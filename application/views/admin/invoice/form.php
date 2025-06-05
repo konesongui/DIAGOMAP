@@ -188,7 +188,7 @@
                         </div>
                         <div class="box-footer">
                             <button type="submit" id="<?= $submitBtn ?>" class="btn btn-primary">Enregistrer</button>
-                            <a href="<?php echo base_url(); ?>admin/invoice" class="btn btn-default">Annuler</a>
+                            <a href="<?php echo base_url(); ?>admin/invoiceItem" class="btn btn-default">Annuler</a>
                         </div>
                     </form>
                 </div>
@@ -197,4 +197,7 @@
     </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/invoice/actions.js"></script>    
