@@ -95,10 +95,10 @@ if ($language_name != 'en') {
 <!-- <script src="<?php echo base_url(); ?>backend/dist/datatables/js/datetime-moment.js"></script>
 -->
     <!-- SweetAlert2 Joseph -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script> -->
 
 </body>
 </html>
