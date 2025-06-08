@@ -9,6 +9,13 @@ class Invoiceitem extends Admin_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->helper('form');
+
+        $this->config->load("app-config");
+        $this->load->library('Enc_lib');
+        $this->load->library('mailsmsconf');
+        $this->load->library('encoding_lib');
+        $this->load->library('customlib');
+
         $this->load->model('invoice_model');
         $this->load->model('clients_model');
         $this->load->model('itemcategory_model');
@@ -621,4 +628,84 @@ class Invoiceitem extends Admin_Controller {
         }
     }
     // -----------------------------------
+
+
+    /**
+     * Envoie la facture par email au client
+     * 
+     * @param int $invoice_id ID du bon de livraison
+     * @return void
+     */
+    public function sendEmail()
+    {
+        // Vérification des permissions
+        if (!$this->rbac->hasPrivilege('Invoiceitem', 'can_edit')) {
+            access_denied();
+        }
+
+        // var_dump($data);
+        // exit;
+
+        $invoice_id = $this->input->post('id', 0);
+
+        // var_dump($invoice_id);
+        // exit;
+
+        // Initialisation de la réponse
+        $response = ['status' => 'fail', 'message' => ''];
+
+        try {
+            // Récupération des données du bon de livraison
+            $data['invoice'] = $this->invoice_model->getInvoiceWithItems($invoice_id);
+            if (!$data['invoice']) {
+                throw new Exception('Facture introuvable');
+            }
+
+            // Vérification de l'email du client
+            if (empty($data['invoice']['customer_email'])) {
+                throw new Exception('Le client n\'a pas d\'adresse email');
+            }
+
+            // Récupération des données de la société
+            $company = $this->setting_model->get();
+
+            // Récupération des données de l'entrepris
+            $data['company'] = $company[0];
+            $data['totalAsletter'] = $this->asLetters(floatval($data['invoice']['total_ttc']));
+
+            // Récupération des informations de l'utilisateur connecté
+            $data['user'] = $this->customlib->getUserData();
+
+            // var_dump($data);
+            // exit;
+
+
+            //===================
+            if ($data['invoice']) {
+
+                $invoice_detail = array(
+                    'id'            => $data['invoice']['id'], 
+                    'data'          => $data, 
+                    'credential_for'=> 'sendInvoice', 
+                    'client_name'       => $data['invoice']['customer_name'].' '.$data['invoice']['customer_last_name'], 
+                    'quotation_number'  => $data['invoice']['invoice_number'], 
+                    'quotation_date'    => !empty($data['invoice']['invoice_date']) ? date('d/m/Y', strtotime($data['invoice']['invoice_date'])) :"N/A", 
+                    'email'             => $data['invoice']['customer_email']);
+
+                $this->mailsmsconf->mailsms('send_invoice', $invoice_detail);
+            }
+            
+            $response['status'] = 'success';
+            $response['message'] = 'La facture a été envoyée avec succès';
+
+        } catch (Exception $e) {
+            $response['message'] = 'Erreur: ' . $e->getMessage();
+            log_message('error', 'Invoice Email Error: ' . $e->getMessage());
+        }
+
+        // Retourner la réponse en JSON
+        echo json_encode($response);
+    }
+
+
 }

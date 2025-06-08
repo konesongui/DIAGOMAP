@@ -237,7 +237,7 @@ $(document).ready(function() {
                         if(response.status == "success") {
                             Toast.fire({
                                 icon: 'success',
-                                title: 'Devis envoyé avec succès'
+                                title: 'Bon de livraison envoyé avec succès'
                             });
                         } else {
                             Toast.fire({
@@ -484,7 +484,6 @@ $(document).ready(function() {
                         /* Dimensions A4 en pixels (approx. 210mm x 297mm) */
                         .page-a4 {
                             width: 210mm;
-                            min-height: 297mm;
                             margin: 0 auto;
                             padding: 15mm 10mm;
                             box-sizing: border-box;

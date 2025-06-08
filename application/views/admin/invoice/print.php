@@ -224,9 +224,9 @@
 </head>
 <body>
     <div class="main-content">
-        <div class="head">FACTURE N° <?= $invoiceNumber ?> </div>
+        <!-- <div class="head">FACTURE N° <?= $invoiceNumber ?> </div> -->
         <div class="invoice-content">
-            <br>
+            <!-- <br>
             <table class="info-table">
                 <tr>
                     <td colspan="2" class="logo">
@@ -255,7 +255,7 @@
                         <strong>Objet :</strong> <?= $invoiceDesignation ;?>
                     </td>
                 </tr>
-            </table><br>
+            </table><br> -->
 
             <table class="products-table">
                 <thead style="background-color:#ccd1cc;">
@@ -316,7 +316,7 @@
         </div>
     </div>
 
-    <div class="footer">
+    <!-- <div class="footer">
         <div class="footer-content">
             <div class="footer-left">
                 <?= $companyName ?> | Registre de Commerce: <?= $companyRccm ?>
@@ -330,6 +330,6 @@
                 Site : <?= $companyWebsite; ?>
             </div>
         </div>
-    </div>
+    </div> -->
 </body>
 </html>

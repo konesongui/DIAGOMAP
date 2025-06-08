@@ -1143,6 +1143,10 @@ class Customlib
 
         $notifications = $this->CI->notificationsetting_model->get();
 
+        // var_dump($find);
+        // var_dump($notifications);
+        // exit;
+
         if (!empty($notifications)) {
             foreach ($notifications as $note_key => $note_value) {
                 if ($note_value->type == $find) {

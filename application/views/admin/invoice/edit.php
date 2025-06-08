@@ -173,7 +173,7 @@
                                 <i class="fa fa-arrow-left"></i> Retour à la liste
                           </a>
                           <button type="submit" id="<?= $submitBtn ?>" class="btn btn-primary">Enregistrer</button>
-                          <a href="<?php echo base_url(); ?>admin/invoice/view/<?php echo $invoice['id']; ?>" class="btn btn-default">Annuler</a>
+                          <a href="<?php echo base_url(); ?>admin/invoiceitem/view/<?php echo $invoice['id']; ?>" class="btn btn-default">Annuler</a>
                       </div>
                   </form>
               </div>

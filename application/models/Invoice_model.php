@@ -145,7 +145,7 @@ class Invoice_model extends MY_Model {
         $this->db->select('invoices.*,clients.item_supplier as customer_name,
             clients.lastname as customer_last_name,
             clients.email as customer_email,
-            clients.phone as customer_phone,
+            clients.phone as customer_phone, clients.comptec, 
             clients.address as customer_address, deliveries.designation')
                  ->from('invoices')
                  ->join('clients', 'clients.id = invoices.customer_id')

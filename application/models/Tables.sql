@@ -374,3 +374,92 @@ ADD CONSTRAINT `stock_removals_ibfk_2` FOREIGN KEY (`updated_by`) REFERENCES `us
 
 ALTER TABLE `stock_removal_items`
 ADD CONSTRAINT `stock_removal_items_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`);
+
+
+
+INSERT INTO notification_setting (
+    id, 
+    type, 
+    is_mail, 
+    is_sms, 
+    is_notification, 
+    display_notification, 
+    display_sms, 
+    subject, 
+    template_id, 
+    template, 
+    variables, 
+    created_at
+) VALUES (
+    13,  -- ou l'ID suivant dans votre séquence
+    'send_quote', 
+    1,  -- is_mail
+    0,  -- is_sms
+    0,  -- is_notification
+    0,  -- display_notification
+    0,  -- display_sms
+    'Votre devis {{quotation_number}}', 
+    '', 
+    'Bonjour {{client_name}},<br>Vous trouverez ci-joint notre devis n°{{quotation_number}} du {{quotation_date}}.<br>Montant total : {{total_amount}} {{currency}}<br>Validité : {{validity_days}} jours.<br>Pour toute question, n''hésitez pas à nous contacter.<br>Cordialement,<br>{{company_name}}<br>{{company_phone}}', 
+    '{{client_name}} {{quotation_number}} {{quotation_date}} {{total_amount}} {{currency}} {{validity_days}} {{company_name}} {{company_phone}}', 
+    NOW()
+);
+
+
+-- Template pour l'envoi de facture
+INSERT INTO notification_setting (
+    id, 
+    type, 
+    is_mail, 
+    is_sms, 
+    is_notification, 
+    display_notification, 
+    display_sms, 
+    subject, 
+    template_id, 
+    template, 
+    variables, 
+    created_at
+) VALUES (
+    14,  -- ID suivant dans la séquence
+    'send_invoice', 
+    1,  -- is_mail
+    0,  -- is_sms
+    0,  -- is_notification
+    0,  -- display_notification
+    0,  -- display_sms
+    'Votre facture {{invoice_number}}', 
+    '', 
+    'Bonjour {{client_name}},<br>Vous trouverez ci-joint notre facture n°{{invoice_number}} du {{invoice_date}}.<br>Montant total : {{total_amount}} {{currency}}<br>Date d''échéance : {{due_date}}<br>Pour toute question, n''hésitez pas à nous contacter.<br>Cordialement,<br>{{company_name}}<br>{{company_phone}}', 
+    '{{client_name}} {{invoice_number}} {{invoice_date}} {{total_amount}} {{currency}} {{due_date}} {{company_name}} {{company_phone}}', 
+    NOW()
+);
+
+-- Template pour l'envoi de bon de livraison
+INSERT INTO notification_setting (
+    id, 
+    type, 
+    is_mail, 
+    is_sms, 
+    is_notification, 
+    display_notification, 
+    display_sms, 
+    subject, 
+    template_id, 
+    template, 
+    variables, 
+    created_at
+) VALUES (
+    15,  -- ID suivant dans la séquence
+    'send_delivery', 
+    1,  -- is_mail
+    0,  -- is_sms
+    0,  -- is_notification
+    0,  -- display_notification
+    0,  -- display_sms
+    'Votre bon de livraison {{delivery_number}}', 
+    '', 
+    'Bonjour {{client_name}},<br>Vous trouverez ci-joint le bon de livraison n°{{delivery_number}} du {{delivery_date}}.<br>Détail de la livraison :<br>{{delivery_details}}<br>Pour toute question, n''hésitez pas à nous contacter.<br>Cordialement,<br>{{company_name}}<br>{{company_phone}}', 
+    '{{client_name}} {{delivery_number}} {{delivery_date}} {{delivery_details}} {{company_name}} {{company_phone}}', 
+    NOW()
+);
