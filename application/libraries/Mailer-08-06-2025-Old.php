@@ -43,33 +43,33 @@ class Mailer {
             $mail->SetFrom($school_email, $school_name);
             $mail->AddReplyTo($school_email, $school_name);
         }
-
-        $mail->AddAddress($toemail);
-        if (!empty($cc)) {
-            $mail->AddCC($cc);
-        }
-        $mail->Subject = $subject;
-        $mail->Body = $body;
-        $mail->IsHTML(true);
-
-        // Gestion des pièces jointes
-        if (!empty($FILES) && isset($FILES['files'])) {
-            foreach ($FILES['files']['name'] as $key => $value) {
-                if (!empty($FILES['files']['tmp_name'][$key])) {
-                    $mail->AddAttachment(
-                        $FILES['files']['tmp_name'][$key],
-                        $FILES['files']['name'][$key],
-                        'base64',
-                        $FILES['files']['type'][$key]
-                    );
+        if (!empty($FILES)) {
+            if (isset($_FILES['files']) && !empty($_FILES['files'])) {
+                $no_files = count($_FILES["files"]['name']);
+                for ($i = 0; $i < $no_files; $i++) {
+                    if ($_FILES["files"]["error"][$i] > 0) {
+                        echo "Error: " . $_FILES["files"]["error"][$i] . "<br>";
+                    } else {
+                        $file_tmp = $_FILES["files"]["tmp_name"][$i];
+                        $file_name = $_FILES["files"]["name"][$i];
+                        $mail->AddAttachment($file_tmp, $file_name);
+                    }
                 }
             }
         }
+        if ($cc != "") {
 
-        if (!$mail->Send()) {
-            return false;
-        } else {
+            $mail->AddCC($cc);
+        }
+
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+        $mail->AltBody = $body;
+        $mail->AddAddress($toemail);
+        if ($mail->Send()) {
             return true;
+        } else {
+            return false;
         }
     }
 
