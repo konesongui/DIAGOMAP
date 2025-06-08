@@ -334,7 +334,8 @@ class Mailgateway {
         );
 
 
-        // var_dump($sender_details);
+        // var_dump($attachments);
+        // // var_dump($sender_details);
         // exit;
 
         // Remplacer les variables dans le template en conservant les sauts de ligne
@@ -418,7 +419,7 @@ class Mailgateway {
             $data['totalAsletter'] = $sender_details['data']['totalAsletter'];
 
             // Charger la vue
-            $html = $this->_CI->load->view('admin/quote/print', $data, true);
+            $html = $this->_CI->load->view('admin/quote/printWithMpdf', $data, true);
             
             // Nettoyer le HTML avant de le passer à mPDF
             // $html = preg_replace('/\s+/', ' ', $html); // Supprimer les espaces multiples
@@ -549,7 +550,7 @@ class Mailgateway {
             $data['totalAsletter'] = $sender_details['data']['totalAsletter'];
 
             // Charger la vue
-            $html = $this->_CI->load->view('admin/itemdelivery/print', $data, true);
+            $html = $this->_CI->load->view('admin/itemdelivery/printWithMpdf', $data, true);
             
             // Nettoyer le HTML avant de le passer à mPDF
             // $html = preg_replace('/\s+/', ' ', $html); // Supprimer les espaces multiples
@@ -606,8 +607,8 @@ class Mailgateway {
         );
 
 
-        // var_dump($subject);
-        // var_dump($sender_details);
+        // var_dump($pdf);
+        // var_dump($attachments);
         // exit;
 
         // Remplacer la variable dans le sujet
@@ -686,7 +687,7 @@ class Mailgateway {
             $data['totalAsletter'] = $sender_details['data']['totalAsletter'];
 
             // Charger la vue
-            $html = $this->_CI->load->view('admin/invoice/print', $data, true);
+            $html = $this->_CI->load->view('admin/invoice/printWithMpdf', $data, true);
             
             // Nettoyer le HTML avant de le passer à mPDF
             // $html = preg_replace('/\s+/', ' ', $html); // Supprimer les espaces multiples

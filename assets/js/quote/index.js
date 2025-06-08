@@ -190,6 +190,16 @@ $(document).ready(function() {
         window.location.href = base_url + remoteAJAXFunctions.view + '/' + quoteId;
     });
 
+
+    
+
+    // Voir un devis
+    // $('.' + dtID).on('click', '.print-printWith', function() {
+    //     var quoteId = $(this).data('id');
+    //     // console.log(quoteId);
+    //     window.location.href = base_url +'/admin/quoteitem/printWithMPDF/' + quoteId;
+    // });
+
     // Modifier un devis
     $('.' + dtID).on('click', '.edit-quote', function() {
         var quoteId = $(this).data('id');
