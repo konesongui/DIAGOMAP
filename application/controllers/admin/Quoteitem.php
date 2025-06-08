@@ -1015,4 +1015,106 @@ class Quoteitem extends Admin_Controller
     }
     // -----------------------------------
 
+
+    /**
+     * Génère un PDF du devis avec mPDF
+     * 
+     * @param int $id ID du devis
+     * @return void
+     */
+    // public function printWithMPDF($id)
+    // {   
+    //     // Vérification des permissions
+    //     if (!$this->rbac->hasPrivilege('Quoteitem', 'can_edit')) {
+    //         access_denied();
+    //     }
+
+    //     try {
+    //         // Récupération des données du devis
+    //         $data['quote'] = $this->quote_model->getQuoteWithItems($id);
+
+    //         if (!$data['quote']) {
+    //             show_404();
+    //             return;
+    //         }
+
+    //         // Récupération des données de la société
+    //         $company = $this->setting_model->get();
+
+    //         // Récupération des données de l'entreprise
+    //         $data['company'] = $company[0];
+    //         $data['totalAsletter'] = $this->asLetters(floatval($data['quote']['total_ttc']));
+
+    //         // Récupération des informations de l'utilisateur connecté
+    //         $data['user'] = $this->customlib->getUserData();
+
+    //         // Charger la bibliothèque mPDF
+    //         require_once FCPATH . 'vendor/autoload.php';
+
+    //         // Configuration de mPDF avec des paramètres optimisés
+    //         $config = [
+    //             'mode' => 'utf-8',
+    //             'format' => 'A4',
+    //             'margin_left' => 15,
+    //             'margin_right' => 15,
+    //             'margin_top' => 15,
+    //             'margin_bottom' => 15,
+    //             'margin_header' => 9,
+    //             'margin_footer' => 9,
+    //             'default_font' => 'dejavusans',
+    //             'autoPageBreak' => true,
+    //             'autoScriptToLang' => true,
+    //             'autoLangToFont' => true,
+    //             'compress' => true,
+    //             'keepColumns' => true,
+    //             'keep_table_proportions' => true,
+    //             'shrink_tables_to_fit' => 1,
+    //             'showImageErrors' => true,
+    //             'debug' => false
+    //         ];
+
+    //         $mpdf = new \Mpdf\Mpdf($config);
+            
+    //         // Définir les informations du document
+    //         $mpdf->SetTitle('Devis ' . $data['quote']['quote_number']);
+    //         $mpdf->SetAuthor($data['company']['name']);
+
+    //         // Charger la vue
+    //         $html = $this->load->view('admin/quote/printWithMpdf', $data, true);
+            
+    //         // Générer le PDF
+    //         $mpdf->WriteHTML($html);
+            
+    //         // Créer le dossier uploads/quotes s'il n'existe pas
+    //         $upload_dir = FCPATH . 'uploads/quotes';
+    //         if (!file_exists($upload_dir)) {
+    //             mkdir($upload_dir, 0777, true);
+    //         }
+            
+    //         // Générer le nom du fichier
+    //         $filename = 'Devis_' . $data['quote']['quote_number'] . '_' . date('Y-m-d') . '.pdf';
+    //         $filepath = $upload_dir . '/' . $filename;
+            
+    //         // Sauvegarder le PDF
+    //         $mpdf->Output($filepath, 'F');
+
+    //         // Retourner le chemin du fichier
+    //         $response = [
+    //             'status' => 'success',
+    //             'message' => 'PDF généré avec succès',
+    //             'filepath' => base_url('uploads/quotes/' . $filename)
+    //         ];
+
+    //         echo json_encode($response);
+
+    //     } catch (Exception $e) {
+    //         log_message('error', 'Quote PDF Generation Error: ' . $e->getMessage());
+    //         $response = [
+    //             'status' => 'error',
+    //             'message' => 'Une erreur est survenue lors de la génération du PDF'
+    //         ];
+    //         echo json_encode($response);
+    //     }
+    // }
+
 }
