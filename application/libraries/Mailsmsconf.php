@@ -18,11 +18,21 @@ class Mailsmsconf {
     }
  
     public function mailsms($send_for, $sender_details, $date = null, $exam_schedule_array = null) {
-      
+        
+        // var_dump($sender_details);
+        // exit;
+
         $send_for = $this->config_mailsms[$send_for];
+        
+        // var_dump($send_for);
+        // exit;
 
         $chk_mail_sms = $this->CI->customlib->sendMailSMS($send_for);
         $sms_detail = $this->CI->smsconfig_model->getActiveSMS();
+
+        // var_dump($chk_mail_sms);
+        // var_dump($sms_detail);
+        // exit;
        
        
         if (!empty($chk_mail_sms)) {
@@ -105,7 +115,14 @@ class Mailsmsconf {
             }  elseif ($send_for == "online_admission_fees_submission") {
 
                 $this->sendOnlineadmissionFees($chk_mail_sms, $sender_details, $chk_mail_sms['template'], $chk_mail_sms['subject'],$chk_mail_sms['template_id']);
-            }else {
+            } elseif ($send_for == "send_quote") {
+                $this->CI->mailgateway->sendQuote($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
+            } elseif ($send_for == "send_delivery") {
+                $this->CI->mailgateway->sendDelivery($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
+            } elseif ($send_for == "send_invoice") {
+                $this->CI->mailgateway->sendInvoice($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
+            }
+            else {
                 
             }
         }

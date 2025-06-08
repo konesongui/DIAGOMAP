@@ -43,6 +43,9 @@ class Mailer {
             $mail->SetFrom($school_email, $school_name);
             $mail->AddReplyTo($school_email, $school_name);
         }
+
+        // var_dump($FILES);
+
         if (!empty($FILES)) {
             if (isset($_FILES['files']) && !empty($_FILES['files'])) {
                 $no_files = count($_FILES["files"]['name']);

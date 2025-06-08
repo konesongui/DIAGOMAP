@@ -440,7 +440,6 @@ $(document).ready(function() {
                         /* Dimensions A4 en pixels (approx. 210mm x 297mm) */
                         .page-a4 {
                             width: 210mm;
-                            min-height: 297mm;
                             margin: 0 auto;
                             padding: 15mm 10mm;
                             box-sizing: border-box;

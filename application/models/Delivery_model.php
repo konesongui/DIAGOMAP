@@ -133,7 +133,7 @@ class Delivery_model extends CI_Model {
     {
         // Récupération de la livraison avec les totaux de la commande
         $this->db->select('deliveries.*, clients.item_supplier as customer_name,
-            clients.lastname as customer_last_name, clients.email as customer_email');
+            clients.lastname as customer_last_name, clients.email as customer_email, clients.phone as customer_phone, clients.address as customer_address, clients.comptec');
         $this->db->from($this->table);
         $this->db->join('clients', 'clients.id = deliveries.customer_id');
         $this->db->where('deliveries.id', $delivery_id);

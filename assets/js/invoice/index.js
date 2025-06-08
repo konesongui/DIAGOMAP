@@ -117,6 +117,14 @@ $(document).ready(function() {
                                     <i class="fa fa-eye me-2"></i> Voir
                                 </a>
                             </li>`;
+
+                     // Option Envoyer par email
+                     actions += `
+                     <li>
+                         <a class="dropdown-item send-invoice" href="#" data-id="${row.id}">
+                             <i class="fa fa-envelope-o me-2"></i> Envoyer par email
+                         </a>
+                     </li>`;
                     
                     
                     
@@ -302,7 +310,6 @@ $(document).ready(function() {
                         /* Dimensions A4 en pixels (approx. 210mm x 297mm) */
                         .page-a4 {
                             width: 210mm;
-                            min-height: 297mm;
                             margin: 0 auto;
                             padding: 15mm 10mm;
                             box-sizing: border-box;
@@ -417,14 +424,14 @@ $(document).ready(function() {
                     url: base_url + '/'+ remoteAJAXFunctions.sendEmail,
                     type: 'POST',
                     data: {
-                        id: deliveryId
+                        id: invoiceId
                     },
                     dataType: 'json',
                     success: function(response) {
                         if(response.status == "success") {
                             Toast.fire({
                                 icon: 'success',
-                                title: 'Devis envoyé avec succès'
+                                title: 'Facture envoyée avec succès'
                             });
                         } else {
                             Toast.fire({

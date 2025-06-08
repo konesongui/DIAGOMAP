@@ -4,25 +4,37 @@ if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
-class Quoteitem extends Admin_Controller {
+class Quoteitem extends Admin_Controller
+{
 
     /**
      * Constructor - Loads necessary helpers and performs initialization
      */
-    function __construct() {
+    function __construct()
+    {
         parent::__construct();
         $this->load->helper('form');
+
+        $this->config->load("app-config");
+        $this->load->library('Enc_lib');
+        $this->load->library('mailsmsconf');
+        $this->load->library('encoding_lib');
+        $this->load->library('customlib');
+
         $this->load->model('quote_model');
         $this->load->model('itemcategory_model');
         $this->load->model('item_model');
         $this->load->model('clients_model');
         $this->load->model('stock_model');
+
+        $this->load->library('customlib');
     }
 
     /**
      * Main index method - Handles item listing and creation
      */
-    function index() {
+    function index()
+    {
         // Check view permission
         if (!$this->rbac->hasPrivilege('item', 'can_view')) {
             access_denied();
@@ -31,7 +43,7 @@ class Quoteitem extends Admin_Controller {
         // Set menu active states
         $this->session->set_userdata('top_menu', 'Inventory');
         $this->session->set_userdata('sub_menu', 'Quoteitem/index');
-        
+
         // Initialize page data
         $data = [
             'title' => 'Add Item',
@@ -51,7 +63,7 @@ class Quoteitem extends Admin_Controller {
      * @return  JSON   $data
      */
     public function getItemByCategory()
-    {   
+    {
         // var_dump($this->input->get());
         // exit;
         $item_category_id = $this->input->get('item_category_id');
@@ -67,10 +79,10 @@ class Quoteitem extends Admin_Controller {
      * @return  JSON   $response
      */
     public function data()
-    {   
+    {
         // Récupère les données du modèle
         $result = $this->quote_model->getListData();
-        
+
         // Les données sont déjà au format JSON, on les renvoie directement
         echo $result;
     }
@@ -79,11 +91,12 @@ class Quoteitem extends Admin_Controller {
     /**
      * STOCK ENTRY TOOL FORM
      */
-    public function form() {
+    public function form()
+    {
         // Définition des menus actifs
         $this->session->set_userdata('top_menu', 'Inventory');
         $this->session->set_userdata('sub_menu', 'Quoteitem/index');
-        
+
         // Préparation des données pour la vue
         $data = [
             'title' => 'Ajouter un article au devis',
@@ -98,13 +111,14 @@ class Quoteitem extends Admin_Controller {
         $this->load->view('layout/footer', $data);
     }
 
-    
-    
+
+
     /**
      * STOCK ENTRY TOOL FORM
      */
 
-     public function add() {
+    public function add()
+    {
         // Initialisation de la réponse
         $response = ['status' => 'fail', 'message' => '', 'error' => []];
 
@@ -186,7 +200,7 @@ class Quoteitem extends Admin_Controller {
 
             // Enregistrement des données
             $insert_id = $this->quote_model->add($data);
-            
+
             if (!$insert_id) {
                 throw new Exception('Erreur lors de l\'enregistrement');
             }
@@ -194,7 +208,6 @@ class Quoteitem extends Admin_Controller {
             $response['status'] = 'success';
             $response['message'] = 'Le devis a été enregistré avec succès';
             $response['quote_id'] = $insert_id;
-
         } catch (Exception $e) {
             $response['message'] = 'Erreur: ' . $e->getMessage();
             log_message('error', 'Quote Add Error: ' . $e->getMessage());
@@ -204,7 +217,7 @@ class Quoteitem extends Admin_Controller {
         echo json_encode($response);
     }
 
-    
+
 
 
     /**
@@ -214,7 +227,7 @@ class Quoteitem extends Admin_Controller {
      * @return void
      */
     public function view($id)
-    {   
+    {
         // var_dump($id);
         // exit;
 
@@ -228,7 +241,7 @@ class Quoteitem extends Admin_Controller {
 
         // var_dump($data['quote']);
         // exit;
-        
+
         // Vérification si le devis existe
         if (!$data['quote']) {
             $this->session->set_flashdata('error', 'Devis non trouvé');
@@ -245,108 +258,76 @@ class Quoteitem extends Admin_Controller {
         $this->load->view('layout/footer');
     }
 
-    
+
     /**
      * Envoie le devis par email au client
      * 
      * @param int $quote_id ID du devis
      * @return void
      */
-    public function sendEmail() {
+    public function sendEmail()
+    {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Or', 'can_view')) {
+        if (!$this->rbac->hasPrivilege('Quoteitem', 'can_edit')) {
             access_denied();
         }
 
-        var_dump($this->input->post());
-        exit;
+        $quote_id = $this->input->post('id', 0);
 
         // Initialisation de la réponse
         $response = ['status' => 'fail', 'message' => ''];
 
-        // try {
-        //     // Récupération des données du devis
-        //     $quote_data = $this->quote_model->getQuoteWithItems($quote_id);
-        //     if (!$quote_data) {
-        //         throw new Exception('Devis introuvable');
-        //     }
+        try {
+            // Récupération des données du devis
+            $data['quote'] = $this->quote_model->getQuoteWithItems($quote_id);
+            if (!$data['quote']) {
+                throw new Exception('Devis introuvable');
+            }
 
-        //     // Vérification de l'email du client
-        //     if (empty($quote_data['customer_email'])) {
-        //         throw new Exception('Le client n\'a pas d\'adresse email');
-        //     }
+            // Vérification de l'email du client
+            if (empty($data['quote']['customer_email'])) {
+                throw new Exception('Le client n\'a pas d\'adresse email');
+            }
 
-        //     // Génération du PDF
-        //     $this->pdf_quote->generateQuote($quote_data);
+            // Récupération des données de la société
+            $company = $this->setting_model->get();
 
-        //     // Création du dossier de stockage si nécessaire
-        //     $upload_dir = FCPATH . 'uploads/quotes/';
-        //     if (!is_dir($upload_dir)) {
-        //         mkdir($upload_dir, 0777, true);
-        //     }
+            // Récupération des données de l'entrepris
+            $data['company'] = $company[0];
+            $data['totalAsletter'] = $this->asLetters(floatval($data['quote']['total_ttc']));
 
-        //     // Sauvegarde du PDF
-        //     $pdf_filename = 'devis_' . $quote_data['quote_number'] . '.pdf';
-        //     $pdf_path = $upload_dir . $pdf_filename;
-        //     $this->pdf_quote->Output($pdf_path, 'F');
+            // Récupération des informations de l'utilisateur connecté
+            $data['user'] = $this->customlib->getUserData();
 
-        //     // Configuration de l'email
-        //     $this->load->library('email');
+            // var_dump($data);
+            // exit;
+
+
+            //===================
+            if ($data['quote']) {
+
+                $quote_detail = array(
+                    'id'            => $data['quote']['id'], 
+                    'data'          => $data, 
+                    'credential_for'=> 'sendQuote', 
+                    'client_name'       => $data['quote']['customer_name'].' '.$data['quote']['customer_last_name'], 
+                    'quotation_number'  => $data['quote']['quote_number'], 
+                    'quotation_date'    => !empty($data['quote']['quote_date']) ? date('d/m/Y', strtotime($data['quote']['quote_date'])) :"N/A", 
+                    'email'             => $data['quote']['customer_email']);
+
+                $this->mailsmsconf->mailsms('send_quote', $quote_detail);
+            }
             
-        //     $config = [
-        //         'protocol' => 'smtp',
-        //         'smtp_host' => $this->config->item('smtp_host'),
-        //         'smtp_port' => $this->config->item('smtp_port'),
-        //         'smtp_user' => $this->config->item('smtp_user'),
-        //         'smtp_pass' => $this->config->item('smtp_pass'),
-        //         'mailtype' => 'html',
-        //         'charset' => 'utf-8',
-        //         'wordwrap' => TRUE
-        //     ];
+            $response['status'] = 'success';
+            $response['message'] = 'Le devis a été envoyé avec succès';
 
-        //     $this->email->initialize($config);
+        } catch (Exception $e) {
+            $response['message'] = 'Erreur: ' . $e->getMessage();
+            log_message('error', 'Quote Email Error: ' . $e->getMessage());
+        }
 
-        //     // Préparation de l'email
-        //     $this->email->from($this->config->item('smtp_user'), $this->config->item('company_name'));
-        //     $this->email->to($quote_data['customer_email']);
-        //     $this->email->subject('Devis ' . $quote_data['quote_number'] . ' - ' . $quote_data['designation']);
-
-        //     // Préparation du message
-        //     $message = $this->load->view('admin/quote/email_template', [
-        //         'quote' => $quote_data,
-        //         'company' => [
-        //             'name' => $this->config->item('company_name'),
-        //             'address' => $this->config->item('company_address'),
-        //             'phone' => $this->config->item('company_phone'),
-        //             'email' => $this->config->item('company_email')
-        //         ]
-        //     ], TRUE);
-
-        //     $this->email->message($message);
-        //     $this->email->attach($pdf_path);
-
-        //     // Envoi de l'email
-        //     if ($this->email->send()) {
-        //         // Mise à jour du statut du devis
-        //         $this->quote_model->updateStatus($quote_id, 1); // 1 = Envoyé
-        //         $response['status'] = 'success';
-        //         $response['message'] = 'Le devis a été envoyé avec succès';
-        //     } else {
-        //         throw new Exception('Erreur lors de l\'envoi de l\'email: ' . $this->email->print_debugger(['headers', 'subject', 'body']));
-        //     }
-
-        // } catch (Exception $e) {
-        //     $response['message'] = 'Erreur: ' . $e->getMessage();
-        //     log_message('error', 'Quote Email Error: ' . $e->getMessage());
-        // }
-
-        // // Suppression du fichier PDF temporaire
-        // if (isset($pdf_path) && file_exists($pdf_path)) {
-        //     unlink($pdf_path);
-        // }
-
-        // // Retourner la réponse en JSON
-        // echo json_encode($response);
+        // Retourner la réponse en JSON
+        echo json_encode($response);
     }
 
     /**
@@ -388,7 +369,6 @@ class Quoteitem extends Admin_Controller {
             $this->load->view('layout/header', $data);
             $this->load->view('admin/quote/edit', $data);
             $this->load->view('layout/footer', $data);
-
         } catch (Exception $e) {
             log_message('error', 'Quote Edit Error: ' . $e->getMessage());
             $this->session->set_flashdata('error', 'Une erreur est survenue lors de l\'édition du devis');
@@ -402,7 +382,8 @@ class Quoteitem extends Admin_Controller {
      * @param int $id ID du devis
      * @return void
      */
-    public function update() {
+    public function update()
+    {
         if (!$this->rbac->hasPrivilege('Or', 'can_edit')) {
             access_denied();
         }
@@ -412,7 +393,7 @@ class Quoteitem extends Admin_Controller {
 
         // Récupérer l'ID du devis
         $id = $this->input->post('id');
-        
+
         // Initialisation de la réponse
         $response = ['status' => 'fail', 'message' => '', 'error' => []];
 
@@ -495,14 +476,13 @@ class Quoteitem extends Admin_Controller {
             // exit;   
             // Mise à jour des données
             $update_success = $this->quote_model->update($data);
-            
+
             if (!$update_success) {
                 throw new Exception('Erreur lors de la mise à jour');
             }
 
             $response['status'] = 'success';
             $response['message'] = 'Le devis a été mis à jour avec succès';
-
         } catch (Exception $e) {
             $response['message'] = 'Erreur: ' . $e->getMessage();
             log_message('error', 'Quote Update Error: ' . $e->getMessage());
@@ -518,7 +498,8 @@ class Quoteitem extends Admin_Controller {
      * @param int $quote_id ID du devis
      * @return bool
      */
-    private function createDeliveryFromOrder($quote_id, $order_id) {
+    private function createDeliveryFromOrder($quote_id, $order_id)
+    {
         // Récupération des données de la commande
         $quote = $this->quote_model->getQuoteWithItems($quote_id);
         if (!$quote) {
@@ -577,7 +558,6 @@ class Quoteitem extends Admin_Controller {
             }
 
             return true;
-
         } catch (Exception $e) {
             log_message('error', 'Delivery Creation Error: ' . $e->getMessage());
             return false;
@@ -590,16 +570,17 @@ class Quoteitem extends Admin_Controller {
      * 
      * @return string
      */
-    private function generateDeliveryNumber() {
+    private function generateDeliveryNumber()
+    {
         $prefix = 'BL';  // BL pour Bon de Livraison
         $date = date('Ym');  // Format YYYYMM
-        
+
         // Recherche le dernier numéro pour ce mois
         $this->db->like('delivery_number', $prefix . '-' . $date, 'after');
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $query = $this->db->get('deliveries');
-        
+
         if ($query->num_rows() > 0) {
             // Extrait le numéro séquentiel de la dernière livraison
             $last_ref = $query->row()->delivery_number;
@@ -608,14 +589,14 @@ class Quoteitem extends Admin_Controller {
             // Première livraison du mois
             $sequence = 1;
         }
-        
+
         // Formate le numéro séquentiel sur 4 chiffres
         $sequence_padded = str_pad($sequence, 4, '0', STR_PAD_LEFT);
-        
+
         return $prefix . '-' . $date . '-' . $sequence_padded;
     }
 
-    
+
 
 
     /**
@@ -624,7 +605,8 @@ class Quoteitem extends Admin_Controller {
      * @param int $quote_id ID du devis
      * @return bool
      */
-    private function createOrderFromQuote($quote_id, $order_number) {
+    private function createOrderFromQuote($quote_id, $order_number)
+    {
         // Récupération des données du devis
         $quote = $this->quote_model->getQuoteWithItems($quote_id);
         if (!$quote) {
@@ -687,13 +669,12 @@ class Quoteitem extends Admin_Controller {
             }
 
             $this->db->trans_complete();
-            
+
             if ($this->db->trans_status() === FALSE) {
                 throw new Exception('Erreur lors de la transaction');
             }
 
             return true;
-
         } catch (Exception $e) {
             $this->db->trans_rollback();
             log_message('error', 'Order Creation Error: ' . $e->getMessage());
@@ -708,7 +689,8 @@ class Quoteitem extends Admin_Controller {
      * @param int $id ID du devis
      * @return void
      */
-    public function validate() {
+    public function validate()
+    {
         // Vérification des permissions
         if (!$this->rbac->hasPrivilege('Quoteitem', 'can_edit')) {
             access_denied();
@@ -758,7 +740,6 @@ class Quoteitem extends Admin_Controller {
 
             // Créer la sortie de stock
             $this->createStockRemovalFromQuote($id);
-
         } catch (Exception $e) {
             $response['message'] = $e->getMessage();
             log_message('error', 'Quote Validation Error: ' . $e->getMessage());
@@ -774,7 +755,8 @@ class Quoteitem extends Admin_Controller {
      * @param int $quote_id ID du devis
      * @return void
      */
-    private function createStockRemovalFromQuote($quote_id) {
+    private function createStockRemovalFromQuote($quote_id)
+    {
         // Récupérer les informations du devis
         $quote = $this->quote_model->getQuoteWithItems($quote_id);
         // var_dump($quote['items']);
@@ -802,7 +784,7 @@ class Quoteitem extends Admin_Controller {
 
         // Insérer la sortie de stock principale
         $this->db->trans_start();
-        
+
         $this->db->insert('stock_removals', $stock_removal_data);
         $removal_id = $this->db->insert_id();
 
@@ -817,17 +799,20 @@ class Quoteitem extends Admin_Controller {
                 'price' => $item['unit_price'],
                 'line_total' => $item['quantity'] * $item['unit_price'],
             ];
-            
+
             $this->db->insert('stock_removal_items', $removal_item);
-            
+
             // Mettre à jour le stock (supposons que vous avez une table 'stock' avec les champs item_id et quantity)
             $this->db->set('initial_quantity', 'GREATEST(initial_quantity - ' . $item['quantity'] . ', 0)', FALSE)
-                    ->set('current_quantity', 
-                        'CASE WHEN current_quantity >= ' . $item['quantity'] . ' 
+                ->set(
+                    'current_quantity',
+                    'CASE WHEN current_quantity >= ' . $item['quantity'] . ' 
                         THEN current_quantity - ' . $item['quantity'] . ' 
-                        ELSE 0 END', FALSE)
-                    ->where('item_id', $item['item_id'])
-                    ->update('stock');
+                        ELSE 0 END',
+                    FALSE
+                )
+                ->where('item_id', $item['item_id'])
+                ->update('stock');
         }
 
         $this->db->trans_complete();
@@ -845,7 +830,8 @@ class Quoteitem extends Admin_Controller {
      * @param int $id ID du devis
      * @return void
      */
-    public function reject() {
+    public function reject()
+    {
         // Vérification des permissions
         if (!$this->rbac->hasPrivilege('Quoteitem', 'can_edit')) {
             access_denied();
@@ -864,7 +850,7 @@ class Quoteitem extends Admin_Controller {
             if (!$quote) {
                 throw new Exception('Devis non trouvé');
             }
-            
+
             // Vérification que le devis n'est pas déjà validé ou rejeté
             if ($this->quote_model->isQuoteValidated($id)) {
                 throw new Exception('Ce devis est déjà validé');
@@ -895,7 +881,6 @@ class Quoteitem extends Admin_Controller {
 
             $response['status'] = 'success';
             $response['message'] = 'Devis rejeté avec succès';
-
         } catch (Exception $e) {
             $response['message'] = $e->getMessage();
             log_message('error', 'Quote Rejection Error: ' . $e->getMessage());
@@ -910,40 +895,33 @@ class Quoteitem extends Admin_Controller {
      * 
      * @param int $id ID de la factures
      */
-    public function print() {
+    public function print()
+    {
 
         $id = $this->input->post('id');
 
-        // var_dump($this->input->post());
-        // var_dump($id);
-        // die();
-
         // Récupération des données de la facture
         $data['quote'] = $this->quote_model->getQuoteWithItems($id);
-        
+
         if (!$data['quote']) {
             show_404();
             return;
         }
 
-        // var_dump($data);
-        // die();   
-
         // Récupération des données de la société
         $company = $this->setting_model->get();
 
-        // Récupération des données de l'entrepris
+        // Récupération des données de l'entreprise
         $data['company'] = $company[0];
         $data['totalAsletter'] = $this->asLetters(floatval($data['quote']['total_ttc']));
-        
 
-
-        // var_dump($data['totalAsletter']);
-        // die();
+        // Récupération des informations de l'utilisateur connecté
+        $data['user'] = $this->customlib->getUserData();
+        // var_dump($userdata);
+        // exit;
 
         // Chargement de la vue d'impression
-        // $this->load->view('admin/invoice/print', $data);
-        $invoice_page = $this->load->view('admin/quote/print', $data, true); 
+        $invoice_page = $this->load->view('admin/quote/print', $data, true);
         $array = array('status' => '1', 'error' => '', 'page' => $invoice_page);
         echo json_encode($array);
     }
@@ -952,79 +930,87 @@ class Quoteitem extends Admin_Controller {
     //------------------------------------
     // AJOUT D'UN NOUVEL ORDRE DE VIREMENT
     //------------------------------------
-    public function asLetters($number) {
+    public function asLetters($number)
+    {
 
         $convert = explode('.', $number);
-        $num[17] = array('zero', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit',
-                         'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize');
-                          
-        $num[100] = array(20 => 'vingt', 30 => 'trente', 40 => 'quarante', 50 => 'cinquante',
-                          60 => 'soixante', 70 => 'soixante-dix', 80 => 'quatre-vingt', 90 => 'quatre-vingt-dix');
-                                          
+        $num[17] = array(
+            'zero',
+            'un',
+            'deux',
+            'trois',
+            'quatre',
+            'cinq',
+            'six',
+            'sept',
+            'huit',
+            'neuf',
+            'dix',
+            'onze',
+            'douze',
+            'treize',
+            'quatorze',
+            'quinze',
+            'seize'
+        );
+
+        $num[100] = array(
+            20 => 'vingt',
+            30 => 'trente',
+            40 => 'quarante',
+            50 => 'cinquante',
+            60 => 'soixante',
+            70 => 'soixante-dix',
+            80 => 'quatre-vingt',
+            90 => 'quatre-vingt-dix'
+        );
+
         if (isset($convert[1]) && $convert[1] != '') {
-          return self::asLetters($convert[0]).' et '.self::asLetters($convert[1]);
+            return self::asLetters($convert[0]) . ' et ' . self::asLetters($convert[1]);
         }
-        if ($number < 0) return 'moins '.self::asLetters(-$number);
+        if ($number < 0) return 'moins ' . self::asLetters(-$number);
         if ($number < 17) {
-          return $num[17][$number];
-        }
-        elseif ($number < 20) {
-          return 'dix-'.self::asLetters($number-10);
-        }
-        elseif ($number < 100) {
-          if ($number%10 == 0) {
-            return $num[100][$number];
-          }
-          elseif (substr($number, -1) == 1) {
-            if( ((int)($number/10)*10)<70 ){
-              return self::asLetters((int)($number/10)*10).'-et-un';
+            return $num[17][$number];
+        } elseif ($number < 20) {
+            return 'dix-' . self::asLetters($number - 10);
+        } elseif ($number < 100) {
+            if ($number % 10 == 0) {
+                return $num[100][$number];
+            } elseif (substr($number, -1) == 1) {
+                if (((int)($number / 10) * 10) < 70) {
+                    return self::asLetters((int)($number / 10) * 10) . '-et-un';
+                } elseif ($number == 71) {
+                    return 'soixante-et-onze';
+                } elseif ($number == 81) {
+                    return 'quatre-vingt-un';
+                } elseif ($number == 91) {
+                    return 'quatre-vingt-onze';
+                }
+            } elseif ($number < 70) {
+                return self::asLetters($number - $number % 10) . '-' . self::asLetters($number % 10);
+            } elseif ($number < 80) {
+                return self::asLetters(60) . '-' . self::asLetters($number % 20);
+            } else {
+                return self::asLetters(80) . '-' . self::asLetters($number % 20);
             }
-            elseif ($number == 71) {
-              return 'soixante-et-onze';
-            }
-            elseif ($number == 81) {
-              return 'quatre-vingt-un';
-            }
-            elseif ($number == 91) {
-              return 'quatre-vingt-onze';
-            }
-          }
-          elseif ($number < 70) {
-            return self::asLetters($number-$number%10).'-'.self::asLetters($number%10);
-          }
-          elseif ($number < 80) {
-            return self::asLetters(60).'-'.self::asLetters($number%20);
-          }
-          else {
-            return self::asLetters(80).'-'.self::asLetters($number%20);
-          }
-        }
-        elseif ($number == 100) {
-          return 'cent';
-        }
-        elseif ($number < 200) {
-          return self::asLetters(100).' '.self::asLetters($number%100);
-        }
-        elseif ($number < 1000) {
-          return self::asLetters((int)($number/100)).' '.self::asLetters(100).($number%100 > 0 ? ' '.self::asLetters($number%100): '');
-        }
-        elseif ($number == 1000){
-          return 'mille';
-        }
-        elseif ($number < 2000) {
-          return self::asLetters(1000).' '.self::asLetters($number%1000).' ';
-        }
-        elseif ($number < 1000000) {
-          return self::asLetters((int)($number/1000)).' '.self::asLetters(1000).($number%1000 > 0 ? ' '.self::asLetters($number%1000): '');
-        }
-        elseif ($number == 1000000) {
-          return 'millions';
-        }
-        elseif ($number < 2000000) {
-          return self::asLetters(1000000).' '.self::asLetters($number%1000000);
-        }
-        elseif ($number < 1000000000) {
-          return self::asLetters((int)($number/1000000)).' '.self::asLetters(1000000).($number%1000000 > 0 ? ' '.self::asLetters($number%1000000): '');
+        } elseif ($number == 100) {
+            return 'cent';
+        } elseif ($number < 200) {
+            return self::asLetters(100) . ' ' . self::asLetters($number % 100);
+        } elseif ($number < 1000) {
+            return self::asLetters((int)($number / 100)) . ' ' . self::asLetters(100) . ($number % 100 > 0 ? ' ' . self::asLetters($number % 100) : '');
+        } elseif ($number == 1000) {
+            return 'mille';
+        } elseif ($number < 2000) {
+            return self::asLetters(1000) . ' ' . self::asLetters($number % 1000) . ' ';
+        } elseif ($number < 1000000) {
+            return self::asLetters((int)($number / 1000)) . ' ' . self::asLetters(1000) . ($number % 1000 > 0 ? ' ' . self::asLetters($number % 1000) : '');
+        } elseif ($number == 1000000) {
+            return 'millions';
+        } elseif ($number < 2000000) {
+            return self::asLetters(1000000) . ' ' . self::asLetters($number % 1000000);
+        } elseif ($number < 1000000000) {
+            return self::asLetters((int)($number / 1000000)) . ' ' . self::asLetters(1000000) . ($number % 1000000 > 0 ? ' ' . self::asLetters($number % 1000000) : '');
         }
     }
     // -----------------------------------

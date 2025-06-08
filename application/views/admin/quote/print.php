@@ -14,7 +14,9 @@
     $companyBank = $company['bank']??"N/A";
 
     $customerFullname = $quote['customer_name'].' '.$quote['customer_last_name']??"N/A";
-    $customerAddress = $quote['customer_address'].' / '.$quote['customer_phone']??"N/A";
+    $customerPhone = $quote['customer_phone']??"N/A";
+    $customerAddress = $quote['customer_address'].' / '.$quote['customer_email']??"N/A";
+    $customerComptec = $quote['comptec']??"N/A";
     $quoteDate = !empty($quote['quote_date'])? date('d/m/Y', strtotime($quote['quote_date'])) :"N/A";
     $quoteDesignation = $quote['designation']??"N/A";
     $quoteNumber = $quote['quote_number']??"N/A";
@@ -26,16 +28,21 @@
     $total_ht = (!empty($quote['total_ht']) && floatval($quote['total_ht']) > 0)? floatval($quote['total_ht']) :0;
     $total_ttc = (!empty($quote['total_ttc']) && floatval($quote['total_ttc']) > 0)? floatval($quote['total_ttc']) :0;
     $payment_method = !empty($quote['payment_method'])? $quote['payment_method'] :"N/A";
+    
+    $userName = !empty($user['name'])? $user['name'] :"N/A";
+
 
 
 
 
 
     // var_dump($company);
+    // var_dump($user);
     // var_dump($companyLogo);
     // var_dump($quote);
     // var_dump($items);
     // var_dump($quote);
+    // var_dump($userName);
     // die();
 ?>
 <!DOCTYPE html>
@@ -226,7 +233,7 @@
 </head>
 <body>
     <div class="main-content">
-        <div class="head">Devis N° <?= $quoteNumber ?> </div>
+        <div class="head">Devis N° <?= $quoteNumber ?> du <?= $quoteDate ?></div>
         <div class="quote-content">
             <br>
             <table class="info-table">
@@ -246,10 +253,11 @@
                     </td>
                     <td colspan="2"></td>
                     <td colspan="2">
-                        <strong>Date :</strong> <?= $quoteDate ?><br>
+                        <strong>Compte contribuable :</strong> <?= $customerComptec ?><br>
                         <strong>Client :</strong> <?= $customerFullname ?><br>
-                        <strong>Adresse du Client :</strong> <?= $customerFullname ?><br>
-                        <strong>Affaire suivi par:</strong>  N/A
+                        <strong>Téléphone :</strong> <?= $customerPhone ?><br>
+                        <strong>Adresse du Client :</strong> <?= $customerAddress ?><br>
+                        <strong>Affaire suivi par:</strong> </strong><?= $userName ?>
                     </td>
                 </tr>
                 <tr>

@@ -12,6 +12,13 @@ class Deliveryitem extends Admin_Controller {
     function __construct() {
         parent::__construct();
         $this->load->helper('form');
+
+        $this->config->load("app-config");
+        $this->load->library('Enc_lib');
+        $this->load->library('mailsmsconf');
+        $this->load->library('encoding_lib');
+        $this->load->library('customlib');
+
         $this->load->model('delivery_model');
         $this->load->model('itemcategory_model');
         $this->load->model('item_model');
@@ -881,6 +888,83 @@ class Deliveryitem extends Admin_Controller {
             log_message('error', 'Delivery Update Error: ' . $e->getMessage());
         }
 
+        echo json_encode($response);
+    }
+
+
+
+    
+    /**
+     * Envoie le bon de livraison par email au client
+     * 
+     * @param int $delivery_id ID du bon de livraison
+     * @return void
+     */
+    public function sendEmail()
+    {
+        // Vérification des permissions
+        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+            access_denied();
+        }
+
+        $delivery_id = $this->input->post('id', 0);
+
+        // var_dump($delivery_id);
+        // exit;
+
+        // Initialisation de la réponse
+        $response = ['status' => 'fail', 'message' => ''];
+
+        try {
+            // Récupération des données du bon de livraison
+            $data['delivery'] = $this->delivery_model->getDeliveryWithItems($delivery_id);
+            if (!$data['delivery']) {
+                throw new Exception('Devis introuvable');
+            }
+
+            // Vérification de l'email du client
+            if (empty($data['delivery']['customer_email'])) {
+                throw new Exception('Le client n\'a pas d\'adresse email');
+            }
+
+            // Récupération des données de la société
+            $company = $this->setting_model->get();
+
+            // Récupération des données de l'entrepris
+            $data['company'] = $company[0];
+            $data['totalAsletter'] = $this->asLetters(floatval($data['delivery']['total_ttc']));
+
+            // Récupération des informations de l'utilisateur connecté
+            $data['user'] = $this->customlib->getUserData();
+
+            // var_dump($data);
+            // exit;
+
+
+            //===================
+            if ($data['delivery']) {
+
+                $delivery_detail = array(
+                    'id'            => $data['delivery']['id'], 
+                    'data'          => $data, 
+                    'credential_for'=> 'sendDelivery', 
+                    'client_name'       => $data['delivery']['customer_name'].' '.$data['delivery']['customer_last_name'], 
+                    'quotation_number'  => $data['delivery']['delivery_number'], 
+                    'quotation_date'    => !empty($data['delivery']['delivery_date']) ? date('d/m/Y', strtotime($data['delivery']['delivery_date'])) :"N/A", 
+                    'email'             => $data['delivery']['customer_email']);
+
+                $this->mailsmsconf->mailsms('send_delivery', $delivery_detail);
+            }
+            
+            $response['status'] = 'success';
+            $response['message'] = 'Le bon de livraison a été envoyé avec succès';
+
+        } catch (Exception $e) {
+            $response['message'] = 'Erreur: ' . $e->getMessage();
+            log_message('error', 'Delivery Email Error: ' . $e->getMessage());
+        }
+
+        // Retourner la réponse en JSON
         echo json_encode($response);
     }
 

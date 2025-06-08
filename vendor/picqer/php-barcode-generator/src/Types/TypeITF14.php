@@ -5,7 +5,6 @@ namespace Picqer\Barcode\Types;
 use Picqer\Barcode\Barcode;
 use Picqer\Barcode\BarcodeBar;
 use Picqer\Barcode\Exceptions\InvalidCharacterException;
-use Picqer\Barcode\Exceptions\InvalidCheckDigitException;
 use Picqer\Barcode\Exceptions\InvalidLengthException;
 
 class TypeITF14 implements TypeInterface
@@ -13,9 +12,8 @@ class TypeITF14 implements TypeInterface
     /**
      * @throws InvalidLengthException
      * @throws InvalidCharacterException
-     * @throws InvalidCheckDigitException
      */
-    public function getBarcode(string $code): Barcode
+    public function getBarcodeData(string $code): Barcode
     {
         $chr = [];
         $chr['0'] = '11221';
@@ -37,10 +35,6 @@ class TypeITF14 implements TypeInterface
 
         if (strlen($code) === 13) {
             $code .= $this->getChecksum($code);
-        } elseif (substr($code, -1) !== $this->getChecksum(substr($code, 0, -1))) {
-            // If length of given barcode is same as final length, barcode is including checksum
-            // Make sure that checksum is the same as we calculated
-            throw new InvalidCheckDigitException();
         }
 
         $barcode = new Barcode($code);
@@ -66,7 +60,7 @@ class TypeITF14 implements TypeInterface
             }
 
             foreach (str_split($pmixed) as $width) {
-                $barcode->addBar(new BarcodeBar(intval($width), 1, $drawBar));
+                $barcode->addBar(new BarcodeBar($width, 1, $drawBar));
                 $drawBar = ! $drawBar;
             }
         }
@@ -79,8 +73,8 @@ class TypeITF14 implements TypeInterface
         $total = 0;
 
         for ($charIndex = 0; $charIndex <= (strlen($code) - 1); $charIndex++) {
-            $integerOfChar = intval($code[$charIndex]);
-            $total += $integerOfChar * ($charIndex % 2 === 0 ? 3 : 1);
+            $integerOfChar = intval($code . substr($charIndex, 1));
+            $total += $integerOfChar * (($charIndex === 0 || $charIndex % 2 === 0) ? 3 : 1);
         }
 
         $checksum = 10 - ($total % 10);
