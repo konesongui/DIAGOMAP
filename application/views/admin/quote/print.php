@@ -253,8 +253,8 @@
                     </td>
                     <td colspan="2"></td>
                     <td colspan="2">
-                        <strong>Compte contribuable :</strong> <?= $customerComptec ?><br>
                         <strong>Client :</strong> <?= $customerFullname ?><br>
+                        <strong>Compte contribuable :</strong> <?= $customerComptec ?><br>
                         <strong>Téléphone :</strong> <?= $customerPhone ?><br>
                         <strong>Adresse du Client :</strong> <?= $customerAddress ?><br>
                         <strong>Affaire suivi par:</strong> </strong><?= $userName ?>

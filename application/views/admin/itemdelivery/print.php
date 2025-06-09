@@ -15,6 +15,7 @@
 
     $customerFullname = $delivery['customer_name'].' '.$delivery['customer_last_name']??"N/A";
     $customerAddress = $delivery['customer_address'].' / '.$delivery['customer_phone']??"N/A";
+    $customerComptec = $delivery['comptec']??"N/A";
     $deliveryDate = !empty($delivery['delivery_date'])? date('d/m/Y', strtotime($delivery['delivery_date'])) :"N/A";
     $deliveryDesignation = $delivery['designation']??"N/A";
     $deliveryNumber = $delivery['delivery_number']??"N/A";
@@ -246,10 +247,11 @@
                     </td>
                     <td colspan="2"></td>
                     <td colspan="2">
-                        <strong>Date :</strong> <?= $deliveryDate ?><br>
                         <strong>Client :</strong> <?= $customerFullname ?><br>
-                        <strong>Adresse du Client :</strong> <?= $customerFullname ?><br>
-                        <strong>Affaire suivi par:</strong>  N/A
+                        <strong>Compte contribuable :</strong> <?= $customerComptec ?><br>
+                        <strong>Téléphone :</strong> <?= $customerPhone ?><br>
+                        <strong>Adresse du Client :</strong> <?= $customerAddress ?><br>
+                        <strong>Affaire suivi par:</strong> </strong><?= $userName ?>
                     </td>
                 </tr>
                 <tr>
