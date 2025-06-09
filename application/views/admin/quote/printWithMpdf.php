@@ -73,8 +73,8 @@
                     </td>
                     <td style="width: 10%; border: none;"></td>
                     <td style="width:55 %; padding: 10px 5px 10px 20px; vertical-align: top;">
-                        <span style="color: rgb(19, 96, 171); font-weight: bold;">Compte contribuable :</span> <?= $customerComptec ?><br>
                         <span style="color: rgb(19, 96, 171); font-weight: bold;">Client :</span> <?= $customerFullname ?><br>
+                        <span style="color: rgb(19, 96, 171); font-weight: bold;">Compte contribuable :</span> <?= $customerComptec ?><br>
                         <span style="color: rgb(19, 96, 171); font-weight: bold;">Téléphone :</span> <?= $customerPhone ?><br>
                         <span style="color: rgb(19, 96, 171); font-weight: bold;">Adresse du Client :</span> <?= $customerAddress ?><br>
                         <span style="color: rgb(19, 96, 171); font-weight: bold;">Affaire suivi par:</span> <?= $userName ?>
@@ -154,7 +154,7 @@
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="width: 33%; text-align: left; padding: 0 5px;">
-                    <?= $companyName ?> | Registre de Commerce: <?= $companyRccm ?>
+                    <?= $companyName ?> | RCCM: <?= $companyRccm ?>
                 </td>
                 <td style="width: 33%; text-align: center; padding: 0 5px;">
                     Téléphone: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
