@@ -884,6 +884,36 @@ class Report extends Admin_Controller
         $this->load->view('layout/footer');
     }
 
+    public function its()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/charge_its');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function cmu()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/charge_cnps_cmu');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function fdfp()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/charge_fdfp');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
     public function income()
     {
         $this->session->set_userdata('top_menu', 'Reports');
@@ -972,6 +1002,111 @@ class Report extends Admin_Controller
         $data['label'] = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
         $this->load->view('layout/header', $data);
         $this->load->view('reports/caisse', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function charge_fdfp()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/charge_fdfp');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $result              = $this->payroll_model->getbetweenpayrollReport($start_date, $end_date);
+        $data['payrollList'] = $result;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/charge_fdfp', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function charge_cnps_cmu()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/charge_cnps_cmu');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $result              = $this->payroll_model->getbetweenpayrollReport($start_date, $end_date);
+        $data['payrollList'] = $result;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/charge_cnps_cmu', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function charge_its()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/charge_its');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $result              = $this->payroll_model->getbetweenpayrollReport($start_date, $end_date);
+        $data['payrollList'] = $result;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/charge_its', $data);
         $this->load->view('layout/footer', $data);
     }
 

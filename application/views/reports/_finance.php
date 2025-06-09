@@ -50,6 +50,26 @@
                         <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/payroll'); ?>"><a href="<?php echo base_url(); ?>report/payroll"><i class="fa fa-file-text-o"></i> Livre de paie</a></li>
                         <?php
                     }
+
+                    if ($this->rbac->hasPrivilege('payroll_report', 'can_view')) {
+                        ?>
+                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/charge_its'); ?>"><a href="<?php echo base_url(); ?>report/charge_its"><i class="fa fa-file-text-o"></i>Charge ITS</a></li>
+                        <?php
+                    }
+
+                    if ($this->rbac->hasPrivilege('payroll_report', 'can_view')) {
+                        ?>
+
+                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/charge_cnps_cmu'); ?>"><a href="<?php echo base_url(); ?>report/charge_cnps_cmu"><i class="fa fa-file-text-o"></i>Charge CNPS & CMU-Employé</a></li>
+
+                        <?php
+                    }
+
+                    if ($this->rbac->hasPrivilege('payroll_report', 'can_view')) {
+                        ?>
+                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/charge_fdfp'); ?>"><a href="<?php echo base_url(); ?>report/charge_fdfp"><i class="fa fa-file-text-o"></i>Charge FDFP</a></li>
+                        <?php
+                    }
                     if ($this->rbac->hasPrivilege('income_group_report', 'can_view')) {
                         ?>
                         <!--<li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/incomegroup'); ?>"><a href="<?php echo base_url(); ?>report/incomegroup"><i class="fa fa-file-text-o"></i> Caisse budgetaire par catégorie</a></li>-->
