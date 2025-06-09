@@ -748,7 +748,7 @@ class Quoteitem extends Admin_Controller
         echo json_encode($response);
     }
 
-
+         
     /**
      * Crée une sortie de stock à partir d'un devis validé
      * 
