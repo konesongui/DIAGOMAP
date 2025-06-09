@@ -63,7 +63,7 @@
                             
                             <?php echo $this->customlib->getCSRF(); ?>
                             
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail1">Client</label><small class="req"> *</small>
                                 <select class="form-control" name="customer">
                                     <option value=""><?php echo $this->lang->line('select'); ?></option>
@@ -76,12 +76,12 @@
                                 <span class="text-danger"><?php echo form_error('customer'); ?></span>
                             </div>
 
-                            <div class="form-group col-md-3">
+                            <!-- <div class="form-group col-md-3">
                                 <label>Désignation <small class="req">*</small></label>
                                 <input name="designation" type="text" class="form-control" value="<?php echo $quote['designation']; ?>" />
-                            </div>
+                            </div> -->
 
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label>Date <small class="req">*</small></label>
                                 <input id="quote_date" name="quote_date" type="text" class="form-control date" value="<?php echo date('d/m/Y', strtotime($quote['quote_date'])); ?>" readonly />
                             </div>

@@ -47,7 +47,7 @@
     <style>
         @page {
             size: A4;
-            margin: 0.3cm;
+            margin: 1.5cm;
         }
         body { 
             font-family: Arial, sans-serif; 
@@ -112,10 +112,10 @@
             text-align: left;
         }
         .footer-center {
-            text-align: center;
+            text-align: left;
         }
         .footer-right {
-            text-align: right;
+            text-align: left;
         }
         .info-table td {
             padding: 2px 5px;

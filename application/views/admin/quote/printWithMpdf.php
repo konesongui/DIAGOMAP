@@ -156,11 +156,11 @@
                 <td style="width: 33%; text-align: left; padding: 0 5px;">
                     <?= $companyName ?> | RCCM: <?= $companyRccm ?>
                 </td>
-                <td style="width: 33%; text-align: center; padding: 0 5px;">
+                <td style="width: 34%; text-align: left; padding: 0 5px;">
                     Téléphone: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
                     Banque: <?= $companyBank ?> | Numéro de compte bancaire: <?= $companyComptBank ?>
                 </td>
-                <td style="width: 33%; text-align: right; padding: 0 5px;">
+                <td style="width: 33%; text-align: left; padding: 0 5px;">
                     Adresse: <?= $companyAddress ?><br>
                     Site : <?= $companyWebsite; ?>
                 </td>

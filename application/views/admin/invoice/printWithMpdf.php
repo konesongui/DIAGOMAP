@@ -45,6 +45,7 @@
 <body style="font-family: Arial, sans-serif; font-size: 12px; color: rgb(19, 96, 171); margin: 0; padding: 0; width: 21cm; height: auto;">
     <div class="main-content" style="padding-bottom: 2cm;">
         <div class="invoice-content" style="margin-top: 0;">
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
             <table class="products-table" style="width: 100%; border-collapse: collapse; margin-top: 3px;">
                 <thead style="background-color:#ccd1cc;">
                     <tr>

@@ -63,7 +63,7 @@
                             
                             <?php echo $this->customlib->getCSRF(); ?>
                             
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label for="exampleInputEmail1">Client</label><small class="req"> *</small>
                                 <select class="form-control" name="customer">
                                     <option value=""><?php echo $this->lang->line('select'); ?></option>
@@ -76,17 +76,17 @@
                                 <span class="text-danger"><?php echo form_error('customer'); ?></span>
                             </div>
 
-                            <div class="form-group col-md-3">
+                            <!-- <div class="form-group col-md-3">
                                 <label>Désignation <small class="req">*</small></label>
                                 <input name="designation" type="text" class="form-control" value="<?php echo $delivery['designation']; ?>" />
-                            </div>
+                            </div> -->
 
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label>Date <small class="req">*</small></label>
                                 <input id="delivery_date" name="delivery_date" type="text" class="form-control date" value="<?php echo date('d/m/Y', strtotime($delivery['delivery_date'])); ?>" readonly />
                             </div>
 
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label>Date de validité <small class="req">*</small></label>
                                 <input id="valid_until" name="valid_until" type="text" class="form-control date" value="<?php echo date('d/m/Y', strtotime($delivery['valid_until'])); ?>" readonly />
                             </div>

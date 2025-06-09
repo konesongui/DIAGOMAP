@@ -46,7 +46,7 @@
     <title>Facture <?= $deliveryNumber ?></title>
 </head>
 <body style="font-family: Arial, sans-serif; font-size: 12px; color: rgb(19, 96, 171); margin: 0; padding: 0; width: 21cm; height: auto;">
-    <div style="padding-bottom: 2cm;">
+    <div style="padding-bottom: 1.5cm;">
         <div style="background-color: rgb(250, 183, 22); padding: 5px; text-align: center; font-weight: bold; font-size: 16px; color: #000; border-radius: 5px; margin-bottom: 3px;">Bon de livraison N° <?= $deliveryNumber ?> </div>
         <div style="margin-top: 0;">
             <br>
@@ -149,11 +149,11 @@
             <div style="text-align: left;">
                 <?= $companyName ?> | Registre de Commerce: <?= $companyRccm ?>
             </div>
-            <div style="text-align: center;">
+            <div style="text-align: left;">
                 Téléphone: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
                 Banque: <?= $companyBank ?> | Numéro de compte bancaire: <?= $companyComptBank ?>
             </div>
-            <div style="text-align: right;">
+            <div style="text-align: left;">
                 Adresse: <?= $companyAddress ?><br>
                 Site : <?= $companyWebsite; ?>
             </div>
