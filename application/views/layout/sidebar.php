@@ -272,8 +272,8 @@ if ($this->rbac->hasPrivilege('student_houses', 'can_view')) {
                             ?>
                                 <li class="<?php echo set_Submenu('incomeshead/index'); ?>"><a href="<?php echo base_url(); ?>admin/incomehead"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('income_head'); ?></a></li>
                             <?php } ?>
-                            <a href="#">
-                                <i style="background-color: white;margin-left: 10px" class="ftlayer"></i> <span style="color: white;margin: 13px">Gérer les dépenses</span> <i class="fa fa-angle-right pull-right"></i>
+                            <a href="#" style="margin: 11px">
+                                <i class="fa fa-angle-double-right"></i><span style="color: white;margin: 10px">Gérer les dépenses</span> <i class="fa fa-angle-left pull-right"></i>
                             </a>
 
                             <ul class="treeview-menu">
