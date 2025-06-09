@@ -51,10 +51,10 @@ $(document).ready(function() {
         let errors = [];
 
         // Vérification des champs obligatoires
-        if (!$('input[name="due_date"]').val()?.trim()) {
-            errors.push("La date d'échéance est obligatoire");
-            isValid = false;
-        }
+        // if (!$('input[name="due_date"]').val()?.trim()) {
+        //     errors.push("La date d'échéance est obligatoire");
+        //     isValid = false;
+        // }
 
         if (!$('input[name="invoice_date"]').val()?.trim()) {
             errors.push("La date d'émission de la facture est obligatoire");
