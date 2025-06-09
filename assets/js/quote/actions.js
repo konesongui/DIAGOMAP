@@ -46,10 +46,10 @@ $(document).ready(function() {
         let errors = [];
 
         // Vérification des champs obligatoires
-        if (!$('input[name="designation"]').val()?.trim()) {
-            errors.push('La désignation est obligatoire');
-            isValid = false;
-        }
+        // if (!$('input[name="designation"]').val()?.trim()) {
+        //     errors.push('La désignation est obligatoire');
+        //     isValid = false;
+        // }
 
         if (!$('input[name="quote_date"]').val()?.trim()) {
             errors.push('La date est obligatoire');

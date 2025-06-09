@@ -44,7 +44,7 @@
     <style>
         @page {
             size: A4;
-            margin: 0.3cm;
+            margin: 1.5cm;
         }
         body { 
             font-family: Arial, sans-serif; 
@@ -256,7 +256,7 @@
                     </td>
                 </tr>
             </table><br> -->
-
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
             <table class="products-table">
                 <thead style="background-color:#ccd1cc;">
                     <tr>

@@ -53,7 +53,7 @@
                                 
                                 <?php echo $this->customlib->getCSRF(); ?>
                                 
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-4">
                                     <label for="exampleInputEmail1">Client</label><small class="req"> *</small>
 
                                     <select class="form-control " name="customer">
@@ -70,16 +70,16 @@
 
                                 </div>
 
-                                <div class="form-group col-md-3">
+                                <!-- <div class="form-group col-md-3">
                                     <label>Désignation <small class="req">*</small></label>
                                     <input name="designation" type="text" class="form-control" value="<?= set_value('designation') ?>" />
-                                </div>
+                                </div> -->
 
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-4">
                                     <label>Date de livraison<small class="req">*</small></label>
                                     <input id="delivery_date" name="delivery_date" type="text" class="form-control date" value="<?= set_value('delivery_date', date('d/m/Y')) ?>" readonly />
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-4">
                                     <label>Date limite</label>
                                     <input id="valid_until" name="valid_until" type="text" class="form-control date" value="<?= set_value('valid_until', date('d/m/Y')) ?>" readonly />
                                 </div>

@@ -119,7 +119,7 @@ class Deliveryitem extends Admin_Controller {
 
 
             // Validation des champs obligatoires
-            $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
+            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('delivery_date', 'Date de livraison', 'required');
             $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
@@ -135,7 +135,7 @@ class Deliveryitem extends Admin_Controller {
 
             // Récupération et validation des données
             $data = [
-                'designation' => $this->input->post('designation'),
+                'designation' => $this->input->post('designation',""),
                 'customer_id' => $this->input->post('customer'),
                 'delivery_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('delivery_date')))),
                 'deadline' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
@@ -311,7 +311,7 @@ class Deliveryitem extends Admin_Controller {
             }
 
             // Validation des champs obligatoires
-            $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
+            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('delivery_date', 'Date de livraison', 'required');
             $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
@@ -328,7 +328,7 @@ class Deliveryitem extends Admin_Controller {
             // Récupération et validation des données
             $data = [
                 'id' => $this->input->post('id'),
-                'designation' => $this->input->post('designation'),
+                'designation' => $this->input->post('designation',""),
                 'customer_id' => $this->input->post('customer'),
                 'delivery_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('delivery_date')))),
                 'shipping_method' => $this->input->post('shipping_method'),

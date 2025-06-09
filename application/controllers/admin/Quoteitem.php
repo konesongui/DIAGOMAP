@@ -129,7 +129,7 @@ class Quoteitem extends Admin_Controller
             }
 
             // Validation des champs obligatoires
-            $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
+            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('quote_date', 'Date', 'required');
             $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
@@ -147,7 +147,7 @@ class Quoteitem extends Admin_Controller
 
             // Récupération et validation des données
             $data = [
-                'designation' => $this->input->post('designation'),
+                'designation' => $this->input->post('designation',''),
                 'customer_id' => $this->input->post('customer'),
                 'quote_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('quote_date')))),
                 'valid_until' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
@@ -409,7 +409,7 @@ class Quoteitem extends Admin_Controller
             }
 
             // Validation des champs obligatoires
-            $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
+            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('quote_date', 'Date', 'required');
             $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
@@ -426,7 +426,7 @@ class Quoteitem extends Admin_Controller
             // Récupération et validation des données
             $data = [
                 'id' => $this->input->post('id'),
-                'designation' => $this->input->post('designation'),
+                'designation' => $this->input->post('designation',''),
                 'customer' => $this->input->post('customer'),
                 'apply_tva' => $this->input->post('apply_tva'),
                 'tva_amount' => $this->input->post('tva_amount'),

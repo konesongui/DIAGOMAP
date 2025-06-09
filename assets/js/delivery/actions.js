@@ -46,10 +46,10 @@ $(document).ready(function() {
         let errors = [];
 
         // Vérification des champs obligatoires
-        if (!$('input[name="designation"]').val()?.trim()) {
-            errors.push('La désignation est obligatoire');
-            isValid = false;
-        }
+        // if (!$('input[name="designation"]').val()?.trim()) {
+        //     errors.push('La désignation est obligatoire');
+        //     isValid = false;
+        // }
 
         if (!$('input[name="delivery_date"]').val()?.trim()) {
             errors.push('La date est obligatoire');
@@ -219,15 +219,15 @@ $(document).ready(function() {
         var availableQty = parseInt(container.find('.available-qty').text()) || 0;
         var quantity = parseInt($(this).val()) || 0;
         
-        if (quantity > availableQty) {
-            Swal.fire({
-                title: 'Attention',
-                text: 'La quantité saisie (' + quantity + ') dépasse la quantité disponible (' + availableQty + ')',
-                icon: 'warning'
-            });
-            $(this).val(availableQty);
-            quantity = availableQty;
-        }
+        // if (quantity > availableQty) {
+        //     Swal.fire({
+        //         title: 'Attention',
+        //         text: 'La quantité saisie (' + quantity + ') dépasse la quantité disponible (' + availableQty + ')',
+        //         icon: 'warning'
+        //     });
+        //     $(this).val(availableQty);
+        //     quantity = availableQty;
+        // }
         
         calculateItemTotal(container);
     });
