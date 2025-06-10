@@ -15,6 +15,19 @@ $formatter = new \IntlDateFormatter(
 //echo ucfirst($formatter->format($date)); // ex: Avril
 ?>
 
+<?php
+
+$total_brute = $result["categorie_salaire"] + $result["sursalaire"] + $result["prime_anc"] + $result["prime_trans"] + $result["forfait_hs"] + $result["prime_resp"] + $result["prime_rend"] + $result["prime_risque"] + $result["prime_assi"] + $result["prime_grati"] + $result["conge"];
+
+$total_pourcentage = $total_brute * 0.1;
+$primet= 30000;
+$primeresp= 0;
+$primerisq= 0;
+?>
+
+
+
+
 
 <style type="text/css">
     @media print {
@@ -421,22 +434,16 @@ $formatter = new \IntlDateFormatter(
                                 <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de transport</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $prime_trans	=	$result["prime_trans"]; echo  number_format($prime_trans, 0, '', '.'); ?></td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">30 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border:1px solid black;"> <?php $prime_trans	=	$result["prime_trans"]; echo  number_format($prime_trans, 0, '', '.'); ?> </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-
-                                    $prime=20000;
-                                    if($prime_trans > $prime)
+                                <td class="text-right" style="border-color: #0c0c0c;border:1px solid black;">
+                                    <?php $trans= 0;
+                                    if ($prime_trans > $primet)
                                     {
-                                        echo  $prime= number_format($prime_trans - $prime);
-
+                                        echo $trans= $prime_trans - $primet;
                                     }
                                     else{
-                                        echo  $prime=0;
-                                    }
-
-                                    ?>
-
+                                        echo $trans;
+                                    }  ?>  </td>
+                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
 
                                 </td>
 
@@ -460,7 +467,20 @@ $formatter = new \IntlDateFormatter(
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de responsabilité</td>
                                 <td class="text-right"><?php $prime_resp	=	$result["prime_resp"]; echo  number_format($prime_resp, 0, '', '.'); ?> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_resp	=	$result["prime_resp"]; echo  number_format($prime_resp, 0, '', '.'); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
+
+                                    <?php
+
+                                    $resp= 0;
+                                    if ($prime_resp > $total_pourcentage)
+                                    {
+                                        echo $resp= $prime_resp - $total_pourcentage;
+                                    }
+                                    else{
+                                        echo $resp;
+                                    }
+                                    ?>
+                                     </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -479,7 +499,15 @@ $formatter = new \IntlDateFormatter(
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de rendement</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_rend	=	$result["prime_rend"]; echo  number_format($prime_rend, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_rend	=	$result["prime_rend"]; echo  number_format($prime_rend, 0, '', '.'); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php
+                                    $rend= 0;
+                                    if ($prime_rend > $total_pourcentage)
+                                    {
+                                        echo $rend= $prime_rend - $total_pourcentage;
+                                    }
+                                    else{
+                                        echo $rend;
+                                    }?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -489,7 +517,15 @@ $formatter = new \IntlDateFormatter(
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de risque</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_risque	=	$result["prime_risque"]; echo  number_format($prime_risque, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_risque	=	$result["prime_risque"]; echo  number_format($prime_risque, 0, '', '.'); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
+                                    <?php
+                                    $risq = 0;
+                                    if ($prime_risque > $total_pourcentage) {
+                                        echo $risq = $prime_risque - $total_pourcentage;
+                                    } else {
+                                        echo $risq;
+                                    }
+                                    ?> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -499,7 +535,15 @@ $formatter = new \IntlDateFormatter(
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime d'assiduité</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $prime_assi	=	$result["prime_assi"]; echo  number_format($prime_assi, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_assi	=	$result["prime_assi"]; echo  number_format($prime_assi, 0, '', '.'); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
+                                    <?php
+                                    $assi = 0;
+                                    if ($prime_assi > $total_pourcentage) {
+                                        echo $assi = $prime_assi - $total_pourcentage;
+                                    } else {
+                                        echo $assi;
+                                    }
+                                    ?> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -532,46 +576,16 @@ $formatter = new \IntlDateFormatter(
 
                                 </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $total_brute	= $result["categorie_salaire"] + $result["sursalaire"] + $result["prime_anc"]+  $result["prime_trans"]+ $result["forfait_hs"]+ $result["prime_resp"]+ $result["prime_rend"]+ $result["prime_risque"]+ $result["prime_assi"]+ $result["prime_grati"]+ $result["conge"]; echo  number_format($total_brute, 0, '', '.'); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php  echo $total_brute; ?> </td>
 
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php $total_pourcentage	=	$total_brute * 0.10; echo  number_format($total_pourcentage, 0, '', '.'); ?></td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php echo  $total_pourcentage; ?></td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $rend= $prime_rend;
-                                    if ($prime_rend > $total_pourcentage)
-                                    {
-                                        echo $rend = $total_pourcentage - $prime_rend;
-                                    }
-
-                                    else{
-                                        echo $rend;
-                                    }
-                                    ?> </td>
+                                   </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $resp = $prime_resp;
-
-                                    if ($prime_resp > $total_pourcentage)
-                                    {
-                                        echo $resp = $total_pourcentage - $prime_resp;
-                                    }
-
-                                    else{
-                                        echo $resp;
-                                    }
-                                    ?></td>
+                                   </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $tran = 20000;
-                                    if ($prime_trans > $total_pourcentage)
-                                    {
-                                        echo $tran = $total_pourcentage - $prime_trans;
-                                    }
 
-                                    else{
-                                        echo $tran;
-                                    }
-                                    ?>
+
                                 </td>
 
 
@@ -582,21 +596,7 @@ $formatter = new \IntlDateFormatter(
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php
-
-                                    $prime=20000;
-                                    if($prime_trans > $prime)
-                                    {
-                                        $prime = ($prime_trans - $prime);
-
-
-
-                                    }
-                                    else{
-                                        echo  $prime=0;
-                                    }
-
-                                    ?> </td>
+                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
 
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php $total_fiscal= $total_brute - ($prime_trans - $prime); echo $total_fiscal?> </td>
 
@@ -605,30 +605,10 @@ $formatter = new \IntlDateFormatter(
                                 <!--<td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php $total_fiscal	=	$categorie_salaire + $sursalaire + $prime_anc + $tax + $allocance + $forfait_hs + ($resp - $total_pourcentage) + ($rend - $total_pourcentage) +  ($tran - $total_pourcentage) + ($risque - $total_pourcentage) + ($assi - $total_pourcentage) ; echo  number_format($total_fiscal, 0, '', '.') ; ?> </td>-->
 
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $risque= $prime_risque;
-                                    if ($prime_risque > $total_pourcentage)
-                                    {
-                                        echo $risque = $total_pourcentage - $prime_risque;
-                                    }
 
-                                    else{
-                                        echo $risque;
-                                    }
-                                    ?>
                                 </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $assi = $prime_assi;
-                                    if ($prime_assi > $total_pourcentage)
-                                    {
-                                        echo $assi = $total_pourcentage - $prime_assi;
-                                    }
-
-                                    else{
-                                        echo $assi;
-                                    }
-                                    ?></td>
+                                   </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                             </tr>
@@ -637,21 +617,7 @@ $formatter = new \IntlDateFormatter(
                                 <td  style="border-color: #0c0c0c;border: 1px solid black;color: black;font-size: 12px;font-family: bold">Total Brute Social</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php
-
-                                    $prime=20000;
-                                    if($prime_trans > $prime)
-                                    {
-                                        $prime = ($prime_trans - $prime);
-
-
-
-                                    }
-                                    else{
-                                        echo  $prime=0;
-                                    }
-
-                                    ?> </td>
+                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
 
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php  echo  $total_social= $total_brute - ($prime_trans - $prime); ?> </td>
 
@@ -764,7 +730,7 @@ $formatter = new \IntlDateFormatter(
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
 
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $cmu	= $result["part_igr"] * "500" ; echo  number_format($cmu, 0, '', '.'); ?></th>
+                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $cmu	= $result["part_igr"] * 500 ; echo  number_format($cmu, 0, '', '.'); ?></th>
 
                             </tr>
                             <tr>
@@ -776,7 +742,7 @@ $formatter = new \IntlDateFormatter(
                                 <!--<td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"><?php $cnps_regim	=	$result["cnps_regim"]; echo  number_format($cnps_regim); ?>  </td>-->
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
 
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $retrai_regime	= $retraite * "6.30" / 100 ; echo  number_format($retrai_regime, 0, '', '.'); ?></th>
+                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $retrai_regime	= $retraite * 0.0630 ; echo  number_format($retrai_regime, 0, '', '.'); ?></th>
 
 
 
@@ -785,7 +751,7 @@ $formatter = new \IntlDateFormatter(
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
 
 
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $retrait	= $total_social * "7.7" / 100; echo  number_format($retrait, 0, '', '.'); ?></th>
+                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $retrait	= $total_social * 0.077; echo  number_format($retrait, 0, '', '.'); ?></th>
 
                             </tr>
                             <tr>

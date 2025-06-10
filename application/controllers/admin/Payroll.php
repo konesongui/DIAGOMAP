@@ -185,6 +185,7 @@ class Payroll extends Admin_Controller
         $crns           = $this->input->post("crns");
         $cmu           = $this->input->post("cmu");
         $cnps_regim          = $this->input->post("cnps_regim");
+        $cnps_regims          = $this->input->post("cnps_regims");
         $cnps_tra           = $this->input->post("cnps_tra");
         $cnps_pres           = $this->input->post("cnps_pres");
         $fdfp_taxe          = $this->input->post("fdfp_taxe");
@@ -235,6 +236,7 @@ class Payroll extends Admin_Controller
                 'crns'                  => $crns,
                 'cmu'                  => $cmu,
                 'cnps_regim'                  => $cnps_regim,
+                'cnps_regims'                  => $cnps_regims,
                 'cnps_tra'                  => $cnps_tra,
                 'cnps_pres'                  => $cnps_pres,
                 'fdfp_taxe'                  => $fdfp_taxe,

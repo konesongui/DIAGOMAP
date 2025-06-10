@@ -32,7 +32,7 @@ class Invoiceitem extends Admin_Controller {
         }
 
         // Définition des menus actifs
-        $this->session->set_userdata('top_menu', 'Caisse');
+        $this->session->set_userdata('top_menu', 'Inventory');
         $this->session->set_userdata('sub_menu', 'Invoiceitem/index');
         
         // Initialisation des données de la page
@@ -61,7 +61,7 @@ class Invoiceitem extends Admin_Controller {
      */
     public function form() {
         // Définition des menus actifs
-        $this->session->set_userdata('top_menu', 'Caisse');
+        $this->session->set_userdata('top_menu', 'Inventory');
         $this->session->set_userdata('sub_menu', 'Invoiceitem/index');
         
         // Préparation des données pour la vue
