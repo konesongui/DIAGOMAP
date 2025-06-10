@@ -183,7 +183,7 @@ $moisEn = [
                                 <th class="text-primary">Prénom</th>
 
 
-                                <th class="text-primary">ITS (Impôt sur les Traitements et Salaires)</th>
+                                <th class="text-primary">ITS</th>
 
                             </tr>
                             </thead>
@@ -239,7 +239,7 @@ $moisEn = [
 
 
                                     <td class="text-primary"><?php echo $this->lang->line('grand_total'); ?> </td>
-                                    <td class="text text-right"><?php echo (number_format($its, 2, '.', '')); ?> FCFA</td>
+                                    <td class="text text-right"><?php echo (number_format($its, 2, '.', '')); ?></td>
 
                                 </tr>
                             <?php } ?>

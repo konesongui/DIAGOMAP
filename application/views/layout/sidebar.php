@@ -259,19 +259,27 @@ if ($this->rbac->hasPrivilege('student_houses', 'can_view')) {
                         </a>
 
                         <ul class="treeview-menu">
-                            <?php if ($this->rbac->hasPrivilege('caisse', 'can_view')) { ?>
-                                <li class="<?php echo set_Submenu('income/index'); ?>"><a href="<?php echo base_url(); ?>admin/income"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('add_income'); ?></a></li>
-                            <?php
-                            }
-                            /* if ($this->rbac->hasPrivilege('search_income', 'can_view')) {
-                                 ?>
-                                                     <li class="<?php echo set_Submenu('income/incomesearch'); ?>"><a href="<?php echo base_url(); ?>admin/income/incomesearch"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('search_income'); ?></a></li>
-                                                     <?php
-                     }*/
-                            if ($this->rbac->hasPrivilege('categorie_caisse', 'can_view')) {
-                            ?>
-                                <li class="<?php echo set_Submenu('incomeshead/index'); ?>"><a href="<?php echo base_url(); ?>admin/incomehead"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('income_head'); ?></a></li>
-                            <?php } ?>
+
+                            <a href="#" style="margin: 11px">
+                                <i class="fa fa-angle-double-right"></i><span style="color: white;margin: 10px">Caisses</span> <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+
+                            <ul class="treeview-menu">
+                                <?php if ($this->rbac->hasPrivilege('caisse', 'can_view')) { ?>
+                                    <li class="<?php echo set_Submenu('income/index'); ?>"><a href="<?php echo base_url(); ?>admin/income"><i class="fa fa-angle-double-right"></i>Caisse</a></li>
+                                    <?php
+                                }
+                                /* if ($this->rbac->hasPrivilege('search_income', 'can_view')) {
+                                     ?>
+                                                         <li class="<?php echo set_Submenu('income/incomesearch'); ?>"><a href="<?php echo base_url(); ?>admin/income/incomesearch"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('search_income'); ?></a></li>
+                                                         <?php
+                         }*/
+                                if ($this->rbac->hasPrivilege('categorie_caisse', 'can_view')) {
+                                    ?>
+                                    <li class="<?php echo set_Submenu('incomeshead/index'); ?>"><a href="<?php echo base_url(); ?>admin/incomehead"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('income_head'); ?></a></li>
+                                <?php } ?>   </ul>
+
+
                             <a href="#" style="margin: 11px">
                                 <i class="fa fa-angle-double-right"></i><span style="color: white;margin: 10px">Gérer les dépenses</span> <i class="fa fa-angle-left pull-right"></i>
                             </a>
@@ -284,6 +292,25 @@ if ($this->rbac->hasPrivilege('student_houses', 'can_view')) {
                                 <li class="<?php echo set_Submenu('expenseshead/index'); ?>"><a href="<?php echo base_url(); ?>admin/expensehead"><i class="fa fa-angle-double-right"></i> <?php echo $this->lang->line('expense_head'); ?></a></li>
 
                             </ul>
+
+            <!--start facture-->
+                            <a href="#" style="margin: 11px">
+                                <i class="fa fa-angle-double-right"></i><span style="color: white;margin: 10px">Facturation</span> <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+
+                            <ul class="treeview-menu">
+                                <?php if ($this->rbac->hasPrivilege('caisse', 'can_view')) { ?>
+                                    <li class="<?php echo set_Submenu('Invoiceitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/invoiceitem"><i class="fa fa-angle-double-right"></i>Factures</a></li>
+
+                                     <?php
+                                }
+                                /* if ($this->rbac->hasPrivilege('search_income', 'can_view')) {
+                                     ?>
+                                                         <li class="<?php echo set_Submenu('income/incomesearch'); ?>"><a href="<?php echo base_url(); ?>admin/income/incomesearch"><i class="fa fa-angle-double-right"></i><?php echo $this->lang->line('search_income'); ?></a></li>
+                                                         <?php
+                         }*/ ?>   </ul>
+                    <!--end facture-->
+
                         </ul>
 
                     </li>
@@ -1024,8 +1051,7 @@ online_course_offline_payment', 'can_view')) ||
                         </a>
                         <ul class="treeview-menu">
                             <?php if ($this->rbac->hasPrivilege('issue_item', 'can_view')) { ?>
-                                <li class="<?php echo set_Submenu('Invoiceitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/invoiceitem"><i class="fa fa-angle-double-right"></i>Factures</a></li>
-                                <li class="<?php echo set_Submenu('Deliveryitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/deliveryitem"><i class="fa fa-angle-double-right"></i>Bons de livraisons</a></li>
+                                 <li class="<?php echo set_Submenu('Deliveryitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/deliveryitem"><i class="fa fa-angle-double-right"></i>Bons de livraisons</a></li>
                                 <li class="<?php echo set_Submenu('Orderformitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/orderformitem"><i class="fa fa-angle-double-right"></i>Bons de commandes</a></li>
                                 <li class="<?php echo set_Submenu('Quoteitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/quoteitem"><i class="fa fa-angle-double-right"></i>Devis</a></li>
                             <?php
