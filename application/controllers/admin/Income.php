@@ -123,7 +123,7 @@ class Income extends Admin_Controller
         if (!$this->rbac->hasPrivilege('caisse', 'can_delete')) {
             access_denied();
         }
-        $data['title'] = 'Fees Master List';
+        $data['title'] = 'Reappro List';
         $this->income_model->remove($id);
         redirect('admin/income/index');
     }
