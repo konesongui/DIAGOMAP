@@ -392,11 +392,19 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 </div>
                                             </div><!--./form-group-->
                                             <div class="form-group">
-                                                <label class="col-sm-4 control-label">CNPS, Regime Retraite</label>
+                                                <label class="col-sm-4 control-label">CNPS, Regime Retraite EMPLOYE</label>
+                                                <div class="col-sm-8">
+                                                    <input class="form-control" name="cnps_regims" value="0" id="regime_em"  type="text" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label">CNPS, Regime Retraite EMPLOYEUR</label>
                                                 <div class="col-sm-8">
                                                     <input class="form-control" name="cnps_regim" value="0" id="regime_s"  type="text" />
                                                 </div>
                                             </div>
+
                                             <div class="form-group" hidden>
                                                 <label class="col-sm-4 control-label">CNPS, Travail</label>
                                                 <div class="col-sm-8">
@@ -706,7 +714,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
         var prime = parseFloat(prime_trans) - parseFloat(prime);
 
-        var total_social = parseFloat(gross_salary) - parseFloat(prime_trans - prime);
+        var total_social = parseFloat(gross_salary);
         var cnps = total_social * 0.0630;
         var cnps_acci = basic_pay * 0.03;
         var prest_famille = basic_pay * 0.0575;
@@ -717,6 +725,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
         var total_revenu = parseFloat(cmu) + parseFloat(cnps) + parseFloat(cnps_acci) + parseFloat(prest_famille) + parseFloat(taxe_apprend) + parseFloat(fdfp_form);
 
         var regime_s = parseFloat(total_social) * 0.0630;
+        var regime_em = parseFloat(total_social) * 0.077;
         var net_salary = parseFloat(gross_salary) - parseFloat(total_revenu);
 
         $("#total_allowance").val(total_allowance.toFixed(2));
@@ -737,6 +746,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
         $("#tax").val(tax.toFixed(2));
         $("#prime").val(prime.toFixed(2));
         $("#regime_s").val(regime_s.toFixed(2));
+        $("#regime_em").val(regime_em.toFixed(2));
         $("#total_impot").val(total_impot.toFixed(2));
         $("#total_social").val(total_social.toFixed(2));
 

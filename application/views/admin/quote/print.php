@@ -331,7 +331,7 @@
     <div class="footer">
         <div class="footer-content">
             <div class="footer-left">
-                <?= $companyName ?> | Registre de Commerce: <?= $companyRccm ?>
+                <?= $companyName ?> | RCCM: <?= $companyRccm ?>
             </div>
             <div class="footer-center">
                 Téléphone: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>

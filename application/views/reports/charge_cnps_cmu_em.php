@@ -156,7 +156,7 @@ $moisEn = [
                     <div class="">
                         <div class="box-header ptbnull"></div>
                         <div class="box-header ptbnull">
-                            <h3 class="box-title titlefix"><i class="fa fa-money"></i><b style="color: black">CHARGE CNPS & CMU EMPLOYE</b></h3>
+                            <h3 class="box-title titlefix"><i class="fa fa-money"></i><b style="color: black">CHARGE CNPS & CMU EMPLOYEUR</b></h3>
                         </div>
                         <div class="box-body table-responsive">
                             <div class="download_label">
@@ -165,7 +165,7 @@ $moisEn = [
                                 </div>
                                 <br/><br/><br/><br/>
                                 <?php
-                                echo "CHARGE CNPS & CMU EMPLOYE <br/><br/>";
+                                echo "CHARGE CNPS & CMU EMPLOYEUR <br/><br/>";
                                 echo "period:"; $this->customlib->get_postmessage();
                                 ;
                                 ?></div>
@@ -181,8 +181,12 @@ $moisEn = [
                                 <th class="text-primary">Nom</th>
                                 <th class="text-primary">Prénom</th>
                                 <th class="text-primary">Cmu</th>
-                                <th class="text-primary">Cnps régime de retraite</th>
+                                <th class="text-primary">Cnps régime de travaile</th>
+                                <th class="text-primary">Cnps prestation</th>
+                                <th class="text-primary">Cnps travail</th>
 
+                                <th class="text-primary">Fdfp, Taxe apprentissage</th>
+                                <th class="text-primary">Fdfp, Form pro Continue</th>
 
                             </tr>
                             </thead>
@@ -195,6 +199,8 @@ $moisEn = [
                             $cnps_tra = 0;
                             $cnps_pres = 0;
                             $cmu = 0;
+                            $fdfp_taxe = 0;
+                            $fdfp_form = 0;
 
 
                             if (empty($payrollList)) {
@@ -210,6 +216,8 @@ $moisEn = [
                                     $cnps_tra += $value["cnps_tra"];
                                     $cnps_pres += $value["cnps_pres"];
                                     $cmu += $value["cmu"];
+                                    $fdfp_taxe += $value["fdfp_taxe"];
+                                    $fdfp_form += $value["fdfp_form"];
                                     ?>
                                     <tr>
 
@@ -239,6 +247,35 @@ $moisEn = [
                                         ?>
                                     </td>
 
+                                    <td>
+                                        <?php
+                                        echo  $value['cnps_pres']
+
+                                        ?>
+                                    </td>
+
+
+                                    <td>
+                                        <?php
+                                        echo  $value['cnps_tra']
+
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo  $value['fdfp_taxe']
+
+                                        ?>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        echo  $value['fdfp_form']
+
+                                        ?>
+                                    </td>
+
                                     <?php
                                     $count++;
                                 }
@@ -249,11 +286,19 @@ $moisEn = [
 
 
 
+
+
                                     <td><?php echo $this->lang->line('grand_total'); ?> </td>
 
-                                    <td><?php echo (number_format($cmu, 2, '.', '')); ?> </td>
+                                    <td><?php echo (number_format($cmu, 2, '.', '')); ?></td>
 
                                     <td><?php echo (number_format($cnps_regim, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($cnps_pres, 2, '.', '')); ?></td>
+
+                                    <td><?php echo (number_format($cnps_tra, 2, '.', '')); ?> </td>
+
+                                    <td><?php echo (number_format($fdfp_taxe, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($fdfp_form, 2, '.', '')); ?></td>
 
                                 </tr>
 

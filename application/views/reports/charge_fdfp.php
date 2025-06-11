@@ -247,9 +247,9 @@ $moisEn = [
 
                                     <td class="text-primary"><?php echo $this->lang->line('grand_total'); ?> </td>
 
-                                    <td class="text text-right"><?php echo (number_format($fdpf_form, 2, '.', '')); ?> FCFA</td>
+                                    <td class="text text-right"><?php echo (number_format($fdpf_form, 2, '.', '')); ?> </td>
 
-                                    <td class="text text-right"><?php echo (number_format($fdpf_taxe, 2, '.', '')); ?> FCFA</td>
+                                    <td class="text text-right"><?php echo (number_format($fdpf_taxe, 2, '.', '')); ?> </td>
 
                                 </tr>
 
