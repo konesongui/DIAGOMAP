@@ -1054,6 +1054,7 @@ online_course_offline_payment', 'can_view')) ||
                                  <li class="<?php echo set_Submenu('Deliveryitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/deliveryitem"><i class="fa fa-angle-double-right"></i>Bons de livraisons</a></li>
                                 <li class="<?php echo set_Submenu('Orderformitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/orderformitem"><i class="fa fa-angle-double-right"></i>Bons de commandes</a></li>
                                 <li class="<?php echo set_Submenu('Quoteitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/quoteitem"><i class="fa fa-angle-double-right"></i>Devis</a></li>
+                                <li class="<?php echo set_Submenu('Quotenostock/index'); ?>"><a href="<?php echo base_url(); ?>admin/quotenostock"><i class="fa fa-angle-double-right"></i>Devis hors stock</a></li>
                             <?php
                             }
                             if ($this->rbac->hasPrivilege('item_stock', 'can_view')) {

@@ -721,4 +721,137 @@ class Mailgateway {
         }
     }
 
+
+    
+    public function sendQuoteNoStock($chk_mail_sms, $sender_details, $template, $subject) {
+        // Générer le PDF du devis
+        $pdf = $this->generateQuoteNoStockPDF($sender_details);
+
+        if (!$pdf) {
+            log_message('error', 'Impossible de générer le PDF du devis');
+            return false;
+        }
+        
+        // Préparer les pièces jointes
+        $attachments = array(
+            'files' => array(
+                'name' => array(basename($pdf)),
+                'type' => array('application/pdf'),
+                'tmp_name' => array($pdf),
+                'error' => array(0),
+                'size' => array(filesize($pdf))
+            )
+        );
+
+        // var_dump($sender_details['data']['quote']);
+        // exit;
+
+        // Remplacer la variable dans le sujet
+        $subject = str_replace('{{quotation_number}}', $sender_details['data']['quote']['quote_number'], $subject);
+
+
+        // Remplacer les variables dans le template en conservant les sauts de ligne
+        $msg = str_replace(
+            [
+                '{{client_name}}',
+                '{{quotation_number}}',
+                '{{quotation_date}}',
+                '{{total_amount}}',
+                '{{currency}}',
+                '{{validity_days}}',
+                '{{company_name}}',
+                '{{company_phone}}'
+            ],
+            [
+                $sender_details['data']['quote']['customer_name'].' '.$sender_details['data']['quote']['customer_last_name'],
+                $sender_details['data']['quote']['quote_number'],
+                $sender_details['data']['quote']['quote_date'],
+                number_format($sender_details['data']['quote']['total_ttc'], 2, ',', ' '),
+                $sender_details['data']['company']['currency'],
+                $this->calculateValidityDays($sender_details['data']['quote']['quote_date'], $sender_details['data']['quote']['valid_until']),
+                $sender_details['data']['company']['name'],
+                $sender_details['data']['company']['phone']
+            ],
+            $template
+        );
+    
+        $send_to = $sender_details['email'];
+
+        // var_dump($send_to);
+        // exit;
+        
+        if (!empty($this->_CI->mail_config) && $send_to != "") {
+            $this->_CI->mailer->send_mail($send_to, $subject, $msg, $attachments);
+        }
+    }
+
+    private function generateQuoteNoStockPDF($sender_details) {
+        // Charger la bibliothèque mPDF
+        require_once FCPATH . 'vendor/autoload.php';
+
+        $data = [];
+        // Configuration de mPDF avec des paramètres optimisés
+        $config = [
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'margin_header' => 9,
+            'margin_footer' => 9,
+            'default_font' => 'dejavusans',
+            'autoPageBreak' => true,
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'compress' => true,
+            'keepColumns' => true,
+            'keep_table_proportions' => true,
+            'shrink_tables_to_fit' => 1,
+            'showImageErrors' => true,
+            'debug' => false
+        ];
+
+        try {
+            $mpdf = new \Mpdf\Mpdf($config);
+            
+            // Définir les informations du document
+            $mpdf->SetTitle('Devis ' . $sender_details['data']['quote']['quote_number']);
+            $mpdf->SetAuthor($sender_details['data']['company']['name']);
+
+            // Préparer les données pour la vue
+            $data['quote'] = $sender_details['data']['quote'];
+            $data['company'] = $sender_details['data']['company'];
+            $data['totalAsletter'] = $sender_details['data']['totalAsletter'];
+            
+            // Les produits et catégories sont maintenant directement dans les données
+            $data['items'] = $sender_details['data']['quote']['items'];
+            $data['categories'] = $sender_details['data']['quote']['categories'];
+
+            // Charger la vue
+            $html = $this->_CI->load->view('admin/quotenostock/printWithMpdf', $data, true);
+            
+            // Générer le PDF
+            $mpdf->WriteHTML($html);
+            
+            // Créer le dossier uploads/quotes s'il n'existe pas
+            $upload_dir = FCPATH . 'uploads/quotes';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            // Générer le nom du fichier
+            $filename = 'Devis_' . $sender_details['data']['quote']['quote_number'] . '_' . date('Y-m-d') . '.pdf';
+            $filepath = $upload_dir . '/' . $filename;
+            
+            // Sauvegarder le PDF
+            $mpdf->Output($filepath, 'F');
+            
+            return $filepath;
+        } catch (\Exception $e) {
+            log_message('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
+            return false;
+        }
+    }
+
 }

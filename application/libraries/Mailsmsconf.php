@@ -121,6 +121,8 @@ class Mailsmsconf {
                 $this->CI->mailgateway->sendDelivery($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
             } elseif ($send_for == "send_invoice") {
                 $this->CI->mailgateway->sendInvoice($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
+            }elseif ($send_for == "send_quote_no_stock") {
+                $this->CI->mailgateway->sendQuoteNoStock($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
             }
             else {
                 
