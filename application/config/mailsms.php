@@ -14,6 +14,7 @@ $config['mailsms'] = array(
     'absent_attendence' => 'absent_attendence',
     'login_credential' => 'login_credential',
     'send_quote' => 'send_quote',
+    'send_quote_no_stock' => 'send_quote_no_stock',
     'send_delivery' => 'send_delivery',
     'send_invoice' => 'send_invoice',
     'fees_reminder' => 'fees_reminder',
