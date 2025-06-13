@@ -71,6 +71,53 @@ $final_assi = $assi;
 
 //fin prime assiduite
 
+//debut total fiscal
+
+$total_fiscal = $total_brute - $final_trans - $final_rend - $final_risq - $final_assi;
+
+//fin fiscal
+
+//debut total brute social
+$total_social= $total_brute - $final_trans;
+
+//social
+
+//debut ITS
+
+
+
+if ($result["categorie_salaire"] > 8000000) {
+    $impot += ($result["categorie_salaire"] - 8000000) * 0.32;
+    $result["categorie_salaire"] = 8000000;
+}
+
+if ($result["categorie_salaire"] > 2400000) {
+    $impot += ($result["categorie_salaire"] - 2400000) * 0.28;
+    $result["categorie_salaire"] = 2400000;
+}
+
+if ($result["categorie_salaire"] > 800000) {
+    $impot += ($result["categorie_salaire"] - 800000) * 0.24;
+    $result["categorie_salaire"] = 800000;
+}
+
+if ($result["categorie_salaire"] > 240000) {
+    $impot += ($result["categorie_salaire"] - 240000) * 0.21;
+    $result["categorie_salaire"] = 240000;
+}
+
+if ($result["categorie_salaire"] > 75000) {
+    $impot += ($result["categorie_salaire"] - 75000) * 0.16;
+    $result["categorie_salaire"] = 75000;
+}
+
+else{
+    $impot = 0;
+}
+
+$its = $impot;
+
+//fin ITS
 
 
 
@@ -611,7 +658,7 @@ $final_assi = $assi;
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
 
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php $total_fiscal= $total_brute - $final_trans - $final_rend - $final_risq - $final_assi; echo $total_fiscal; ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php echo $total_fiscal; ?> </td>
 
 
 
@@ -632,7 +679,7 @@ $final_assi = $assi;
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
 
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php  echo  $total_social= $total_brute - ($prime_trans - $prime); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php  echo  $total_social; ?> </td>
 
 
 
@@ -647,42 +694,7 @@ $final_assi = $assi;
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $imp_sal	=	$total_brute; echo  number_format($imp_sal, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1,2</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $impot = "-";
-
-                                    if ($categorie_salaire > 8000000) {
-                                        $impot += ($categorie_salaire - 8000000) * 0.32;
-                                        $categorie_salaire = 8000000;
-                                    }
-
-                                    if ($categorie_salaire > 2400000) {
-                                        $impot += ($categorie_salaire - 2400000) * 0.28;
-                                        $categorie_salaire = 2400000;
-                                    }
-
-                                    if ($categorie_salaire > 800000) {
-                                        $impot += ($categorie_salaire - 800000) * 0.24;
-                                        $categorie_salaire = 800000;
-                                    }
-
-                                    if ($categorie_salaire > 240000) {
-                                        $impot += ($categorie_salaire - 240000) * 0.21;
-                                        $categorie_salaire = 240000;
-                                    }
-
-                                    if ($categorie_salaire > 75000) {
-                                        $impot += ($categorie_salaire - 75000) * 0.16;
-                                        $salaire = 75000;
-                                    }
-
-                                    echo $impot;
-
-                                    ?>
-                                </td>
-
-
-
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php echo $its; ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
 
@@ -707,7 +719,7 @@ $final_assi = $assi;
 
                             <tr>
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Impôt IGR</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $prime_grati	=	$impot * $result["part_igr"]; echo  number_format($prime_grati, 0, '', '.'); ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $prime_grati	=	$its * $result["part_igr"]; echo  number_format($prime_grati, 0, '', '.'); ?> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
