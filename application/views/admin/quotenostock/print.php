@@ -282,7 +282,7 @@
                     <?php foreach ($items as $item): ?>
                         <tr>
                             <td><?= htmlspecialchars($item['quantity']) ?></td>
-                            <td><?= htmlspecialchars($item['item_name']) ?> - <?= htmlspecialchars($item['category_name']) ?></td>
+                            <td><?= htmlspecialchars($item['item_name']) ?> - <?= htmlspecialchars($item['product_name']) ?></td>
                             <td><?= htmlspecialchars($item['unit_price']) ?></td>
                             <td><?= htmlspecialchars($item['line_total']) ?></td>
                         </tr>

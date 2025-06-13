@@ -535,7 +535,7 @@ INSERT INTO notification_setting (
     0,  -- display_sms
     'Votre devis {{quotation_number}}', 
     '', 
-    'Bonjour {{client_name}},<br>Vous trouverez ci-joint notre devis n°{{quotation_number}} du {{quotation_date}}.<br>Montant total : {{total_amount}} {{currency}}<br>Validité : {{validity_days}} jours.<br>Pour toute question, n''hésitez pas à nous contacter.<br>Cordialement,<br>{{company_name}}<br>{{company_phone}}', 
+    'Bonjour {{cli  ent_name}},<br>Vous trouverez ci-joint notre devis n°{{quotation_number}} du {{quotation_date}}.<br>Montant total : {{total_amount}} {{currency}}<br>Validité : {{validity_days}} jours.<br>Pour toute question, n''hésitez pas à nous contacter.<br>Cordialement,<br>{{company_name}}<br>{{company_phone}}',
     '{{client_name}} {{quotation_number}} {{quotation_date}} {{total_amount}} {{currency}} {{validity_days}} {{company_name}} {{company_phone}}', 
     NOW()
 );
