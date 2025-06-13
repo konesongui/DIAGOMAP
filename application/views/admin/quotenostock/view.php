@@ -136,7 +136,7 @@ $currency_symbol = 'FCA'; // Symbole de la devise
                                             <?php foreach ($quote['items'] as $item) : ?>
                                             <tr>
                                                 <td><?php echo $item['category_name']; ?></td>
-                                                <td><?php echo $item['item_name']; ?></td>
+                                                <td><?php echo $item['product_name']; ?></td>
                                                 <td><?php echo $item['quantity']; ?></td>
                                                 <td><?php echo $item['unit']; ?></td>
                                                 <td><?php echo number_format($item['unit_price'], 2, ',', ' ') . ' ' . $currency_symbol; ?></td>
