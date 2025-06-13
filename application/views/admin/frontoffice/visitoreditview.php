@@ -95,7 +95,7 @@
 
                             <div class="box-footer">
                                 <button type="submit" class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
-                                <a href="<?php echo base_url() ?>admin/visitor" type="button" class="btn btn-primary btn-xs" style="width: 99px;height: 23px">
+                                <a href="<?php echo base_url() ?>admin/visitors" type="button" class="btn btn-primary btn-xs" style="width: 99px;height: 23px">
                                     <i class="fa fa-arrow-left"></i> </a>
                             </div>
                         </form>

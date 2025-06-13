@@ -30,6 +30,10 @@ $moisEn = [
     .carousel-row {
         margin-bottom: 10px;
     }
+    .text-primary{
+        color: black;
+        text-transform: uppercase;
+    }
     .slide-row {
         padding: 0;
         background-color: #ffffff;
@@ -182,16 +186,16 @@ $moisEn = [
                                 <!--<th><?php echo $this->lang->line('month'); ?> - <?php echo $this->lang->line('year') ?></th>-->
 
                                 <!--<th><?php echo $this->lang->line('payslip'); ?> #</th>-->
-                                <th class="text text-right"><?php echo $this->lang->line('basic_salary'); ?> </th>
+                                <th><?php echo $this->lang->line('basic_salary'); ?> </th>
 
                                 <!---<th class="text text-right"><?php echo $this->lang->line('earning'); ?></th>-->
                                 <!-- <th class="text text-right"> </th>-->
                                 <!--<th>Autre revenu</th>-->
-                                <th class="text text-right">Cnps</th>
-                                <th class="text text-right">Cmu</th>
-                                <th class="text text-right">ITS</th>
-                                <th class="text text-right">Total revenu</th>
-                                <th class="text text-right"><?php echo $this->lang->line('net_salary'); ?></th>
+                                <th>Cnps</th>
+                                <th>Cmu</th>
+                                <th>ITS</th>
+                                <th>Total revenu</th>
+                                <th><?php echo $this->lang->line('net_salary'); ?></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -283,7 +287,7 @@ $moisEn = [
                                         ?></div>
 
                                         </td>-->
-                                        <td class="text text-right">
+                                        <td>
                                             <?php echo number_format($value['categorie_salaire'], 2, '.', ''); ?>
                                         </td>
 
@@ -296,13 +300,13 @@ $moisEn = [
                                         </td>-->
 
 
-                                        <td class="text text-right">
+                                        <td>
                                             <?php echo $value['cnps_regim']; ?>
                                         </td>
-                                        <td class="text text-right">
+                                        <td>
                                             <?php echo $value['cmu']; ?>
                                         </td>
-                                        <td class="text text-right">
+                                        <td>
                                             <?php
                                             echo  $value['its']
 
@@ -341,10 +345,10 @@ $moisEn = [
 
                                         ?>
                                         </td>-->
-                                        <td class="text text-right">
+                                        <td>
                                             <?php echo $value['total_revenu']; ?>
                                         </td>
-                                        <td class="text text-right">
+                                        <td>
                                             <?php
                                             echo $value["net_salary"];
 
@@ -358,20 +362,20 @@ $moisEn = [
                                 <tr class="box box-solid total-bg">
 
                                     <!-- <td class="text text-right"><?php echo ($currency_symbol . number_format($earnings, 2, '.', '')); ?></td>-->
-                                    <td class="text text-right"></td>
+                                    <td></td>
 
 
 
-                                    <td class="text-right"><?php echo $this->lang->line('grand_total'); ?> </td>
-                                    <td class="text text-right"><?php echo (number_format($gross, 2, '.', '')); ?></td>
-                                    <td class="text text-right"><?php echo (number_format($basic, 2, '.', '')); ?></td>
-                                    <td class="text text-right"><?php echo (number_format($cnps, 2, '.', '')); ?></td>
+                                    <td><?php echo $this->lang->line('grand_total'); ?> </td>
+                                    <td><?php echo (number_format($gross, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($basic, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($cnps, 2, '.', '')); ?></td>
 
-                                    <td class="text text-right"><?php echo (number_format($cmu, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($cmu, 2, '.', '')); ?></td>
 
-                                    <td class="text text-right"><?php echo (number_format($its, 2, '.', '')); ?></td>
-                                    <td class="text text-right"><?php echo (number_format($total_rev, 2, '.', '')); ?></td>
-                                    <td class="text text-right"><?php echo (number_format($net, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($its, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($total_rev, 2, '.', '')); ?></td>
+                                    <td><?php echo (number_format($net, 2, '.', '')); ?></td>
 
                                 </tr>
                             <?php } ?>

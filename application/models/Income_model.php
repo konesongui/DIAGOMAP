@@ -396,6 +396,7 @@ class Income_model extends My_Model
     public function getReapprovisionnements($incomeID)
     {
         $this->db->select('*');
+        $this->db->where('income_processing.deleted', 1);
         $this->db->from('income_processing');
         $this->db->where('income_id', $incomeID);
         $this->db->where('amount >', 0); // Filtrer les montants positifs

@@ -23,6 +23,58 @@ $total_pourcentage = $total_brute * 0.1;
 $primet= 30000;
 $primeresp= 0;
 $primerisq= 0;
+
+//prime transport
+if ($result["prime_trans"] > $primet) {
+    $trans = $result["prime_trans"] - $primet;
+} else {
+    $trans =0;
+}
+$final_trans=$trans;
+//fin prime transport
+
+//prime rendement
+if ($result["prime_rend"] > $total_pourcentage)
+{
+    $rends= $result["prime_rend"] - $total_pourcentage;
+}
+else{
+    $rends = 0;
+}
+$final_rend= $rends;
+
+//fin prime rendement
+
+//prime risque
+
+
+if ($result["prime_risque"] > $total_pourcentage) {
+    $risq = $result["prime_risque"] - $total_pourcentage;
+} else {
+    $risq= 0;
+}
+
+$final_risq=$risq;
+
+//fin prime risque
+
+//prime assiduité
+
+
+if ($result["prime_assi"] > $total_pourcentage) {
+    $assi = $result["prime_assi"] - $total_pourcentage;
+} else {
+    $assi = 0;
+}
+
+$final_assi = $assi;
+
+//fin prime assiduite
+
+
+
+
+
 ?>
 
 
@@ -434,15 +486,7 @@ $primerisq= 0;
                                 <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de transport</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $prime_trans	=	$result["prime_trans"]; echo  number_format($prime_trans, 0, '', '.'); ?></td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">30 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border:1px solid black;">
-                                    <?php $trans= 0;
-                                    if ($prime_trans > $primet)
-                                    {
-                                        echo $trans= $prime_trans - $primet;
-                                    }
-                                    else{
-                                        echo $trans;
-                                    }  ?>  </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border:1px solid black;"><?php $prime_trans	=	$result["prime_trans"]; echo  number_format($prime_trans, 0, '', '.'); ?>  </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
 
                                 </td>
@@ -471,16 +515,9 @@ $primerisq= 0;
 
                                     <?php
 
-                                    $resp= 0;
-                                    if ($prime_resp > $total_pourcentage)
-                                    {
-                                        echo $resp= $prime_resp - $total_pourcentage;
-                                    }
-                                    else{
-                                        echo $resp;
-                                    }
+
                                     ?>
-                                     </td>
+                                </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -499,15 +536,7 @@ $primerisq= 0;
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de rendement</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_rend	=	$result["prime_rend"]; echo  number_format($prime_rend, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php
-                                    $rend= 0;
-                                    if ($prime_rend > $total_pourcentage)
-                                    {
-                                        echo $rend= $prime_rend - $total_pourcentage;
-                                    }
-                                    else{
-                                        echo $rend;
-                                    }?></td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php $prime_rend	=	$result["prime_rend"]; echo  number_format($prime_rend, 0, '', '.');?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -517,15 +546,7 @@ $primerisq= 0;
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de risque</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_risque	=	$result["prime_risque"]; echo  number_format($prime_risque, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $risq = 0;
-                                    if ($prime_risque > $total_pourcentage) {
-                                        echo $risq = $prime_risque - $total_pourcentage;
-                                    } else {
-                                        echo $risq;
-                                    }
-                                    ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_risque	=	$result["prime_risque"]; echo  number_format($prime_risque, 0, '', '.');  ?> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -535,15 +556,7 @@ $primerisq= 0;
                                 <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime d'assiduité</td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $prime_assi	=	$result["prime_assi"]; echo  number_format($prime_assi, 0, '', '.'); ?></td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
-                                    <?php
-                                    $assi = 0;
-                                    if ($prime_assi > $total_pourcentage) {
-                                        echo $assi = $prime_assi - $total_pourcentage;
-                                    } else {
-                                        echo $assi;
-                                    }
-                                    ?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_assi	=	$result["prime_assi"]; echo  number_format($prime_assi, 0, '', '.');  ?> </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
@@ -578,11 +591,11 @@ $primerisq= 0;
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
                                 <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php  echo $total_brute; ?> </td>
 
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php echo  $total_pourcentage; ?></td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                   </td>
+                                </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                   </td>
+                                </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
 
 
@@ -598,7 +611,7 @@ $primerisq= 0;
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
 
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php $total_fiscal= $total_brute - ($prime_trans - $prime); echo $total_fiscal?> </td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php $total_fiscal= $total_brute - $final_trans - $final_rend - $final_risq - $final_assi; echo $total_fiscal; ?> </td>
 
 
 
@@ -608,7 +621,7 @@ $primerisq= 0;
 
                                 </td>
                                 <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                   </td>
+                                </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
                             </tr>
@@ -670,7 +683,7 @@ $primerisq= 0;
 
 
 
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1,2</td>
+                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
                                 <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
 
                                 <!--<th style="border-color: #0c0c0c;border: 1px solid black;" class="text-right"><?php $retenu	= $imp_sal * 0.012; echo  number_format($retenu, 0, '', '.'); ?></th>-->
