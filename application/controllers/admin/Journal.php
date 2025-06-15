@@ -4,7 +4,7 @@ if (!defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
-class Income extends Admin_Controller
+class Journal extends Admin_Controller
 {
 
     public function __construct()
@@ -23,7 +23,7 @@ class Income extends Admin_Controller
         }
 
         $this->session->set_userdata('top_menu', 'Income');
-        $this->session->set_userdata('sub_menu', 'income/index');
+        $this->session->set_userdata('sub_menu', 'journal/index');
         $data['title']      = 'Add Income';
         $data['title_list'] = 'Recent Incomes';
         $this->form_validation->set_rules('inc_head_id', $this->lang->line('income_head'), 'trim|required|xss_clean');
@@ -60,7 +60,7 @@ class Income extends Admin_Controller
         $incomeHead          = $this->incomehead_model->get();
         $data['incheadlist'] = $incomeHead;
         $this->load->view('layout/header', $data);
-        $this->load->view('admin/income/incomeList', $data);
+        $this->load->view('admin/journal/journal_comptable', $data);
         $this->load->view('layout/footer', $data);
     }
 
