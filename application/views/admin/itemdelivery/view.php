@@ -43,10 +43,6 @@ $currency_symbol = 'FCA'; // Symbole de la devise
                                         <td><?php echo date('d/m/Y', strtotime($delivery['deadline'])); ?></td>
                                     </tr>
                                     <tr>
-                                        <th>Désignation</th>
-                                        <td><?php echo $delivery['designation']; ?></td>
-                                    </tr>
-                                    <tr>
                                         <th>Statut</th>
                                         <td>
                                             <?php

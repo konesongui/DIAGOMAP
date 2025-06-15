@@ -94,7 +94,7 @@ class Stock_model extends MY_Model {
         // exit;    
         $this->db->select('item.*, stock.current_quantity, stock.weighted_avg_price');
         $this->db->from('item');
-        $this->db->join('stock', 'item.id = stock.item_id', 'inner');
+        $this->db->join('stock', 'item.id = stock.item_id', 'left');
         $this->db->where('item.item_category_id', $item_category_id);
         $this->db->where('stock.current_quantity >', 0);
         $this->db->where('stock.status', 1);

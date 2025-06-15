@@ -69,19 +69,13 @@
                                     <span class="text-danger"><?php echo form_error('customer'); ?></span>
 
                                 </div>
-
-                                <!-- <div class="form-group col-md-3">
-                                    <label>Désignation </label>
-                                    <input name="designation" type="text" class="form-control" value="<?= set_value('designation') ?>" />
-                                </div> -->
-
                                 <div class="form-group col-md-4">
                                     <label>Date de création<small class="req">*</small></label>
-                                    <input id="quote_date" name="quote_date" type="text" class="form-control date" value="<?= set_value('quote_date', date('d/m/Y')) ?>" readonly />
+                                    <input id="quote_date" name="quote_date" type="text" class="form-control dateSelect" value="<?= set_value('quote_date', date('d/m/Y')) ?>" readonly />
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label>Date limite</label>
-                                    <input id="valid_until" name="valid_until" type="text" class="form-control date" value="<?= set_value('valid_until', date('d/m/Y')) ?>" readonly />
+                                    <input id="valid_until" name="valid_until" type="text" class="form-control dateSelect" value="<?= set_value('valid_until', date('d/m/Y')) ?>" readonly />
                                 </div>
                             </div> 
                             <div class="row">
@@ -108,26 +102,29 @@
                                             <div class="row">
                                                 <div class="form-group col-md-3">
                                                     <label>Catégorie <small class="req">*</small></label>
-                                                    <select name="item_category_id[]" class="form-control item-category" required>
-                                                        <option value="">Sélectionner</option>
+                                                    <input type="text" name="item_category[]" class="form-control item-category" list="category-list" placeholder="Sélectionnez ou enregistrer une catégorie" required>
+                                                    <datalist id="category-list">
                                                         <?php foreach ($itemcatlist as $category): ?>
-                                                            <option value="<?= $category['id'] ?>"><?= $category['item_category'] ?></option>
+                                                            <option value="<?= $category['item_category'] ?>">
                                                         <?php endforeach; ?>
-                                                    </select>
+                                                    </datalist>
                                                 </div>
                                                 <div class="form-group col-md-3">
                                                     <label>Article <small class="req">*</small></label>
-                                                    <select name="item_id[]" class="form-control item-select" required>
-                                                        <option value="">Sélectionner</option>
-                                                    </select>
+                                                    <input type="text" name="item_name[]" class="form-control item-name" list="item-list" placeholder="Sélectionnez ou enregistrer un article" required>
+                                                    <datalist id="item-list">
+                                                        <?php foreach ($itemlist as $item): ?>
+                                                            <option value="<?= $item['item_name'] ?>" data-id="<?= $item['id'] ?>" data-stock="<?= $item['quantity'] ?>" data-unit="<?= $item['unit'] ?>" data-price="<?= $item['selling_price'] ?>">
+                                                        <?php endforeach; ?>
+                                                    </datalist>
                                                 </div>
                                                 <div class="form-group col-md-1">
                                                     <label>Unité</label>
-                                                    <input type="text" name="unit[]" class="form-control unit" readonly>
+                                                    <input type="text" name="unit[]" class="form-control unit">
                                                 </div>
                                                 <div class="form-group col-md-2">
                                                     <label>Quantité <small class="req">*</small></label>
-                                                    <input type="number" name="quantity[]" class="form-control quantity" min="1" max="1" required>
+                                                    <input type="text" name="quantity[]" class="form-control quantity" value="1" required>
                                                     <div class="availability" style="margin-top: 5px; color: #3c8dbc; font-weight: bold;">
                                                         Stock disponible: <span class="available-qty">0</span>
                                                     </div>
@@ -200,7 +197,20 @@
     </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/fr.js"></script>
+<script type="text/javascript">
+    // Configuration de moment.js en français
+    moment.locale('fr');
+    
+    // Configuration de base pour jQuery
+    var base_url = '<?php echo base_url(); ?>';
+</script>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/quote/actions.js"></script>

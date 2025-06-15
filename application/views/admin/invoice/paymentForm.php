@@ -1,6 +1,11 @@
 <?php
     $formID = 'paymentForm';
     $submitID = 'paymentSubmit';
+
+    $remaining = (float) str_replace(',', '.', str_replace(' ', '', $remaining));
+
+    // var_dump($remaining);
+    // exit;
 ?>
 <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -15,7 +20,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="amount">Montant <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+                    <input type="number" class="form-control" id="amount" name="amount" value="<?= $remaining ;?>" step="0.01" required>
                 </div>
             </div>
             <div class="col-md-6">

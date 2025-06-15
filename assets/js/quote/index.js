@@ -43,7 +43,6 @@ $(document).ready(function() {
         },
         "columns": [
             { "data": "quote_number" },
-            { "data": "designation" },
             { 
                 data: "customer",
                 render: function(data) {
