@@ -40,6 +40,8 @@
                                         <option value="Achats">Achats</option>
                                         <option value="Caisse">Caisse</option>
                                         <option value="Banque">Banque</option>
+                                    <option value="Banque">Banque</option>
+
                                     </select>
                                     <span class="text-danger"><?php echo form_error('type_journal'); ?></span>
                                 </div>
