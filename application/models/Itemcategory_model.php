@@ -200,5 +200,16 @@ class Itemcategory_model extends MY_Model
         }
     }
 
+    /**
+     * Récupère une catégorie par son nom
+     * @param string $name Nom de la catégorie
+     * @return array|null
+     */
+    public function getCategoryByName($name)
+    {
+        $this->db->where('item_category', $name);
+        $query = $this->db->get('item_category');
+        return $query->row_array();
+    }
 
 }

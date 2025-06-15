@@ -31,10 +31,6 @@ $currency_symbol = 'FCA'; // Symbole de la devise
                                         <td><?php echo date('d/m/Y', strtotime($order['valid_until'])); ?></td>
                                     </tr>
                                     <tr>
-                                        <th>Désignation</th>
-                                        <td><?php echo $order['designation']; ?></td>
-                                    </tr>
-                                    <tr>
                                         <th>Statut</th>
                                         <td>
                                             <?php

@@ -120,32 +120,35 @@
                                             <div class="row">
                                                 <div class="form-group col-md-3">
                                                     <label>Catégorie <small class="req">*</small></label>
-                                                    <select name="item_category_id[]" class="form-control item-category" required>
-                                                        <option value="">Sélectionner</option>
-                                                        <?php foreach ($itemcatlist as $category) { ?>
-                                                            <option value="<?php echo $category['id']; ?>" <?php echo ((int)$category['id'] == (int)$item['category_id']) ? 'selected' : ''; ?>>
-                                                                <?php echo $category['item_category']; ?>
-                                                            </option>
-                                                        <?php } ?>
-                                                    </select>
+                                                    <input type="text" name="item_category[]" class="form-control item-category" list="category-list" value="<?php echo $item['category_name']; ?>" placeholder="Sélectionner ou enregistrer une catégorie" required>
+                                                    <datalist id="category-list">
+                                                        <?php foreach ($itemcatlist as $category): ?>
+                                                            <option value="<?= $category['item_category'] ?>">
+                                                        <?php endforeach; ?>
+                                                        <?php foreach ($quote['items'] as $quoteItem): ?>
+                                                            <option value="<?= $quoteItem['category_name'] ?>">
+                                                        <?php endforeach; ?>
+                                                    </datalist>
                                                 </div>
                                                 <div class="form-group col-md-3">
                                                     <label>Article <small class="req">*</small></label>
-                                                    <select name="item_id[]" class="form-control item-select" required>
-                                                        <?php foreach ($itemList as $list) { ?>
-                                                            <option value="<?php echo $list['id']; ?>" <?php echo ((int)$list['id'] == (int)$item['item_id']) ? 'selected' : ''; ?>>
-                                                                <?php echo $list['name']; ?>
-                                                            </option>
-                                                        <?php } ?>
-                                                    </select>
+                                                    <input type="text" name="item_name[]" class="form-control item-name" list="item-list" value="<?php echo $item['item_name']; ?>" placeholder="Sélectionner ou enregistrer un article" required>
+                                                    <datalist id="item-list">
+                                                        <?php foreach ($itemList as $list): ?>
+                                                            <option value="<?= $list['name'] ?>" data-id="<?= $list['id'] ?>" data-stock="<?= $list['quantity'] ?>" data-unit="<?= $list['unit'] ?>" data-price="<?= $list['selling_price'] ?>">
+                                                        <?php endforeach; ?>
+                                                        <?php foreach ($quote['items'] as $quoteItem): ?>
+                                                            <option value="<?= $quoteItem['item_name'] ?>" data-id="<?= $quoteItem['item_id'] ?>" data-stock="<?= $quoteItem['quantity'] ?>" data-unit="<?= $quoteItem['unit'] ?>" data-price="<?= $quoteItem['unit_price'] ?>">
+                                                        <?php endforeach; ?>
+                                                    </datalist>
                                                 </div>
                                                 <div class="form-group col-md-1">
                                                     <label>Unité</label>
-                                                    <input type="text" name="unit[]" class="form-control unit" value="<?php echo $item['unit']; ?>" readonly>
+                                                    <input type="text" name="unit[]" class="form-control unit" value="<?php echo $item['unit']; ?>">
                                                 </div>
                                                 <div class="form-group col-md-2">
                                                     <label>Quantité <small class="req">*</small></label>
-                                                    <input type="number" name="quantity[]" class="form-control quantity" min="1" value="<?php echo $item['quantity']; ?>" required>
+                                                    <input type="text" name="quantity[]" class="form-control quantity" value="<?php echo $item['quantity']; ?>" required>
                                                     <div class="availability">
                                                         Stock disponible: <span class="available-qty">0</span>
                                                     </div>

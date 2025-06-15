@@ -19,8 +19,8 @@ var dtID = 'quoteDatatable',
 const TVA_RATE = 0.18;
 
 $(document).ready(function() {
-    // Initialisation du datepicker
-    $('.date').datepicker({
+    // Initialisation du datepicker avec moment.js
+    $('.dateSelect').datepicker({
         format: 'dd/mm/yyyy',
         autoclose: true,
         todayHighlight: true
@@ -29,14 +29,18 @@ $(document).ready(function() {
     // Chargement initial des articles pour toutes les lignes existantes
     $('.repeater-item').each(function() {
         var $item = $(this);
-        var categoryId = $item.find('.item-category').val();
-        var itemId = $item.find('.item-select').val();
+        var categoryName = $item.find('.item-category').val();
+        var itemName = $item.find('.item-name').val();
         
-        if (categoryId) {
-            // Attendre que le DOM soit complètement chargé
-            setTimeout(function() {
-                populateItem($item.find('.item-select'), categoryId, itemId);
-            }, 100);
+        if (categoryName && itemName) {
+            // Les valeurs sont déjà présentes dans les champs de texte
+            var container = $item;
+            container.find('.unit').val($item.find('.unit').val() || '');
+            container.find('.price').val($item.find('.price').val() || '');
+            container.find('.available-qty').text($item.find('.available-qty').text() || '0');
+            
+            // Déclencher le calcul du total
+            calculateItemTotal(container);
         }
     });
 
@@ -44,12 +48,6 @@ $(document).ready(function() {
     function validateForm() {
         let isValid = true;
         let errors = [];
-
-        // Vérification des champs obligatoires
-        // if (!$('input[name="designation"]').val()?.trim()) {
-        //     errors.push('La désignation est obligatoire');
-        //     isValid = false;
-        // }
 
         if (!$('input[name="quote_date"]').val()?.trim()) {
             errors.push('La date est obligatoire');
@@ -71,22 +69,21 @@ $(document).ready(function() {
         $('.repeater-item').each(function() {
             const $item = $(this);
             const category = $item.find('.item-category').val();
-            const itemId = $item.find('.item-select').val();
-            const quantity = $item.find('.quantity').val();
+            const itemName = $item.find('.item-name').val();
+            const quantity = parseFloat($item.find('.quantity').val()) || 0;
 
-            if (category || itemId || quantity) {
+            if (category || itemName || quantity > 0) {
                 hasItems = true;
                 if (!category) {
                     errors.push('La catégorie est obligatoire pour tous les articles');
                     isValid = false;
                 }
-                if (!itemId) {
+                if (!itemName) {
                     errors.push('L\'article est obligatoire pour tous les articles');
                     isValid = false;
                 }
-                if (!quantity || quantity <= 0) {
-                    errors.push('La quantité doit être supérieure à 0 pour tous les articles');
-                    isValid = false;
+                if (quantity <= 0) {
+                    $item.find('.quantity').val(1);
                 }
             }
         });
@@ -145,6 +142,95 @@ $(document).ready(function() {
         }
     }
 
+    // Gestion de la saisie de catégorie
+    $(document).on('input', '.item-category', function() {
+        var input = $(this);
+        var value = input.val();
+        var container = input.closest('.repeater-item');
+        var itemNameInput = container.find('.item-name');
+        
+        // Vider la liste des produits
+        itemNameInput.val('');
+        container.find('.unit').val('');
+        container.find('.price').val('');
+        container.find('.available-qty').text('');
+        container.find('.quantity').removeAttr('max');
+        
+        if (value) {
+            // Vérifier si la catégorie existe
+            $.ajax({
+                url: base_url + 'admin/quoteitem/checkCategory',
+                type: 'POST',
+                data: { category_name: value },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.exists) {
+                        // Si la catégorie existe, charger les produits de cette catégorie
+                        $.ajax({
+                            url: base_url + 'admin/quoteitem/getItemsByCategory',
+                            type: 'POST',
+                            data: { category_name: value },
+                            dataType: 'json',
+                            success: function(items) {
+                                // Mettre à jour le datalist des produits
+                                var datalist = $('#item-list');
+                                datalist.empty();
+                                
+                                items.forEach(function(item) {
+                                    datalist.append(
+                                        $('<option>', {
+                                            value: item.name,
+                                            'data-id': item.id,
+                                            'data-stock': item.quantity,
+                                            'data-unit': item.unit,
+                                            'data-price': item.price
+                                        })
+                                    );
+                                });
+                            }
+                        });
+                    } else {
+                        // Si la catégorie n'existe pas, vider le datalist des produits
+                        $('#item-list').empty();
+                    }
+                }
+            });
+        }
+    });
+
+    // Gestion de la sélection d'un article
+    $(document).on('input', '.item-name', function() {
+        var input = $(this);
+        var value = input.val();
+        var datalist = $('#item-list option');
+        var container = input.closest('.repeater-item');
+        
+        // Recherche de l'article correspondant
+        var selectedItem = datalist.filter(function() {
+            return $(this).val() === value;
+        });
+
+        if (selectedItem.length > 0) {
+            // Article existant trouvé
+            var availableQty = selectedItem.data('stock') || 0;
+            var unit = selectedItem.data('unit') || '';
+            var price = selectedItem.data('price') || 0;
+            
+            container.find('.unit').val(unit);
+            container.find('.price').val(price);
+            container.find('.available-qty').text(availableQty);
+            container.find('.quantity').attr('max', availableQty);
+        } else {
+            // Nouvel article
+            container.find('.unit').val('');
+            container.find('.price').val('');
+            container.find('.available-qty').text('Nouveau produit');
+            container.find('.quantity').removeAttr('max');
+        }
+        
+        calculateItemTotal(container);
+    });
+
     // Calcul du total pour un article
     function calculateItemTotal(container) {
         var quantity = parseFloat(container.find('.quantity').val()) || 0;
@@ -190,8 +276,8 @@ $(document).ready(function() {
     // Ajout d'un nouvel article
     $('#add-item').click(function() {
         var newItem = $('.repeater-item').first().clone();
-        newItem.find('select').val('');
         newItem.find('input').val('');
+        newItem.find('.quantity').val('1');
         newItem.find('.total-price').text('0.00');
         $('#items-container').append(newItem);
     });
@@ -206,108 +292,86 @@ $(document).ready(function() {
         }
     });
 
-    // Changement de catégorie d'article
-    $(document).on('change', '.item-category', function() {
-        var itemSelect = $(this).closest('.repeater-item').find('.item-select');
-        var selectedItemId = itemSelect.val();
-        populateItem(itemSelect, $(this).val(), selectedItemId);
-    });
-
-    // Changement d'article sélectionné
-    $(document).on('change', '.item-select', function() {
-        var selectedOption = $(this).find('option:selected');
-        var container = $(this).closest('.repeater-item');
-        var availableQty = selectedOption.data('available') || 0;
-        
-        container.find('.unit').val(selectedOption.data('unit') || '');
-        container.find('.price').val(selectedOption.data('price') || '');
-        container.find('.available-qty').text(availableQty);
-        
-        // Mettre à jour la quantité maximale autorisée
-        container.find('.quantity').attr('max', availableQty);
-        
-        calculateItemTotal(container);
-    });
-
-    // Validation de la quantité saisie
-    $(document).on('input', '.quantity', function() {
-        var container = $(this).closest('.repeater-item');
-        var availableQty = parseInt(container.find('.available-qty').text()) || 0;
-        var quantity = parseInt($(this).val()) || 0;
-        
-        // if (quantity > availableQty) {
-        //     Swal.fire({
-        //         title: 'Attention',
-        //         text: 'La quantité saisie (' + quantity + ') dépasse la quantité disponible (' + availableQty + ')',
-        //         icon: 'warning'
-        //     });
-        //     $(this).val(availableQty);
-        //     quantity = availableQty;
-        // }
-        
-        calculateItemTotal(container);
-    });
-
-    // Changement de quantité ou prix
+    // Événements pour le calcul automatique des totaux
     $(document).on('input', '.quantity, .price', function() {
         var container = $(this).closest('.repeater-item');
+        var quantity = parseFloat($(this).val()) || 0;
+        
+        // Validation de la quantité
+        if (quantity <= 0) {
+            $(this).val(1);
+            quantity = 1;
+        }
+        
         calculateItemTotal(container);
     });
 
-    // Gestion du changement de l'option TVA
-    $(document).on('change', '#apply_tva', function() {
+    // Gestion de la TVA
+    $('#apply_tva').change(function() {
         calculateGrandTotal();
     });
 
-    // Soumission du formulaire
-    $(document).on('click', "#"+dtButtons.set, function(e) {
-        e.preventDefault();
+    // // Soumission du formulaire
+    // $('#' + formID).submit(function(e) {
+    //     e.preventDefault();
         
-        var $form = $("#"+formID);
-        var $submitBtn = $(this);
+    //     // Vérifier et corriger les quantités avant la validation
+    //     $('.quantity').each(function() {
+    //         var quantity = parseFloat($(this).val()) || 0;
+    //         if (quantity <= 0) {
+    //             $(this).val(1);
+    //         }
+    //     });
+        
+    //     var validation = validateForm();
+    //     if (!validation.isValid) {
+    //         Swal.fire({
+    //             title: 'Erreur de validation',
+    //             html: validation.errors.join('<br>'),
+    //             icon: 'error'
+    //         });
+    //         return;
+    //     }
 
-        // Validation du formulaire
-        const { isValid, errors } = validateForm();
-        if (!isValid) {
-            Swal.fire('Erreur', errors.join('<br>'), 'error');
-            return;
-        }
+    //     var formData = $(this).serialize();
+        
+    //     $.ajax({
+    //         url: base_url + remoteAJAXFunctions.add,
+    //         type: 'POST',
+    //         data: formData,
+    //         dataType: 'json',
+    //         success: function(response) {
+    //             if (response.status) {
 
-        Swal.fire({
-            title: 'Confirmation',
-            text: "Voulez-vous enregistrer cette commande ?",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Oui, enregistrer',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Enregistrement...');
+    //                 console.log(response.status);
+    //                 // Swal.fire({
+    //                 //     title: 'Succès',
+    //                 //     text: 'Le devis a été créé avec succès',
+    //                 //     icon: 'success'
+    //                 // }).then((result) => {
+    //                 //     window.location.href = base_url + 'admin/quoteitem';
+    //                 // });
+    //             } else {
+    //                 Swal.fire({
+    //                     title: 'Erreur',
+    //                     text: response.message || 'Une erreur est survenue',
+    //                     icon: 'error'
+    //                 });
+    //             }
+    //         },
+    //         error: function() {
+    //             Swal.fire({
+    //                 title: 'Erreur',
+    //                 text: 'Une erreur est survenue lors de la communication avec le serveur',
+    //                 icon: 'error'
+    //             });
+    //         }
+    //     });
+    // });
 
-                $.ajax({
-                    url: $form.attr('action'),
-                    type: 'POST',
-                    data: $form.serialize(),
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            Swal.fire('Succès', response.message, 'success').then(() => {
-                                window.location.href = base_url + 'admin/quoteitem';
-                            });
-                        } else {
-                            Swal.fire('Erreur', response.message, 'error');
-                            $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Enregistrer');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Erreur AJAX:', error);
-                        Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.', 'error');
-                        $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Enregistrer');
-                    }
-                });
-            }
-        });
-    });
+    // Calcul initial des totaux
+    calculateGrandTotal();
+
 
     // Soumission du formulaire de modification
     $(document).on('click', "#"+dtButtons.edit, function(e) {
@@ -379,4 +443,64 @@ $(document).ready(function() {
             }
         });
     });
+
+
+     // Soumission du formulaire
+     $(document).on('click', "#"+dtButtons.set, function(e) {
+        e.preventDefault();
+
+        // Vérifier et corriger les quantités avant la validation
+        $('.quantity').each(function() {
+            var quantity = parseFloat($(this).val()) || 0;
+            if (quantity <= 0) {
+                $(this).val(1);
+            }
+        });
+        
+        var $form = $("#"+formID);
+        var $submitBtn = $(this);
+
+        // Validation du formulaire
+        const { isValid, errors } = validateForm();
+        if (!isValid) {
+            Swal.fire('Erreur', errors.join('<br>'), 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Confirmation',
+            text: "Voulez-vous enregistrer ce devis ?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Oui, enregistrer',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Enregistrement...');
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            Swal.fire('Succès', response.message, 'success').then(() => {
+                                window.location.href = base_url + 'admin/quoteitem';
+                            });
+                        } else {
+                            Swal.fire('Erreur', response.message, 'error');
+                            $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Enregistrer');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur AJAX:', error);
+                        Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.', 'error');
+                        $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Enregistrer');
+                    }
+                });
+            }
+        });
+    });
+
 });
