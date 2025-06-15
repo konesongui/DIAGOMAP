@@ -20,9 +20,9 @@ class Income_processing_model extends My_Model
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
-        $this->db->where('id', $id);
-
-        $this->db->delete('income_processing');
+        $this->db->where('id', $id)
+        ->set('deleted', '0');
+        $this->db->update('income_processing');
 
         $message   = DELETE_RECORD_CONSTANT . " On  Increase   id " . $id;
         $action    = "Delete";

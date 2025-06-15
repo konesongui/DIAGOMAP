@@ -117,7 +117,7 @@ $moisEn = [
                         <h3 class="box-title"><i class="fa fa-search"></i> <?php echo $this->lang->line('select_criteria'); ?></h3>
                     </div>
 
-                    <form role="form" action="<?php echo site_url('report/payroll') ?>" method="post" class="">
+                    <form role="form" action="<?php echo site_url('report/charge_fdfp') ?>" method="post" class="">
                         <div class="box-body row">
 
                             <?php echo $this->customlib->getCSRF(); ?>

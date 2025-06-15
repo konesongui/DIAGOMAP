@@ -75,7 +75,10 @@
 
                     if ($this->rbac->hasPrivilege('payroll_report', 'can_view')) {
                         ?>
+
                         <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/charge_fdfp'); ?>"><a href="<?php echo base_url(); ?>report/charge_fdfp"><i class="fa fa-file-text-o"></i>Charge FDFP</a></li>
+                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/bilan_comptable'); ?>"><a href="<?php echo base_url(); ?>report/bilan_comptable"><i class="fa fa-file-text-o"></i>Bilan Comptable</a></li>
+
                         <?php
                     }
                     if ($this->rbac->hasPrivilege('income_group_report', 'can_view')) {

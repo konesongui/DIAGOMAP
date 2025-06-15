@@ -9,7 +9,7 @@ $dID = 'quoteDatatable';
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            <i class="fa fa-object-group"></i> Devis
+            <i class="fa fa-object-group"></i> Devis hors stock
         </h1>
     </section>
     <!-- Main content -->
@@ -19,7 +19,7 @@ $dID = 'quoteDatatable';
                 <!-- Horizontal Form -->
                 <div class="box box-primary">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Devis</h3>
+                        <h3 class="box-title">Devis hors stock</h3>
                         <div class="box-tools pull-right">
                             <div class="form-group btn-sm" style="display: inline-block; margin-right: 10px;">
                                 <select id="statusFilter" class="form-control">

@@ -100,7 +100,7 @@
                     <?php foreach ($items as $item): ?>
                         <tr style="background-color: <?= $loop->even ? 'rgba(250, 183, 22, 0.1)' : 'transparent' ?>;">
                             <td style="border: 1px solid #ccc; padding: 5px; font-size: 12px;"><?= htmlspecialchars($item['quantity']) ?></td>
-                            <td style="border: 1px solid #ccc; padding: 5px; font-size: 12px;"><?= htmlspecialchars($item['item_name']) ?> - <?= htmlspecialchars($item['category_name']) ?></td>
+                            <td style="border: 1px solid #ccc; padding: 5px; font-size: 12px;"><?= htmlspecialchars($item['item_name']) ?> - <?= htmlspecialchars($item['product_name']) ?></td>
                             <td style="border: 1px solid #ccc; padding: 5px; font-size: 12px;"><?= htmlspecialchars($item['unit_price']) ?></td>
                             <td style="border: 1px solid #ccc; padding: 5px; font-size: 12px;"><?= htmlspecialchars($item['line_total']) ?></td>
                         </tr>
