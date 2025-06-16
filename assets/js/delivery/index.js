@@ -46,7 +46,6 @@ $(document).ready(function() {
         },
         "columns": [
             { "data": "delivery_number" },
-            { "data": "designation" },
             { 
                 data: "customer",
                 render: function(data) {

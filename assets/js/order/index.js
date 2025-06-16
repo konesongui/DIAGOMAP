@@ -28,7 +28,6 @@ $(document).ready(function() {
         },
         "columns": [
             { "data": "order_number" },
-            { "data": "designation" },
             { 
                 data: "customer",
                 render: function(data) {

@@ -30,6 +30,7 @@ class Quoteitem extends Admin_Controller
         $this->load->library('customlib');
     }
 
+
     /**
      * Main index method - Handles item listing and creation
      */
@@ -102,6 +103,7 @@ class Quoteitem extends Admin_Controller
             'title' => 'Ajouter un article au devis',
             'title_list' => 'Derniers articles ajoutés au devis',
             'itemcatlist' => $this->itemcategory_model->get(),
+            'itemlist' => $this->item_model->get(),
             'clients' => $this->clients_model->get()
         ];
 
@@ -110,7 +112,6 @@ class Quoteitem extends Admin_Controller
         $this->load->view('admin/quote/form', $data);
         $this->load->view('layout/footer', $data);
     }
-
 
 
     /**
@@ -128,16 +129,16 @@ class Quoteitem extends Admin_Controller
                 throw new Exception('Aucune donnée reçue');
             }
 
+            // var_dump($this->input->post());
+            // exit;
+
             // Validation des champs obligatoires
-            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('quote_date', 'Date', 'required');
-            $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
-            $this->form_validation->set_rules('item_id[]', 'Article', 'required');
+            $this->form_validation->set_rules('item_category[]', 'Catégorie', 'required');
+            $this->form_validation->set_rules('item_name[]', 'Article', 'required');
             $this->form_validation->set_rules('quantity[]', 'Quantité', 'required|numeric|greater_than[0]');
             $this->form_validation->set_rules('price[]', 'Prix unitaire', 'required|numeric|greater_than[0]');
-            $this->form_validation->set_rules('total_ht', 'Total HT', 'required|numeric|greater_than[0]');
-            $this->form_validation->set_rules('total_ttc', 'Total TTC', 'required|numeric|greater_than[0]');
 
             if ($this->form_validation->run() == false) {
                 $response['error'] = $this->form_validation->error_array();
@@ -145,28 +146,9 @@ class Quoteitem extends Admin_Controller
                 return;
             }
 
-            // Récupération et validation des données
-            $data = [
-                'designation' => $this->input->post('designation',''),
-                'customer_id' => $this->input->post('customer'),
-                'quote_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('quote_date')))),
-                'valid_until' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
-                'payment_term' => $this->input->post('payment_term'),
-                'delivery_term' => $this->input->post('delivery_term'),
-                'delivery_location' => $this->input->post('delivery_location'),
-                'apply_tva' => $this->input->post('apply_tva'),
-                'tva_rate' => $this->input->post('tva_rate'),
-                'tva_amount' => $this->input->post('tva_amount'),
-                'total_ht' => $this->input->post('total_ht'),
-                'total_ttc' => $this->input->post('total_ttc'),
-                'status' => 1, // 1 = En attente
-                'created_at' => date('Y-m-d H:i:s'),
-                'items' => []
-            ];
-
-            // Validation des articles
-            $categories = $this->input->post('item_category_id');
-            $items = $this->input->post('item_id');
+            // Récupération des données
+            $categories = $this->input->post('item_category');
+            $items = $this->input->post('item_name');
             $quantities = $this->input->post('quantity');
             $prices = $this->input->post('price');
             $units = $this->input->post('unit');
@@ -175,48 +157,142 @@ class Quoteitem extends Admin_Controller
                 throw new Exception('Format de données invalide');
             }
 
-            // Construction du tableau d'articles
-            foreach ($categories as $index => $category_id) {
-                if (empty($items[$index]) || empty($quantities[$index]) || empty($prices[$index])) {
-                    throw new Exception('Données d\'article manquantes');
+            // Préparation des données du devis
+            $quote_data = [
+                'quote_number'=> $this->generateQuoteNumber(),
+                'customer_id' => $this->input->post('customer'),
+                'quote_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('quote_date')))),
+                'valid_until' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
+                'payment_terms' => $this->input->post('payment_term'),
+                'delivery_terms' => $this->input->post('delivery_term'),
+                'delivery_location' => $this->input->post('delivery_location'),
+                'apply_tva' => $this->input->post('apply_tva') ? 1 : 0,
+                'tva_rate' => $this->input->post('tva_rate'),
+                'tva_amount' => $this->input->post('tva_amount'),
+                'total_ht' => $this->input->post('total_ht'),
+                'total_ttc' => $this->input->post('total_ttc'),
+                'status' => 1, // 1 = En attente
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            // Début de la transaction
+            $this->db->trans_start();
+
+            // Insertion du devis
+            $this->db->insert('quotes', $quote_data);
+            $quote_id = $this->db->insert_id();
+
+            // Traitement des articles
+            $quote_items = [];
+            foreach ($categories as $index => $category_name) {
+                // Vérifier si la catégorie existe
+                $category = $this->db->where('item_category', $category_name)->get('item_category')->row();
+                if (!$category) {
+                    // Créer la catégorie si elle n'existe pas
+                    $this->db->insert('item_category', ['item_category' => $category_name]);
+                    $category_id = $this->db->insert_id();
+                } else {
+                    $category_id = $category->id;
                 }
 
-                $quantity = floatval($quantities[$index]);
-                $price = floatval($prices[$index]);
-                $line_total = $quantity * $price;
+                // Vérifier si l'article existe
+                $item = $this->db->where('name', $items[$index])
+                                ->where('item_category_id', $category_id)
+                                ->get('item')
+                                ->row();
+                
+                if (!$item) {
+                    // Créer l'article s'il n'existe pas
+                    $item_data = [
+                        'name' => $items[$index],
+                        'item_category_id' => $category_id,
+                        'unit' => $units[$index] ?? '',
+                        'unit_price' => $prices[$index],
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $this->db->insert('item', $item_data);
+                    $item_id = $this->db->insert_id();
 
-                $data['items'][] = [
+                    // Ajouter l'article dans la table stock avec quantité 0
+                    $stock_data = [
+                        'item_id' => $item_id,
+                        'initial_quantity' => 0,
+                        'current_quantity' => 0,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $this->db->insert('stock', $stock_data);
+                } else {
+                    $item_id = $item->id;
+                }
+
+                // Ajouter l'article au devis
+                $quote_items[] = [
+                    'quote_id' => $quote_id,
                     'category_id' => $category_id,
-                    'item_id' => $items[$index],
-                    'quantity' => $quantity,
-                    'price' => $price,
+                    'item_id' => $item_id,
+                    'quantity' => $quantities[$index],
+                    'unit_price' => $prices[$index],
                     'unit' => $units[$index] ?? '',
-                    'line_total' => $line_total
+                    'line_total' => $quantities[$index] * $prices[$index]
                 ];
             }
 
-            // var_dump($data);
-            // exit;
+            // Insertion des articles du devis
+            if (!empty($quote_items)) {
+                $this->db->insert_batch('quote_items', $quote_items);
+            }
 
-            // Enregistrement des données
-            $insert_id = $this->quote_model->add($data);
+            // Fin de la transaction
+            $this->db->trans_complete();
 
-            if (!$insert_id) {
-                throw new Exception('Erreur lors de l\'enregistrement');
+            if ($this->db->trans_status() === false) {
+                throw new Exception('Erreur lors de l\'enregistrement du devis');
             }
 
             $response['status'] = 'success';
-            $response['message'] = 'Le devis a été enregistré avec succès';
-            $response['quote_id'] = $insert_id;
+            $response['message'] = 'Devis créé avec succès';
+            $response['quote_id'] = $quote_id;
+
         } catch (Exception $e) {
-            $response['message'] = 'Erreur: ' . $e->getMessage();
-            log_message('error', 'Quote Add Error: ' . $e->getMessage());
+            $response['message'] = $e->getMessage();
         }
 
-        // Retourner la réponse en JSON
         echo json_encode($response);
     }
 
+
+
+    /**
+     * Génère un numéro unique pour une commande
+     * Format: CMD-YYYYMM-XXXX où XXXX est un numéro séquentiel
+     * 
+     * @return string
+     */
+    private function generateQuoteNumber()
+    {
+        $prefix = 'DEV';  // DEV pour Devis
+        $date = date('Ym');  // Format YYYYMM
+        
+        // Recherche le dernier numéro pour ce mois
+        $this->db->like('quote_number', $prefix . '-' . $date, 'after');
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit(1);
+        $query = $this->db->get('quotes');
+        
+        if ($query->num_rows() > 0) {
+            // Extrait le numéro séquentiel de la dernière commande
+            $last_ref = $query->row()->quote_number;
+            $sequence = intval(substr($last_ref, -4)) + 1;
+        } else {
+            // Première commande du mois
+            $sequence = 1;
+        }
+        
+        // Formate le numéro séquentiel sur 4 chiffres
+        $sequence_padded = str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        
+        return $prefix . '-' . $date . '-' . $sequence_padded;
+    }
 
 
 
@@ -376,6 +452,8 @@ class Quoteitem extends Admin_Controller
         }
     }
 
+
+
     /**
      * Met à jour un devis existant
      * 
@@ -384,36 +462,20 @@ class Quoteitem extends Admin_Controller
      */
     public function update()
     {
-        if (!$this->rbac->hasPrivilege('Or', 'can_edit')) {
-            access_denied();
-        }
-
-        // var_dump($this->input->post());
-        // exit;  
-
-        // Récupérer l'ID du devis
-        $id = $this->input->post('id');
-
         // Initialisation de la réponse
         $response = ['status' => 'fail', 'message' => '', 'error' => []];
 
         try {
-            // Vérifier le statut du devis
-            $quote = $this->quote_model->getQuoteWithItems($id);
-            if (!$quote) {
-                throw new Exception('Devis introuvable');
-            }
-
-            if ((int)$quote['status'] !== 1) {
-                throw new Exception('Ce devis ne peut plus être modifié');
+            // Vérification des données POST
+            if (!$this->input->post()) {
+                throw new Exception('Aucune donnée reçue');
             }
 
             // Validation des champs obligatoires
-            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('quote_date', 'Date', 'required');
-            $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
-            $this->form_validation->set_rules('item_id[]', 'Article', 'required');
+            $this->form_validation->set_rules('item_category[]', 'Catégorie', 'required');
+            $this->form_validation->set_rules('item_name[]', 'Article', 'required');
             $this->form_validation->set_rules('quantity[]', 'Quantité', 'required|numeric|greater_than[0]');
             $this->form_validation->set_rules('price[]', 'Prix unitaire', 'required|numeric|greater_than[0]');
 
@@ -423,27 +485,10 @@ class Quoteitem extends Admin_Controller
                 return;
             }
 
-            // Récupération et validation des données
-            $data = [
-                'id' => $this->input->post('id'),
-                'designation' => $this->input->post('designation',''),
-                'customer' => $this->input->post('customer'),
-                'apply_tva' => $this->input->post('apply_tva'),
-                'tva_amount' => $this->input->post('tva_amount'),
-                'total_ht' => $this->input->post('total_ht'),
-                'total_ttc' => $this->input->post('total_ttc'),
-                'tva_rate' => $this->input->post('tva_rate'),
-                'valid_until' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
-                'payment_term' => $this->input->post('payment_term'),
-                'delivery_term' => $this->input->post('delivery_term'),
-                'delivery_location' => $this->input->post('delivery_location'),
-                'quote_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('quote_date')))),
-                'items' => []
-            ];
-
-            // Validation des articles
-            $categories = $this->input->post('item_category_id');
-            $items = $this->input->post('item_id');
+            // Récupération des données
+            $quote_id = $this->input->post('id');
+            $categories = $this->input->post('item_category');
+            $items = $this->input->post('item_name');
             $quantities = $this->input->post('quantity');
             $prices = $this->input->post('price');
             $units = $this->input->post('unit');
@@ -452,43 +497,97 @@ class Quoteitem extends Admin_Controller
                 throw new Exception('Format de données invalide');
             }
 
-            // Construction du tableau d'articles
-            foreach ($categories as $index => $category_id) {
-                if (empty($items[$index]) || empty($quantities[$index]) || empty($prices[$index])) {
-                    throw new Exception('Données d\'article manquantes');
+            // Préparation des données du devis
+            $quote_data = [
+                'customer_id' => $this->input->post('customer'),
+                'quote_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('quote_date')))),
+                'valid_until' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
+                'payment_terms' => $this->input->post('payment_terms'),
+                'delivery_terms' => $this->input->post('delivery_terms'),
+                'delivery_location' => $this->input->post('delivery_location'),
+                'apply_tva' => $this->input->post('apply_tva') ? 1 : 0,
+                'tva_rate' => $this->input->post('tva_rate'),
+                'tva_amount' => $this->input->post('tva_amount'),
+                'total_ht' => $this->input->post('total_ht'),
+                'total_ttc' => $this->input->post('total_ttc'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            // Début de la transaction
+            $this->db->trans_start();
+
+            // Mise à jour du devis
+            $this->db->where('id', $quote_id)->update('quotes', $quote_data);
+
+            // Suppression des anciens articles
+            $this->db->where('quote_id', $quote_id)->delete('quote_items');
+
+            // Traitement des articles
+            $quote_items = [];
+            foreach ($categories as $index => $category_name) {
+                // Vérifier si la catégorie existe
+                $category = $this->db->where('item_category', $category_name)->get('item_category')->row();
+                if (!$category) {
+                    // Créer la catégorie si elle n'existe pas
+                    $this->db->insert('item_category', ['item_category' => $category_name]);
+                    $category_id = $this->db->insert_id();
+                } else {
+                    $category_id = $category->id;
                 }
 
-                $quantity = floatval($quantities[$index]);
-                $price = floatval($prices[$index]);
-                $line_total = $quantity * $price;
+                // Vérifier si l'article existe
+                $item = $this->db->where('name', $items[$index])
+                                ->where('item_category_id', $category_id)
+                                ->get('item')
+                                ->row();
+                
+                if (!$item) {
+                    // Créer l'article s'il n'existe pas
+                    $item_data = [
+                        'name' => $items[$index],
+                        'item_category_id' => $category_id,
+                        'unit' => $units[$index] ?? '',
+                        'unit_price' => $prices[$index],
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $this->db->insert('item', $item_data);
+                    $item_id = $this->db->insert_id();
+                } else {
+                    $item_id = $item->id;
+                }
 
-                $data['items'][] = [
+                // Ajouter l'article au devis
+                $quote_items[] = [
+                    'quote_id' => $quote_id,
                     'category_id' => $category_id,
-                    'item_id' => $items[$index],
-                    'quantity' => $quantity,
-                    'price' => $price,
+                    'item_id' => $item_id,
+                    'quantity' => $quantities[$index],
+                    'unit_price' => $prices[$index],
                     'unit' => $units[$index] ?? '',
-                    'line_total' => $line_total
+                    'line_total' => $quantities[$index] * $prices[$index]
                 ];
             }
 
-            // var_dump($data);
-            // exit;   
-            // Mise à jour des données
-            $update_success = $this->quote_model->update($data);
+            // Insertion des articles du devis
+            if (!empty($quote_items)) {
+                $this->db->insert_batch('quote_items', $quote_items);
+            }
 
-            if (!$update_success) {
-                throw new Exception('Erreur lors de la mise à jour');
+            // Fin de la transaction
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === false) {
+                throw new Exception('Erreur lors de la mise à jour du devis');
             }
 
             $response['status'] = 'success';
-            $response['message'] = 'Le devis a été mis à jour avec succès';
+            $response['message'] = 'Devis mis à jour avec succès';
+            $response['quote_id'] = $quote_id;
+
         } catch (Exception $e) {
-            $response['message'] = 'Erreur: ' . $e->getMessage();
-            log_message('error', 'Quote Update Error: ' . $e->getMessage());
+            $response['message'] = $e->getMessage();
         }
 
-        // Retourner la réponse en JSON
         echo json_encode($response);
     }
 
@@ -1116,5 +1215,37 @@ class Quoteitem extends Admin_Controller
     //         echo json_encode($response);
     //     }
     // }
+
+    /**
+     * Vérifie si une catégorie existe
+     * @return JSON
+     */
+    public function checkCategory()
+    {
+        $category_name = $this->input->post('category_name');
+        $category = $this->itemcategory_model->getCategoryByName($category_name);
+        
+        echo json_encode([
+            'exists' => !empty($category),
+            'category' => $category
+        ]);
+    }
+
+    /**
+     * Récupère les produits d'une catégorie
+     * @return JSON
+     */
+    public function getItemsByCategory()
+    {
+        $category_name = $this->input->post('category_name');
+        $category = $this->itemcategory_model->getCategoryByName($category_name);
+        
+        if ($category) {
+            $items = $this->item_model->getItemByCategory($category['id']);
+            echo json_encode($items);
+        } else {
+            echo json_encode([]);
+        }
+    }
 
 }

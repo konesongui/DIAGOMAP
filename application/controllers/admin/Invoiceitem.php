@@ -542,7 +542,10 @@ class Invoiceitem extends Admin_Controller {
     {
         // Try to get any row's id sent
         $data['rowID'] = ( ! empty($this->input->post('rowID')) && (int)$this->input->post('rowID') > 0) ? (int)$this->input->post('rowID') : 0;
-        $data['remaining'] = ( ! empty($this->input->post('remaining')) && (int)$this->input->post('remaining') > 0) ? (int)$this->input->post('remaining') : 0;
+        $data['remaining'] = ( ! empty($this->input->post('remaining')) && $this->input->post('remaining') > 0) ? $this->input->post('remaining') : 0;
+
+        // var_dump($data['remaining']);
+        // exit;
 
         // Load the form view with all the data required
         $this->load->view('admin/invoice/paymentForm', $data);

@@ -43,7 +43,6 @@ $dID = 'deliveryDatatable';
                                 <thead>
                                     <tr>
                                         <th>Référence</th>
-                                        <th>Désignation</th>
                                         <th>Client</th>
                                         <th>Date d'édition</th>
                                         <th>Terme de paiement</th>
