@@ -131,6 +131,28 @@ $language_name = $language["short_code"];
                                     </select><span class="text-danger"><?php echo form_error('status'); ?></span>
 
                                 </div>
+
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">Type du journal</label><small class="req"> *</small>
+
+                                    <select autofocus="" id="journal_id" name="journal_id" class="form-control" >
+                                        <option value=""><?php echo $this->lang->line('select'); ?></option>
+                                        <?php
+                                        foreach ($journal as $type) {
+                                            ?>
+                                            <option value="<?php echo $type['id'] ?>"<?php
+                                            if (set_value('type_journal') == $type['type_journal']) {
+                                                echo "selected = selected";
+                                            }
+                                            ?>><?php echo $type['type_journal'] ?></option>
+
+                                            <?php
+                                            //$count++;
+                                        }
+                                        ?>
+                                    </select><span class="text-danger"><?php echo form_error('inc_head_id'); ?></span>
+
+                                </div>
                             </div>
                             <!-- /.box-body -->
 
@@ -190,6 +212,7 @@ $language_name = $language["short_code"];
                                     </th>
                                     <th>Solde restant
                                     </th>
+
                                     <!-- <th>Users
                                      </th>-->
                                     <th>Status
