@@ -300,7 +300,9 @@ if ($this->rbac->hasPrivilege('student_houses', 'can_view')) {
 
                             <ul class="treeview-menu">
                                 <?php if ($this->rbac->hasPrivilege('caisse', 'can_view')) { ?>
-                                    <li class="<?php echo set_Submenu('Journal/journal_comptable'); ?>"><a href="<?php echo base_url(); ?>admin/journal"><i class="fa fa-angle-double-right"></i>Journal comptable</a></li>
+                                    <li class="<?php echo set_Submenu('Comptecomptable/index'); ?>"><a href="<?php echo base_url(); ?>admin/comptecomptable"><i class="fa fa-angle-double-right"></i>Compte comptable</a></li>
+
+                                    <li class="<?php echo set_Submenu('Journal/index'); ?>"><a href="<?php echo base_url(); ?>admin/journal"><i class="fa fa-angle-double-right"></i>Journal comptable</a></li>
                                     <li class="<?php echo set_Submenu('Invoiceitem/index'); ?>"><a href="<?php echo base_url(); ?>admin/invoiceitem"><i class="fa fa-angle-double-right"></i>Factures</a></li>
 
                                      <?php
