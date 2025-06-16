@@ -16,7 +16,6 @@ class Journal_model extends MY_Model {
      * @return mixed
      */
     public function get($id = null) {
-        $this->db->where('journal_comptable.deleted', '1');
         $this->db->select()->from('journal_comptable');
         if ($id != null) {
             $this->db->where('id', $id);
@@ -45,7 +44,7 @@ class Journal_model extends MY_Model {
         if (isset($data['id'])) {
             $this->db->where('id', $data['id']);
             $this->db->update('journal_comptable', $data);
-            $message = UPDATE_RECORD_CONSTANT . " On  journal id " . $data['id'];
+            $message = UPDATE_RECORD_CONSTANT . " On  Journal add id " . $data['id'];
             $action = "Update";
             $record_id = $data['id'];
             $this->log($message, $record_id, $action);
@@ -64,11 +63,11 @@ class Journal_model extends MY_Model {
         } else {
             $this->db->insert('journal_comptable', $data);
             $insert_id = $this->db->insert_id();
-            $message = INSERT_RECORD_CONSTANT . " On journal_comptable id " . $insert_id;
+            $message = INSERT_RECORD_CONSTANT . " On Journal add id " . $insert_id;
             $action = "Insert";
             $record_id = $insert_id;
             $this->log($message, $record_id, $action);
-
+           
             //======================Code End==============================
 
             $this->db->trans_complete(); # Completing transaction
@@ -95,10 +94,9 @@ class Journal_model extends MY_Model {
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
-        $this->db->where('id', $id)
-        ->set('deleted', '0');
-        $this->db->update('journal_comptable');
-        $message = DELETE_RECORD_CONSTANT . " On item supplier id " . $id;
+        $this->db->where('id', $id);
+        $this->db->delete('journal_comptable');
+        $message = DELETE_RECORD_CONSTANT . " On journal delete id " . $id;
         $action = "Delete";
         $record_id = $id;
         $this->log($message, $record_id, $action);

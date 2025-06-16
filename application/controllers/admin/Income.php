@@ -44,6 +44,7 @@ class Income extends Admin_Controller
                 'invoice_no'  => $this->input->post('invoice_no'),
                 'note'        => $this->input->post('description'),
                 'documents'   => $this->input->post('documents'),
+                'journal_id'   => $this->input->post('journal_id'),
                 'status'   => $this->input->post('status'),
 
             );
@@ -70,6 +71,8 @@ class Income extends Admin_Controller
         $data['incomeTotal']  = $this->income_model->getTotalIncome();
         $incomeHead          = $this->incomehead_model->get();
         $data['incheadlist'] = $incomeHead;
+        $journal_comptable          = $this->journal_model->get();
+        $data['journal'] = $journal_comptable;
         $this->load->view('layout/header', $data);
         $this->load->view('admin/income/incomeList', $data);
         $this->load->view('layout/footer', $data);
@@ -258,6 +261,9 @@ class Income extends Admin_Controller
         $data['title_list']  = 'Fees Master List';
         $expnseHead          = $this->incomehead_model->get();
         $data['incheadlist'] = $expnseHead;
+
+        $journal_comptable          = $this->journal_model->get();
+        $data['journal'] = $journal_comptable;
         $this->form_validation->set_rules('inc_head_id', $this->lang->line('income_head'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('amount', $this->lang->line('amount'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('name', $this->lang->line('name'), 'trim|required|xss_clean');
@@ -279,6 +285,7 @@ class Income extends Admin_Controller
                 'invoice_no'  => $this->input->post('invoice_no'),
                 'note'        => $this->input->post('description'),
                 'status'        => $this->input->post('status'),
+                'journal_id'   => $this->input->post('journal_id'),
             );
             $insert_id = $this->income_model->add($data);
             if (isset($_FILES["documents"]) && !empty($_FILES['documents']['name'])) {
@@ -364,7 +371,7 @@ class Income extends Admin_Controller
                 $row[]     = $value->income_category;
                 $row[]     = $value->amount .$currency_symbol;
                 $row[]     = $value->amount_re .$currency_symbol;
-                /*$row[]     = $value->user;*/
+
 
                 if ($value->status=="Ouvert") {
                     $row[]     =  "<h6><span class='label label-warning' style='background-color: #ff9801 !important; border-radius: 2px'>Ouverte<span/></h6>";

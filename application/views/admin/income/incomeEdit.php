@@ -96,6 +96,26 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <span class="text-danger"><?php echo form_error('status'); ?></span>
                                 </div>
 
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">Type du journal</label>
+                                    <select autofocus="" id="inc_head_id" name="inc_head_id" class="form-control" >
+                                        <option value=""><?php echo $this->lang->line('select'); ?></option>
+                                        <?php
+                                        foreach ($journal as $type) {
+                                            ?>
+                                            <option value="<?php echo $type['id'] ?>"<?php
+                                            if ($type['type_journal'] == $type['type_journal']) {
+                                                echo "selected =selected";
+                                            }
+                                            ?>><?php echo $type['type_journal'] ?></option>
+                                            <?php
+                                            $count++;
+                                        }
+                                        ?>
+                                    </select>
+                                    <span class="text-danger"><?php echo form_error('inc_head_id'); ?></span>
+                                </div>
+
                             </div><!-- /.box-body -->
 
 
@@ -140,6 +160,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     </th>
                                     <th>Solde restant
                                     </th>
+
                                     <th class="text-right noExport"><?php echo $this->lang->line('action'); ?></th>
                                 </tr>
                                 </thead>
