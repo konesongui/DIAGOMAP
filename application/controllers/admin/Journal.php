@@ -12,57 +12,24 @@ class Journal extends Admin_Controller
         parent::__construct();
         $this->load->helper('form');
         $this->config->load('app-config');
-        $this->load->library("datatables");
+        $this->load->library("datatables");    H
     }
 
-    public function index()
-    {
-
+    function index() {
         if (!$this->rbac->hasPrivilege('income', 'can_view')) {
             access_denied();
         }
-
-        $this->session->set_userdata('top_menu', 'Income');
-        $this->session->set_userdata('sub_menu', 'journal/index');
-        $data['title']      = 'Add Income';
-        $data['title_list'] = 'Recent Incomes';
-        $this->form_validation->set_rules('inc_head_id', $this->lang->line('income_head'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('amount', $this->lang->line('amount'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('name', $this->lang->line('name'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('date', $this->lang->line('date'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('documents', $this->lang->line('documents'), 'callback_handle_upload');
-        if ($this->form_validation->run() == false) {
-
-        } else {
-            $data = array(
-                'inc_head_id' => $this->input->post('inc_head_id'),
-                'name'        => $this->input->post('name'),
-                'date'        => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
-                'amount'      => $this->input->post('amount'),
-                'invoice_no'  => $this->input->post('invoice_no'),
-                'note'        => $this->input->post('description'),
-                'documents'   => $this->input->post('documents'),
-            );
-            $insert_id = $this->income_model->add($data);
-            if (isset($_FILES["documents"]) && !empty($_FILES['documents']['name'])) {
-                $fileInfo = pathinfo($_FILES["documents"]["name"]);
-                $img_name = $insert_id . '.' . $fileInfo['extension'];
-                move_uploaded_file($_FILES["documents"]["tmp_name"], "./uploads/school_income/" . $img_name);
-                $data_img = array('id' => $insert_id, 'documents' => 'uploads/school_income/' . $img_name);
-                $this->income_model->add($data_img);
-            }
-            $this->session->set_flashdata('msg', '<div class="alert alert-success text-left">' . $this->lang->line('success_message') . '</div>');
-            redirect('admin/income/index');
-        }
-
-        $income_result       = $this->income_model->get();
-        $data['incomelist']  = $income_result;
-        $incomeHead          = $this->incomehead_model->get();
-        $data['incheadlist'] = $incomeHead;
+        $this->session->set_userdata('top_menu', 'Inventory');
+        $this->session->set_userdata('sub_menu', 'Journal/index');
+        $data['title'] = 'Item Supplier List';
+        $journal_result = $this->Journal_model->get();
+        $data['journallist'] = $journal_result;
         $this->load->view('layout/header', $data);
         $this->load->view('admin/journal/journal_comptable', $data);
         $this->load->view('layout/footer', $data);
     }
+
+
 
     public function download($documents)
     {
@@ -79,7 +46,7 @@ class Journal extends Admin_Controller
             access_denied();
         }
         $data['title']  = 'Fees Master List';
-        $income         = $this->income_model->get($id);
+        $journal         = $this->Journal_model->get($id);
         $data['income'] = $income;
         $this->load->view('layout/header', $data);
         $this->load->view('income/incomeShow', $data);
@@ -113,25 +80,28 @@ class Journal extends Admin_Controller
             access_denied();
         }
         $data['title'] = 'Fees Master List';
-        $this->income_model->remove($id);
-        redirect('admin/income/index');
+        $this->Journal_model->remove($id);
+        redirect('admin/journal/index');
     }
 
     public function create()
     {
         $data['title'] = 'Add Fees Master';
-        $this->form_validation->set_rules('income', $this->lang->line('fees_master'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('code_journal', $this->lang->line('fees_master'), 'trim|required|xss_clean');
         if ($this->form_validation->run() == false) {
             $this->load->view('layout/header', $data);
-            $this->load->view('income/incomeCreate', $data);
+            $this->load->view('admin/journal/journal_comptable', $data);
             $this->load->view('layout/footer', $data);
         } else {
             $data = array(
-                'income' => $this->input->post('income'),
+                'code_journal' => $this->input->post('code_journal'),
+                'libelle_journal' => $this->input->post('libelle_journal'),
+                'type_journal' => $this->input->post('type_journal'),
+
             );
-            $this->income_model->add($data);
-            $this->session->set_flashdata('msg', '<div class="alert alert-success text-left">' . $this->lang->line('success_message') . '</div>');
-            redirect('income/index');
+            $this->Journal_model->add($data);
+            $this->session->set_flashdata('msg', '<div class="alert alert-success text-left">' . ('Journal comptable créé avec succès.') . '</div>');
+            redirect('admin/journal/index');
         }
     }
 
@@ -175,48 +145,34 @@ class Journal extends Admin_Controller
         return true;
     }
 
-    public function edit($id)
-    {
-        if (!$this->rbac->hasPrivilege('income', 'can_edit')) {
+    function edit($id) {
+        if (!$this->rbac->hasPrivilege('clients', 'can_edit')) {
             access_denied();
         }
-        $data['title']       = 'Edit Fees Master';
-        $data['id']          = $id;
-        $income              = $this->income_model->get($id);
-        $data['income']      = $income;
-        $data['title_list']  = 'Fees Master List';
-        $expnseHead          = $this->incomehead_model->get();
-        $data['incheadlist'] = $expnseHead;
-        $this->form_validation->set_rules('inc_head_id', $this->lang->line('income_head'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('amount', $this->lang->line('amount'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('name', $this->lang->line('name'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('date', $this->lang->line('date'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('documents', $this->lang->line('documents'), 'callback_handle_upload');
-        if ($this->form_validation->run() == false) {
+        $data['title'] = 'Edit Item Supplier';
+        $journal_results = $this->Journal_model->get();
+        $data['journalliste'] = $journal_results;
+        $data['id'] = $id;
+        $store = $this->Journal_model->get($id);
+        $data['journallist'] = $store;
+
+        $this->form_validation->set_rules('code_journal', "code journal", 'trim|required|xss_clean');
+      if ($this->form_validation->run() == false) {
             $this->load->view('layout/header', $data);
-            $this->load->view('admin/income/incomeEdit', $data);
+            $this->load->view('admin/journal/journalEdit', $data);
             $this->load->view('layout/footer', $data);
         } else {
             $data = array(
                 'id'          => $id,
-                'inc_head_id' => $this->input->post('inc_head_id'),
-                'name'        => $this->input->post('name'),
-                'date'        => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
-                'amount'      => $this->input->post('amount'),
-                'invoice_no'  => $this->input->post('invoice_no'),
-                'note'        => $this->input->post('description'),
+                'code_journal' => $this->input->post('code_journal'),
+                'libelle_journal' => $this->input->post('libelle_journal'),
+                'type_journal' => $this->input->post('type_journal'),
             );
-            $insert_id = $this->income_model->add($data);
-            if (isset($_FILES["documents"]) && !empty($_FILES['documents']['name'])) {
-                $fileInfo = pathinfo($_FILES["documents"]["name"]);
-                $img_name = $id . '.' . $fileInfo['extension'];
-                move_uploaded_file($_FILES["documents"]["tmp_name"], "./uploads/school_income/" . $img_name);
-                $data_img = array('id' => $id, 'documents' => 'uploads/school_income/' . $img_name);
-                $this->income_model->add($data_img);
-            }
+            $insert_id = $this->Journal_model->add($data);
+
 
             $this->session->set_flashdata('msg', '<div class="alert alert-success text-left">' . $this->lang->line('success_message') . '</div>');
-            redirect('admin/income/index');
+            redirect('admin/journal/index');
         }
     }
 

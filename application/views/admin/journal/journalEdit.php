@@ -24,22 +24,22 @@
                                 <?php echo $this->customlib->getCSRF(); ?>
                                 <div class="form-group">
                                     <label for="code_journal">Code du Journal</label><small class="req"> *</small>
-                                    <input autofocus="" id="code_journal" name="code_journal" placeholder="" type="text" class="form-control"  value="<?php echo set_value('code_journal'); ?>" />
+                                    <input autofocus="" id="code_journal" name="code_journal" placeholder="" type="text" class="form-control"  value="<?php echo set_value('code_journal', $journallist['code_journal']); ?>" />
                                     <span class="text-danger"><?php echo form_error('code_journal'); ?></span>
                                 </div>
                                 <div class="form-group">
                                     <label for="libelle_journal">Libellé du Journal</label><small class="req"> *</small>
-                                    <input autofocus="" id="libelle_journal" name="libelle_journal" placeholder="" type="text" class="form-control"  value="<?php echo set_value('libelle_journal'); ?>" />
+                                    <input autofocus="" id="libelle_journal" name="libelle_journal" placeholder="" type="text" class="form-control"  value="<?php echo set_value('journal', $journallist['libelle_journal']); ?>"/>
                                     <span class="text-danger"><?php echo form_error('libelle_journal'); ?></span>
                                 </div>
                                 <div class="form-group">
                                     <label for="type_journal"> Type de Journal</label><small class="req"> *</small>
                                     <select name="type_journal" required class="form-control"  value="<?php echo set_value('libelle_journal'); ?>" />
-                                        <option value="Général">Général</option>
-                                        <option value="Ventes">Ventes</option>
-                                        <option value="Achats">Achats</option>
-                                        <option value="Caisse">Caisse</option>
-                                        <option value="Banque">Banque</option>
+                                    <option value="Général">Général</option>
+                                    <option value="Ventes">Ventes</option>
+                                    <option value="Achats">Achats</option>
+                                    <option value="Caisse">Caisse</option>
+                                    <option value="Banque">Banque</option>
                                     <option value="Banque">Banque</option>
 
                                     </select>
@@ -90,24 +90,24 @@
                                     <?php
                                 } else {
                                     $count = 1;
-                                    foreach ($journallist as $journal) {
+                                    foreach ($journallist as $journali) {
                                         ?>
                                         <tr>
-                                            <td class="mailbox-name"><?php echo $journal['code_journal'] ?></td>
+                                            <td class="mailbox-name"><?php echo $journali['code_journal'] ?></td>
 
-                                            <td class="mailbox-name"><?php echo $journal['libelle_journal'] ?></td>
-                                            <td class="mailbox-name"><?php echo $journal['type_journal'] ?></td>
-                                            <td class="mailbox-name"><?php echo $journal['date_creation'] ?></td>
+                                            <td class="mailbox-name"><?php echo $journali['libelle_journal'] ?></td>
+                                            <td class="mailbox-name"><?php echo $journali['type_journal'] ?></td>
+                                            <td class="mailbox-name"><?php echo $journali['date_creation'] ?></td>
 
 
 
                                             <td class="mailbox-date pull-right no-print">
                                                 <?php if ($this->rbac->hasPrivilege('income', 'can_edit')) { ?>
-                                                    <a data-placement="left" href="<?php echo base_url(); ?>admin/journal/edit/<?php echo $journal['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
+                                                    <a data-placement="left" href="<?php echo base_url(); ?>admin/journal/edit/<?php echo $journali['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
                                                 <?php } if ($this->rbac->hasPrivilege('income', 'can_delete')) { ?>
-                                                    <a data-placement="left" href="<?php echo base_url(); ?>admin/journal/delete/<?php echo $journal['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
+                                                    <a data-placement="left" href="<?php echo base_url(); ?>admin/journal/delete/<?php echo $journali['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
                                                         <i class="fa fa-remove"></i>
                                                     </a>
                                                 <?php } ?>
@@ -131,15 +131,6 @@
         </div>   <!-- /.row -->
     </section><!-- /.content -->
 </div>
-<script type="text/javascript">
-    $(document).ready(function () {
-        $("#btnreset").click(function () {
-            $("#form1")[0].reset();
-        });
-    });
-
-</script>
-
 <script>
     $(document).ready(function () {
         $('.detail_popover').popover({
@@ -152,10 +143,4 @@
             }
         });
     });
-</script>
-
-<script type="text/javascript">
-    var base_url = '<?php echo base_url() ?>';
-
-
 </script>
