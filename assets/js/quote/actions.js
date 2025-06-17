@@ -121,6 +121,8 @@ $(document).ready(function() {
                     var options = "<option value=''>Sélectionner</option>";
                     $.each(data, function (i, obj) {
                         var selected = (selectedItemId && selectedItemId == obj.id) ? 'selected' : '';
+
+                        console.log(obj);
                         options += "<option data-available='" + (obj.current_quantity || 0) + "' value='" + obj.id + "' data-unit='" + (obj.unit || '') + "' data-price='" + (obj.weighted_avg_price || 0) + "' " + selected + ">" + obj.name + "</option>";
                     });
                     container.find('.item-select').html(options);
@@ -177,13 +179,14 @@ $(document).ready(function() {
                                 datalist.empty();
                                 
                                 items.forEach(function(item) {
+                                    // console.log(item);
                                     datalist.append(
                                         $('<option>', {
                                             value: item.name,
                                             'data-id': item.id,
                                             'data-stock': item.quantity,
                                             'data-unit': item.unit,
-                                            'data-price': item.price
+                                            'data-price': item.weighted_avg_price
                                         })
                                     );
                                 });
@@ -216,19 +219,22 @@ $(document).ready(function() {
             var unit = selectedItem.data('unit') || '';
             var price = selectedItem.data('price') || 0;
             
+            // Mise à jour des champs avec les valeurs de l'article
             container.find('.unit').val(unit);
             container.find('.price').val(price);
             container.find('.available-qty').text(availableQty);
             container.find('.quantity').attr('max', availableQty);
+            
+            // Déclencher le calcul du total
+            calculateItemTotal(container);
         } else {
             // Nouvel article
             container.find('.unit').val('');
             container.find('.price').val('');
             container.find('.available-qty').text('Nouveau produit');
             container.find('.quantity').removeAttr('max');
+            container.find('.total-price').text('0.00');
         }
-        
-        calculateItemTotal(container);
     });
 
     // Calcul du total pour un article
@@ -277,7 +283,7 @@ $(document).ready(function() {
     $('#add-item').click(function() {
         var newItem = $('.repeater-item').first().clone();
         newItem.find('input').val('');
-        newItem.find('.quantity').val('1');
+        newItem.find('.quantity').val('');
         newItem.find('.total-price').text('0.00');
         $('#items-container').append(newItem);
     });
@@ -299,7 +305,7 @@ $(document).ready(function() {
         
         // Validation de la quantité
         if (quantity <= 0) {
-            $(this).val(0);
+            $(this).val('');
             quantity = 0;
         }
         
@@ -311,63 +317,7 @@ $(document).ready(function() {
         calculateGrandTotal();
     });
 
-    // // Soumission du formulaire
-    // $('#' + formID).submit(function(e) {
-    //     e.preventDefault();
-        
-    //     // Vérifier et corriger les quantités avant la validation
-    //     $('.quantity').each(function() {
-    //         var quantity = parseFloat($(this).val()) || 0;
-    //         if (quantity <= 0) {
-    //             $(this).val(1);
-    //         }
-    //     });
-        
-    //     var validation = validateForm();
-    //     if (!validation.isValid) {
-    //         Swal.fire({
-    //             title: 'Erreur de validation',
-    //             html: validation.errors.join('<br>'),
-    //             icon: 'error'
-    //         });
-    //         return;
-    //     }
-
-    //     var formData = $(this).serialize();
-        
-    //     $.ajax({
-    //         url: base_url + remoteAJAXFunctions.add,
-    //         type: 'POST',
-    //         data: formData,
-    //         dataType: 'json',
-    //         success: function(response) {
-    //             if (response.status) {
-
-    //                 console.log(response.status);
-    //                 // Swal.fire({
-    //                 //     title: 'Succès',
-    //                 //     text: 'Le devis a été créé avec succès',
-    //                 //     icon: 'success'
-    //                 // }).then((result) => {
-    //                 //     window.location.href = base_url + 'admin/quoteitem';
-    //                 // });
-    //             } else {
-    //                 Swal.fire({
-    //                     title: 'Erreur',
-    //                     text: response.message || 'Une erreur est survenue',
-    //                     icon: 'error'
-    //                 });
-    //             }
-    //         },
-    //         error: function() {
-    //             Swal.fire({
-    //                 title: 'Erreur',
-    //                 text: 'Une erreur est survenue lors de la communication avec le serveur',
-    //                 icon: 'error'
-    //             });
-    //         }
-    //     });
-    // });
+  
 
     // Calcul initial des totaux
     calculateGrandTotal();

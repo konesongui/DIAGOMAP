@@ -1241,7 +1241,9 @@ class Quoteitem extends Admin_Controller
         $category = $this->itemcategory_model->getCategoryByName($category_name);
         
         if ($category) {
-            $items = $this->item_model->getItemByCategory($category['id']);
+            // $items = $this->item_model->getItemByCategory($category['id']);
+            $items = $this->stock_model->getItemByCategory($category['id']);
+
             echo json_encode($items);
         } else {
             echo json_encode([]);
