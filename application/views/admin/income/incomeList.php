@@ -7,6 +7,7 @@ $result = $conn->query($sql);
 
 ?>
 
+
 <?php
 $conn = new mysqli("localhost","root","","diao");
 $sql1 = "SELECT SUM(amount) AS total_amount  FROM income Where deleted = 1 ";
@@ -121,30 +122,35 @@ $language_name = $language["short_code"];
                                     <span class="text-danger"></span>
                                 </div>
                                 <div class="form-group">
-                                    <label for="exampleInputEmail1">Status</label><small class="req"> *</small>
+                                    <!--<label for="exampleInputEmail1">Status</label><small class="req"> *</small>-->
+                                    <div class="form-group">
+                                        <label for="est_actif">Actif ?</label>
+                                        <input type="checkbox" name="est_actif" id="est_actif" value="1" checked class="form-group">
+                                    </div>
 
-                                    <select autofocus="" id="status" name="status" class="form-control" >
+                                    <!--<select autofocus="" id="status" name="status" class="form-control" >
                                         <option value=""><?php echo $this->lang->line('select'); ?></option>
                                         <option value="Ouvert">Ouvert</option>
                                         <option value="Fermer">Fermer</option>
 
-                                    </select><span class="text-danger"><?php echo form_error('status'); ?></span>
+                                    </select>-->
+                                    <span class="text-danger"><?php echo form_error('status'); ?></span>
 
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Type du journal</label><small class="req"> *</small>
+                                <!--<div class="form-group">
+                                    <label for="exampleInputEmail1">Selectionné le compte</label><small class="req"> *</small>
 
                                     <select autofocus="" id="journal_id" name="journal_id" class="form-control" >
                                         <option value=""><?php echo $this->lang->line('select'); ?></option>
                                         <?php
-                                        foreach ($journal as $type) {
+                                        foreach ($compte as $type) {
                                             ?>
                                             <option value="<?php echo $type['id'] ?>"<?php
-                                            if (set_value('type_journal') == $type['type_journal']) {
+                                            if (set_value('intitule') == $type['intitule']) {
                                                 echo "selected = selected";
                                             }
-                                            ?>><?php echo $type['type_journal'] ?></option>
+                                            ?>><?php echo $type['intitule'] ?></option>
 
                                             <?php
                                             //$count++;
@@ -152,7 +158,7 @@ $language_name = $language["short_code"];
                                         ?>
                                     </select><span class="text-danger"><?php echo form_error('inc_head_id'); ?></span>
 
-                                </div>
+                                </div>-->
                             </div>
                             <!-- /.box-body -->
 
@@ -261,11 +267,12 @@ $language_name = $language["short_code"];
     </section><!-- /.content -->
 </div><!--/.content-wrapper-->
 
+
 <script>
     ( function ( $ ) {
         'use strict';
         $(document).ready(function () {
-            initDatatable('income-list','admin/income/getincomelist',[],[],50);
+            initDatatable('income-list','admin/income/getincomelist',[],[],10);
         });
     } ( jQuery ) )
 

@@ -26,40 +26,55 @@ class Income extends Admin_Controller
         $this->session->set_userdata('sub_menu', 'income/index');
         $data['title']      = 'Add Income';
         $data['title_list'] = 'Recent Incomes';
+        $this->form_validation->set_rules('inc_head_id', $this->lang->line('income_head'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('amount', $this->lang->line('amount'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('name', $this->lang->line('name'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('date', $this->lang->line('date'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('documents', $this->lang->line('documents'), 'callback_handle_upload');
+        if ($this->form_validation->run() == false) {
 
-        $data = [
-            'inc_head_id' => $this->input->post('inc_head_id'),
-            'name'        => $this->input->post('name'),
-            'user'        => $this->input->post('user'),
-            'date'        => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
-            'amount'      => $this->input->post('amount'),
-            'amount_re'   => $this->input->post('amount'),
-            'invoice_no'  => $this->input->post('invoice_no'),
-            'note'        => $this->input->post('description'),
-            'documents'   => $this->input->post('documents'),
-            'est_actif' => $this->input->post('est_actif')  ? 1 : 0,
-            'type_operation' => 'entrée',
-            'reference_piece' => 'RECU-' . uniqid(),
-        ];
+        } else {
+            $data = array(
+                'inc_head_id' => $this->input->post('inc_head_id'),
+                'name'        => $this->input->post('name'),
+                'user'        => $this->input->post('user'),
+                'date'        => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
+                'amount'      => $this->input->post('amount'),
+                'amount_re'   => $this->input->post('amount'),
+                'invoice_no'  => $this->input->post('invoice_no'),
+                'note'        => $this->input->post('description'),
+                'documents'   => $this->input->post('documents'),
+                'type_operation'   => $this->input->post('type_operation'),
+                'status'   => $this->input->post('status'),
+                'type_operation' => 'entrée',
+                'reference_piece' => 'RECU-' . uniqid(),
 
-        $insert_id = $this->income_model->add($data);
+            );
 
-
-
-
-        $data = [
-            'date_operation'        => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
-            'reference_piece' => 'RECU-' . $insert_id,
-            'libelle_operation'  => $this->input->post('name'),
-            'compte_debit_id'    => 571,
-            'compte_credit_id'   => 706,
-            'montant'      => $this->input->post('amount'),
+            $insert_id = $this->income_model->add($data);
 
 
-        ];
-        $insert_id = $this->journal_model->save($data);
+            if (isset($_FILES["documents"]) && !empty($_FILES['documents']['name'])) {
+                $fileInfo = pathinfo($_FILES["documents"]["name"]);
+                $img_name = $insert_id . '.' . $fileInfo['extension'];
+                move_uploaded_file($_FILES["documents"]["tmp_name"], "./uploads/school_income/" . $img_name);
+                $data_img = array('id' => $insert_id, 'documents' => 'uploads/school_income/' . $img_name);
+                $this->income_model->add($data_img);
+            }
+            $this->session->set_flashdata('msg', '<div class="alert alert-success text-left">' . $this->lang->line('success_message') . '</div>');
+            redirect('admin/income/index');
 
 
+        }
+
+
+
+
+
+        // $data['incomeTotal']  = $this->income_model->getTotalIncome();
+
+        // var_dump($data['incomeTotal']);
+        // exit;
 
         $income_result       = $this->income_model->get();
         $data['incomelist']  = $income_result;
@@ -279,8 +294,8 @@ class Income extends Admin_Controller
                 'amount_re'      => $this->input->post('amount_re'),
                 'invoice_no'  => $this->input->post('invoice_no'),
                 'note'        => $this->input->post('description'),
-                'est_actif' => $this->input->post('est_actif')  ? 1 : 0,
-                'type_operation'   => $this->input->post('type_operation'),
+                'status'        => $this->input->post('status'),
+                'journal_id'   => $this->input->post('journal_id'),
             );
             $insert_id = $this->income_model->add($data);
             if (isset($_FILES["documents"]) && !empty($_FILES['documents']['name'])) {
@@ -368,7 +383,7 @@ class Income extends Admin_Controller
                 $row[]     = $value->amount_re .$currency_symbol;
 
 
-                if ($value->est_actif=="1") {
+                if ($value->status=="Ouvert") {
                     $row[]     =  "<h6><span class='label label-warning' style='background-color: #ff9801 !important; border-radius: 2px'>Ouverte<span/></h6>";
                 }
                 else{
@@ -697,3 +712,5 @@ class Income extends Admin_Controller
     //--------------------------------------------------
 
 }
+
+

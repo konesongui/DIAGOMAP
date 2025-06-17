@@ -73,7 +73,7 @@ class Expense_model extends MY_Model
     public function getexpenselist($id = null)
     {
         $this->datatables
-            ->select('expenses.id,expenses.date,expenses.name,expenses.user, income.name as income_name,income.amount as income_amount, income.amount_re as income_amount_re, expenses.invoice_no,expenses.user,expenses.amount,expenses.documents,expenses.note,expense_head.exp_category,expenses.exp_head_id')
+            ->select('expenses.id,expenses.date,expenses.name,expenses.user, income.name as income_name,income.est_actif as income_est_actif,income.amount as income_amount, income.amount_re as income_amount_re, expenses.invoice_no,expenses.user,expenses.amount,expenses.documents,expenses.note,expense_head.exp_category,expenses.exp_head_id')
             ->searchable('expenses.id,expenses.date,expenses.name,expenses.user,expenses.invoice_no,expenses.amount,expenses.documents,expenses.note,expense_head.exp_category,expenses.exp_head_id')
             ->orderable('expenses.name,expenses.user,expenses.note,expenses.invoice_no,expenses.date,expense_head.exp_category,expenses.amount')
             ->join("expense_head", "expenses.exp_head_id = expense_head.id")

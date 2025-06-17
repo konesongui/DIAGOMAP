@@ -90,13 +90,17 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <textarea class="form-control" id="description" name="description" placeholder="" rows="3" placeholder="Enter ..."><?php echo set_value('description'); ?><?php echo set_value('description', $income['note']) ?></textarea>
                                     <span class="text-danger"><?php echo form_error('description'); ?></span>
                                 </div>
-                                <div class="form-group">
+                               <!-- <div class="form-group">
                                     <label for="exampleInputEmail1">Statut<small class="req"> *</small></label>
                                     <input id="status" name="status" placeholder="" type="text" class="form-control"  value="<?php echo set_value('status', $income['status']); ?>" />
                                     <span class="text-danger"><?php echo form_error('status'); ?></span>
+                                </div>-->
+                                <div class="form-group">
+                                    <label for="est_actif">Compte actif ?</label>
+                                    <input type="checkbox" name="est_actif" class="form-group" id="est_actif" value="1" <?= $income['est_actif'] ? 'checked' : '' ?>>
                                 </div>
 
-                                <div class="form-group">
+                                <!--<div class="form-group">
                                     <label for="exampleInputEmail1">Type du journal</label>
                                     <select autofocus="" id="inc_head_id" name="inc_head_id" class="form-control" >
                                         <option value=""><?php echo $this->lang->line('select'); ?></option>
@@ -114,7 +118,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         ?>
                                     </select>
                                     <span class="text-danger"><?php echo form_error('inc_head_id'); ?></span>
-                                </div>
+                                </div>-->
 
                             </div><!-- /.box-body -->
 

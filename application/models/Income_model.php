@@ -127,8 +127,8 @@ class Income_model extends My_Model
 
     public function get($id = null)
     {
-        $this->db->select('income.id,income.date,income.name,income.user,income.invoice_no,income.status,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id');
-        $this->db->where('income.status', 'Ouvert')
+        $this->db->select('income.id,income.date,income.name,income.est_actif,income.user,income.invoice_no,income.status,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id');
+        $this->db->where('income.est_actif', '1')
             ->from('income');
         $this->db->join('income_head', 'income.inc_head_id = income_head.id');
         if ($id != null) {
@@ -147,7 +147,7 @@ class Income_model extends My_Model
 
     public function got($id = null)
     {
-        $this->db->select('income.id,income.date,income.name,income.user,income.invoice_no,income.status,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id')
+        $this->db->select('income.id,income.date,income.name,income.est_actif,income.user,income.invoice_no,income.status,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id')
 
             ->from('income');
         $this->db->join('income_head', 'income.inc_head_id = income_head.id');
@@ -167,7 +167,7 @@ class Income_model extends My_Model
 
     public function gets($id = null)
     {
-        $this->db->select('income.id,income.date,income.name,income.invoice_no,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id')->from('files');
+        $this->db->select('income.id,income.date,income.name,income.invoice_no,income.amount,income.amount_re,income.est_actif,income.documents,income.note,income_head.income_category,income.inc_head_id')->from('files');
         $this->db->join('income_head', 'income.inc_head_id = income_head.id');
         if ($id != null) {
             $this->db->where('income.id', $id);
@@ -189,7 +189,7 @@ class Income_model extends My_Model
     public function getincomelist()
     {
         $this->datatables
-            ->select('income.id,income.date,income.name,income.user,income.invoice_no,income.status,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id')
+            ->select('income.id,income.date,income.name,income.est_actif,income.user,income.invoice_no,income.status,income.amount,income.amount_re,income.documents,income.note,income_head.income_category,income.inc_head_id')
             ->searchable('income.name,income,income.user,income.invoice_no,income.status,income.date,income_head.income_category,income.amount,income.amount_re,income.note')
             ->orderable('income.name,income.user,income.note,income.invoice_no,income.status,income.date,income_head.income_category,income.amount,income.amount_re')
             ->join("income_head", "income.inc_head_id = income_head.id")
@@ -356,6 +356,7 @@ class Income_model extends My_Model
     {
         $this->db->select('income.*, income_head.income_category');
         $this->db->where('income.deleted', 1);
+        $this->db->where('income.est_actif', 1);
         $this->db->from('income');
         $this->db->join('income_head', 'income.inc_head_id = income_head.id');
         $this->db->where('income.date >=', $start_date);

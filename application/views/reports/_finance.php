@@ -77,7 +77,8 @@
                         ?>
 
                         <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/charge_fdfp'); ?>"><a href="<?php echo base_url(); ?>report/charge_fdfp"><i class="fa fa-file-text-o"></i>Charge FDFP</a></li>
-                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/bilan_comptable'); ?>"><a href="<?php echo base_url(); ?>report/bilan_comptable"><i class="fa fa-file-text-o"></i>Bilan Comptable</a></li>
+                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/journal_comptable'); ?>"><a href="<?php echo base_url(); ?>report/journal_comptable"><i class="fa fa-file-text-o"></i>Journal Comptable</a></li>
+                        <!--<li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/finance/ecriture_comptable'); ?>"><a href="<?php echo base_url(); ?>report/ecriture_comptable"><i class="fa fa-file-text-o"></i>Ecriture Comptable</a></li>-->
 
                         <?php
                     }
