@@ -299,8 +299,8 @@ $(document).ready(function() {
         
         // Validation de la quantité
         if (quantity <= 0) {
-            $(this).val(1);
-            quantity = 1;
+            $(this).val(0);
+            quantity = 0;
         }
         
         calculateItemTotal(container);

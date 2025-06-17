@@ -124,7 +124,7 @@
                                                 </div>
                                                 <div class="form-group col-md-2">
                                                     <label>Quantité <small class="req">*</small></label>
-                                                    <input type="text" name="quantity[]" class="form-control quantity" value="1" required>
+                                                    <input type="text" name="quantity[]" class="form-control quantity" value="0" required>
                                                     <div class="availability" style="margin-top: 5px; color: #3c8dbc; font-weight: bold;">
                                                         Stock disponible: <span class="available-qty">0</span>
                                                     </div>
