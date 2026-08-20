@@ -13,16 +13,83 @@ class Schsettings extends Admin_Controller
         $this->load->library('upload');
     }
 
-  
+    /**
+     * Récupère l'entreprise_id de l'utilisateur connecté
+     * @return int
+     */
+    private function get_entreprise_id()
+    {
+        $entreprise_id = 0;
+        $admin_session = $this->session->userdata('admin');
+
+        if (is_array($admin_session) && isset($admin_session['entreprise_id'])) {
+            $entreprise_id = (int) $admin_session['entreprise_id'];
+        }
+
+        if ($entreprise_id <= 0) {
+            $entreprise_id = (int) ($this->session->userdata('entreprise_id') ?? 0);
+        }
+
+        return $entreprise_id;
+    }
+
     public function index()
     {
-
         if (!$this->rbac->hasPrivilege('general_setting', 'can_view')) {
             access_denied();
         }
+
         $app_ver = $this->config->item('app_ver');
         $this->session->set_userdata('top_menu', 'System Settings');
         $this->session->set_userdata('sub_menu', 'schsettings/index');
+
+        $data['title']          = 'Setting List';
+        $timezoneList           = $this->customlib->timezone_list();
+        $data['title']          = 'School Setting';
+        $session_result         = $this->session_model->get();
+        $language_result        = $this->language_model->getEnable_languages();
+        $data['sessionlist']    = $session_result;
+        $month_list             = $this->customlib->getMonthList();
+        $days_list              = $this->customlib->getDayList();
+        $data['daysList']       = $days_list;
+        $data['languagelist']   = $language_result;
+        $data['timezoneList']   = $timezoneList;
+        $data['monthList']      = $month_list;
+        $dateFormat             = $this->customlib->getDateFormat();
+        $currency               = $this->customlib->getCurrency();
+        $data['dateFormatList'] = $dateFormat;
+        $data['currencyList']   = $currency;
+        $digit                  = $this->customlib->getDigits();
+        $data['digitList']      = $digit;
+        $currencyPlace          = $this->customlib->getCurrencyPlace();
+        $data['currencyPlace']  = $currencyPlace;
+
+        // ===== RÉCUPÉRATION DES SETTINGS DE L'ENTREPRISE CONNECTÉE =====
+        $data['result']         = $this->setting_model->getSetting();
+
+        // ===== AJOUT : Récupérer l'entreprise_id pour la vue =====
+        $admin_session = $this->session->userdata('admin');
+        $data['entreprise_id'] = (is_array($admin_session) && isset($admin_session['entreprise_id']))
+            ? (int) $admin_session['entreprise_id']
+            : (int) ($this->session->userdata('entreprise_id') ?? 0);
+
+        $data['app_response']   = $this->auth->andapp_validate();
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('setting/settingList', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function index_170726()
+    {
+        if (!$this->rbac->hasPrivilege('general_setting', 'can_view')) {
+            access_denied();
+        }
+
+        $app_ver = $this->config->item('app_ver');
+        $this->session->set_userdata('top_menu', 'System Settings');
+        $this->session->set_userdata('sub_menu', 'schsettings/index');
+
         $data['title']          = 'Setting List';
         $timezoneList           = $this->customlib->timezone_list();
         $data['title']          = 'School Setting';
@@ -45,6 +112,7 @@ class Schsettings extends Admin_Controller
         $data['currencyPlace']  = $currencyPlace;
         $data['result']         = $this->setting_model->getSetting();
         $data['app_response']   = $this->auth->andapp_validate();
+
         $this->load->view('layout/header', $data);
         $this->load->view('setting/settingList', $data);
         $this->load->view('layout/footer', $data);
@@ -54,6 +122,7 @@ class Schsettings extends Admin_Controller
     {
         $this->form_validation->set_rules('id', $this->lang->line('id'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('file', $this->lang->line('image'), 'callback_handle_upload');
+
         if ($this->form_validation->run() == false) {
             $data = array(
                 'file' => form_error('file'),
@@ -62,13 +131,20 @@ class Schsettings extends Admin_Controller
             echo json_encode($array);
         } else {
             $id = $this->input->post('id');
+            $entreprise_id = $this->get_entreprise_id();
 
             if (isset($_FILES["file"]) && !empty($_FILES['file']['name'])) {
                 $fileInfo = pathinfo($_FILES["file"]["name"]);
                 $img_name = $id . '.' . $fileInfo['extension'];
                 move_uploaded_file($_FILES["file"]["tmp_name"], "./uploads/school_content/logo/" . $img_name);
             }
-            $data_record = array('id' => $id, 'image' => $img_name);
+
+            $data_record = array(
+                'id' => $id,
+                'image' => $img_name,
+                'entreprise_id' => $entreprise_id
+            );
+
             $this->setting_model->add($data_record);
             $array = array('success' => true, 'error' => '', 'message' => $this->lang->line('success_message'));
             echo json_encode($array);
@@ -77,9 +153,9 @@ class Schsettings extends Admin_Controller
 
     public function ajax_editadmin_smalllogo()
     {
-
         $this->form_validation->set_rules('id', $this->lang->line('id'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('file', $this->lang->line('image'), 'callback_handle_upload');
+
         if ($this->form_validation->run() == false) {
             $data = array(
                 'file' => form_error('file'),
@@ -88,13 +164,20 @@ class Schsettings extends Admin_Controller
             echo json_encode($array);
         } else {
             $id = $this->input->post('id');
+            $entreprise_id = $this->get_entreprise_id();
 
             if (isset($_FILES["file"]) && !empty($_FILES['file']['name'])) {
                 $fileInfo = pathinfo($_FILES["file"]["name"]);
                 $img_name = $id . '.' . $fileInfo['extension'];
                 move_uploaded_file($_FILES["file"]["tmp_name"], "./uploads/school_content/admin_small_logo/" . $img_name);
             }
-            $data_record = array('id' => $id, 'admin_small_logo' => $img_name);
+
+            $data_record = array(
+                'id' => $id,
+                'admin_small_logo' => $img_name,
+                'entreprise_id' => $entreprise_id
+            );
+
             $this->setting_model->add($data_record);
             $array = array('success' => true, 'error' => '', 'message' => $this->lang->line('success_message'));
             echo json_encode($array);
@@ -103,9 +186,9 @@ class Schsettings extends Admin_Controller
 
     public function ajax_editadmin_adminlogo()
     {
-
         $this->form_validation->set_rules('id', $this->lang->line('id'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('file', $this->lang->line('image'), 'callback_handle_upload');
+
         if ($this->form_validation->run() == false) {
             $data = array(
                 'file' => form_error('file'),
@@ -114,13 +197,20 @@ class Schsettings extends Admin_Controller
             echo json_encode($array);
         } else {
             $id = $this->input->post('id');
+            $entreprise_id = $this->get_entreprise_id();
 
             if (isset($_FILES["file"]) && !empty($_FILES['file']['name'])) {
                 $fileInfo = pathinfo($_FILES["file"]["name"]);
                 $img_name = $id . '.' . $fileInfo['extension'];
                 move_uploaded_file($_FILES["file"]["tmp_name"], "./uploads/school_content/admin_logo/" . $img_name);
             }
-            $data_record = array('id' => $id, 'admin_logo' => $img_name);
+
+            $data_record = array(
+                'id' => $id,
+                'admin_logo' => $img_name,
+                'entreprise_id' => $entreprise_id
+            );
+
             $this->setting_model->add($data_record);
             $array = array('success' => true, 'error' => '', 'message' => $this->lang->line('success_message'));
             echo json_encode($array);
@@ -133,7 +223,10 @@ class Schsettings extends Admin_Controller
         $setting_result      = $this->setting_model->get();
         $data['settinglist'] = $setting_result;
         $data['id']          = $id;
+        $entreprise_id = $this->get_entreprise_id();
+
         $this->form_validation->set_rules('file', $this->lang->line('image'), 'callback_handle_upload');
+
         if ($this->form_validation->run() == false) {
             $this->load->view('layout/header', $data);
             $this->load->view('setting/editLogo', $data);
@@ -144,7 +237,13 @@ class Schsettings extends Admin_Controller
                 $img_name = $id . '.' . $fileInfo['extension'];
                 move_uploaded_file($_FILES["file"]["tmp_name"], "./uploads/school_content/logo/" . $img_name);
             }
-            $data_record = array('id' => $id, 'image' => $img_name);
+
+            $data_record = array(
+                'id' => $id,
+                'image' => $img_name,
+                'entreprise_id' => $entreprise_id
+            );
+
             $this->setting_model->add($data_record);
             $this->session->set_flashdata('msg', '<div class="alert alert-left">' . $this->lang->line('update_message') . '</div>');
             redirect('schsettings/index');
@@ -193,48 +292,48 @@ class Schsettings extends Admin_Controller
 
     public function getSchsetting()
     {
-
         $data = $this->setting_model->getSetting();
         echo json_encode($data);
     }
 
     public function ajax_schedit()
     {
-
         if (!$this->rbac->hasPrivilege('general_setting', 'can_edit')) {
             access_denied();
         }
+
+        // ==================== RÉCUPÉRATION DE L'ENTREPRISE_ID ====================
+        $entreprise_id = $this->get_entreprise_id();
+
         $auto_staff_id = false;
         $this->form_validation->set_rules('sch_session_id', $this->lang->line('session'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('fee_due_days', $this->lang->line('fees_due_days'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_name', $this->lang->line('school_name'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_phone', $this->lang->line('phone'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_start_month', $this->lang->line('start_month'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_address', $this->lang->line('address'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_email', $this->lang->line('email'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_lang_id', $this->lang->line('language'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_currency_symbol', $this->lang->line('currency_symbol'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_timezone', $this->lang->line('timezone'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_currency', $this->lang->line('currency'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('currency_place', $this->lang->line('currency_place'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_date_format', $this->lang->line('date_format'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_is_rtl', $this->lang->line('rtl'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('theme', $this->lang->line('theme'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('sch_start_week', $this->lang->line('start_day_of_week'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('attendence_type', $this->lang->line('attendance') . " " . $this->lang->line('type'), 'trim|required|xss_clean');
-
+        $this->form_validation->set_rules('sch_name', $this->lang->line('school_name'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_phone', $this->lang->line('phone'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_start_month', $this->lang->line('start_month'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_address', $this->lang->line('address'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_email', $this->lang->line('email'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_lang_id', $this->lang->line('language'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_currency_symbol', $this->lang->line('currency_symbol'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_currency', $this->lang->line('currency'), 'trim|xss_clean');
+        $this->form_validation->set_rules('currency_place', $this->lang->line('currency_place'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_date_format', $this->lang->line('date_format'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_is_rtl', $this->lang->line('rtl'), 'trim|xss_clean');
+        $this->form_validation->set_rules('theme', $this->lang->line('theme'), 'trim|xss_clean');
+        $this->form_validation->set_rules('sch_start_week', $this->lang->line('start_day_of_week'), 'trim|xss_clean');
+        $this->form_validation->set_rules('attendence_type', $this->lang->line('attendance') . " " . $this->lang->line('type'), 'trim|xss_clean');
         $this->form_validation->set_rules('is_duplicate_fees_invoice', $this->lang->line('duplicate') . " " . $this->lang->line('fees') . " " . $this->lang->line('invoice'), 'trim|required|xss_clean');
 
         if ($this->input->post('adm_auto_insert')) {
-            $this->form_validation->set_rules('adm_prefix', $this->lang->line('admission_no_prefix'), 'trim|required|xss_clean');
-            $this->form_validation->set_rules('adm_start_from', $this->lang->line('admission_start_from'), 'trim|integer|required|xss_clean');
-            $this->form_validation->set_rules('adm_no_digit', $this->lang->line('admission_no_digit'), 'trim|integer|required|xss_clean|callback_check_admission_digit');
+            $this->form_validation->set_rules('adm_prefix', $this->lang->line('admission_no_prefix'), 'trim|xss_clean');
+            $this->form_validation->set_rules('adm_start_from', $this->lang->line('admission_start_from'), 'trim|integer|xss_clean');
+            $this->form_validation->set_rules('adm_no_digit', $this->lang->line('admission_no_digit'), 'trim|integer|xss_clean|callback_check_admission_digit');
         }
-        if ($this->input->post('staffid_auto_insert')) {
 
-            $this->form_validation->set_rules('staffid_prefix', $this->lang->line('staff_id_prefix'), 'trim|required|xss_clean');
-            $this->form_validation->set_rules('staffid_start_from', $this->lang->line('staff_id_start_from'), 'trim|integer|required|xss_clean');
-            $this->form_validation->set_rules('staffid_no_digit', $this->lang->line('staff_id_digit'), 'trim|integer|required|xss_clean|callback_check_staff_id_digit');
+        if ($this->input->post('staffid_auto_insert')) {
+            $this->form_validation->set_rules('staffid_prefix', $this->lang->line('staff_id_prefix'), 'trim|xss_clean');
+            $this->form_validation->set_rules('staffid_start_from', $this->lang->line('staff_id_start_from'), 'trim|integer|xss_clean');
+            $this->form_validation->set_rules('staffid_no_digit', $this->lang->line('staff_id_digit'), 'trim|integer|xss_clean|callback_check_staff_id_digit');
         }
 
         if ($this->form_validation->run() == false) {
@@ -243,16 +342,25 @@ class Schsettings extends Admin_Controller
                 'sch_session_id'            => form_error('sch_session_id'),
                 'sch_name'                  => form_error('sch_name'),
                 'sch_phone'                 => form_error('sch_phone'),
-                'bank'                 => form_error('bank'),
-                'compt_bank'                 => form_error('compt_bank'),
-                'rccm'                 => form_error('rccm'),
+                'bank'                      => form_error('bank'),
+                'registre_commerce'         => form_error('registre_commerce'),
+                'compte_contribuable'       => form_error('compte_contribuable'),
+                'forme_jurique'             => form_error('forme_jurique'),
+                'cnps_number'               => form_error('cnps_number'),
+                'boite_postal'              => form_error('boite_postal'),
+                'compt_bank'                => form_error('compt_bank'),
+                'centre_impot'              => form_error('centre_impot'),
+                'regime_imposition'         => form_error('regime_imposition'),
+                'rccm'                      => form_error('rccm'),
+                'site_web'                  => form_error('site_web'),
+                'company_activity'          => form_error('company_activity'),
+                'company_supplier'          => form_error('company_supplier'),
                 'sch_start_month'           => form_error('sch_start_month'),
                 'sch_start_week'            => form_error('sch_start_week'),
                 'sch_address'               => form_error('sch_address'),
                 'sch_email'                 => form_error('sch_email'),
                 'sch_lang_id'               => form_error('sch_lang_id'),
                 'sch_currency_symbol'       => form_error('sch_currency_symbol'),
-                'sch_timezone'              => form_error('sch_timezone'),
                 'sch_currency'              => form_error('sch_currency'),
                 'currency_place'            => form_error('currency_place'),
                 'sch_date_format'           => form_error('sch_date_format'),
@@ -266,7 +374,6 @@ class Schsettings extends Admin_Controller
                 'staffid_start_from'        => form_error('staffid_start_from'),
                 'staffid_prefix'            => form_error('staffid_prefix'),
                 'staffid_no_digit'          => form_error('staffid_no_digit'),
-
                 'is_duplicate_fees_invoice' => form_error('is_duplicate_fees_invoice'),
                 'attendence_type'           => form_error('attendence_type'),
                 'fee_due_days'              => form_error('fee_due_days'),
@@ -276,16 +383,44 @@ class Schsettings extends Admin_Controller
         } else {
             $setting_result = $this->setting_model->getSetting();
 
+            if (empty($setting_result) || empty($setting_result->id)) {
+                $array = array('status' => 'fail', 'error' => array(), 'message' => "Aucun parametre trouve pour cette entreprise.");
+                echo json_encode($array);
+                return;
+            }
+
+            $safe_setting_id = (int) $setting_result->id;
+
+            if ($entreprise_id > 0) {
+                $tenant_setting_id = $this->setting_model->getSettingIdByEntreprise($entreprise_id);
+                if (!empty($tenant_setting_id)) {
+                    $safe_setting_id = (int) $tenant_setting_id;
+                }
+            }
+
+            // ==================== PRÉPARATION DES DONNÉES AVEC ENTREPRISE_ID ====================
             $data = array(
-                'id'                        => $this->input->post('sch_id'),
+                'id'                        => $safe_setting_id,
                 'attendence_type'           => $this->input->post('attendence_type'),
                 'session_id'                => $this->input->post('sch_session_id'),
                 'name'                      => $this->input->post('sch_name'),
+                'director'                  => $this->input->post('director'),
+                'director_title'            => $this->input->post('director_title'),
                 'phone'                     => $this->input->post('sch_phone'),
                 'dise_code'                 => $this->input->post('sch_dise_code'),
-                'rccm'                 => $this->input->post('rccm'),
-                'bank'                 => $this->input->post('bank'),
-                'compt_bank'                 => $this->input->post('compt_bank'),
+                'rccm'                      => $this->input->post('rccm'),
+                'site_web'                  => $this->input->post('site_web'),
+                'company_activity'          => $this->input->post('company_activity'),
+                'company_supplier'          => $this->input->post('company_supplier'),
+                'bank'                      => $this->input->post('bank'),
+                'registre_commerce'         => $this->input->post('registre_commerce'),
+                'compte_contribuable'       => $this->input->post('compte_contribuable'),
+                'forme_jurique'             => $this->input->post('forme_jurique'),
+                'cnps_number'               => $this->input->post('cnps_number'),
+                'boite_postal'              => $this->input->post('boite_postal'),
+                'compt_bank'                => $this->input->post('compt_bank'),
+                'regime_imposition'         => $this->input->post('regime_imposition'),
+                'centre_impot'              => $this->input->post('centre_impot'),
                 'start_month'               => $this->input->post('sch_start_month'),
                 'start_week'                => $this->input->post('sch_start_week'),
                 'address'                   => $this->input->post('sch_address'),
@@ -315,7 +450,228 @@ class Schsettings extends Admin_Controller
                 'app_secondary_color_code'  => $this->input->post('app_secondary_color_code'),
                 'mobile_api_url'            => $this->input->post('mobile_api_url'),
                 'my_question'               => $this->input->post('my_question'),
+                'ai_enabled'                => $this->input->post('ai_enabled'),
+                'ai_api_key'                => $this->input->post('ai_api_key'),
+                'ai_model'                  => $this->input->post('ai_model'),
+                'ai_api_url'                => $this->input->post('ai_api_url'),
+                'ai_system_prompt'          => $this->input->post('ai_system_prompt'),
+                                // ===== Ajout : paramètres de sauvegarde automatique =====
+                                'auto_backup'               => $this->input->post('auto_backup') ? 1 : 0,
+                                'backup_time'               => $this->input->post('backup_time'),
+                                'backup_frequency'          => $this->input->post('backup_frequency'), // e.g. 'daily' or 'weekly'
+                                'backup_weekday'            => $this->input->post('backup_weekday'),
+                                'entreprise_id'             => $entreprise_id
+                            );
 
+            // ==================== MISE À JOUR DE LA SESSION ====================
+            $this->session->userdata['admin']['is_rtl'] = $this->input->post('sch_is_rtl');
+            $language_result = $this->language_model->get($this->input->post('sch_lang_id'));
+
+            if ($this->customlib->get_rtl_languages($language_result['short_code'])) {
+                $this->session->userdata['admin']['is_rtl'] = 'enabled';
+                $data['is_rtl'] = 'enabled';
+            }
+
+            $session_result = $this->session_model->get($this->input->post('sch_session_id'));
+
+            $session = array(
+                'session_id' => $session_result['id'],
+                'session'    => $session_result['session'],
+            );
+            $this->session->set_userdata('session_array', $session);
+
+            // ==================== GESTION DES NUMÉROS AUTOMATIQUES ====================
+            $data['adm_update_status'] = 1;
+            $data['staffid_update_status'] = 1;
+
+            if ($this->input->post('adm_auto_insert')) {
+                if ($setting_result->adm_prefix != $this->input->post('adm_prefix') ||
+                    $setting_result->adm_start_from != $this->input->post('adm_start_from') ||
+                    $setting_result->adm_no_digit != $this->input->post('adm_no_digit')
+                ) {
+                    $data['adm_update_status'] = 0;
+                }
+            }
+
+            if ($this->input->post('staffid_auto_insert')) {
+                if ($setting_result->staffid_prefix != $this->input->post('staffid_prefix') ||
+                    $setting_result->staffid_start_from != $this->input->post('staffid_start_from') ||
+                    $setting_result->staffid_no_digit != $this->input->post('staffid_no_digit')
+                ) {
+                    $data['staffid_update_status'] = 0;
+                }
+            }
+
+            // ==================== SAUVEGARDE ====================
+            $this->setting_model->add($data);
+            $this->load->helper('lang');
+
+            // ==================== MISE À JOUR DE LA SESSION UTILISATEUR ====================
+            $this->session->userdata['admin']['date_format']     = $this->input->post('sch_date_format');
+            $this->session->userdata['admin']['currency_symbol'] = $this->input->post('sch_currency_symbol');
+            $this->session->userdata['admin']['start_week']      = date("w", strtotime($this->input->post('sch_start_week')));
+            $this->session->userdata['admin']['timezone']        = $this->input->post('sch_timezone');
+            $this->session->userdata['admin']['theme']           = $this->input->post('theme');
+            $this->session->userdata['admin']['currency_place']  = $this->input->post('currency_place');
+
+            $session = $this->session->userdata('admin');
+            $staff_id = $session['id'];
+            $defoultlang = $this->setting_model->get_stafflang($staff_id);
+
+            if ($defoultlang['lang_id'] != 0) {
+                set_language($defoultlang['lang_id']);
+            } else {
+                set_language($this->input->post('sch_lang_id'));
+            }
+
+            $array = array('status' => 'success', 'error' => '', 'message' => $this->lang->line('success_message'));
+            echo json_encode($array);
+        }
+    }
+
+    // ==================== VERSION ANCIENNE (CONSERVÉE POUR COMPATIBILITÉ) ====================
+    public function ajax_schedit_17()
+    {
+        if (!$this->rbac->hasPrivilege('general_setting', 'can_edit')) {
+            access_denied();
+        }
+
+        $auto_staff_id = false;
+        $this->form_validation->set_rules('sch_session_id', $this->lang->line('session'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('fee_due_days', $this->lang->line('fees_due_days'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_name', $this->lang->line('school_name'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_phone', $this->lang->line('phone'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_start_month', $this->lang->line('start_month'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_address', $this->lang->line('address'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_email', $this->lang->line('email'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_lang_id', $this->lang->line('language'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_currency_symbol', $this->lang->line('currency_symbol'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_currency', $this->lang->line('currency'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('currency_place', $this->lang->line('currency_place'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_date_format', $this->lang->line('date_format'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_is_rtl', $this->lang->line('rtl'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('theme', $this->lang->line('theme'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('sch_start_week', $this->lang->line('start_day_of_week'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('attendence_type', $this->lang->line('attendance') . " " . $this->lang->line('type'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('is_duplicate_fees_invoice', $this->lang->line('duplicate') . " " . $this->lang->line('fees') . " " . $this->lang->line('invoice'), 'trim|required|xss_clean');
+
+        if ($this->input->post('adm_auto_insert')) {
+            $this->form_validation->set_rules('adm_prefix', $this->lang->line('admission_no_prefix'), 'trim|required|xss_clean');
+            $this->form_validation->set_rules('adm_start_from', $this->lang->line('admission_start_from'), 'trim|integer|required|xss_clean');
+            $this->form_validation->set_rules('adm_no_digit', $this->lang->line('admission_no_digit'), 'trim|integer|required|xss_clean|callback_check_admission_digit');
+        }
+        if ($this->input->post('staffid_auto_insert')) {
+            $this->form_validation->set_rules('staffid_prefix', $this->lang->line('staff_id_prefix'), 'trim|required|xss_clean');
+            $this->form_validation->set_rules('staffid_start_from', $this->lang->line('staff_id_start_from'), 'trim|integer|required|xss_clean');
+            $this->form_validation->set_rules('staffid_no_digit', $this->lang->line('staff_id_digit'), 'trim|integer|required|xss_clean|callback_check_staff_id_digit');
+        }
+
+        if ($this->form_validation->run() == false) {
+            $data = array(
+                'is_student_house'          => form_error('is_student_house'),
+                'sch_session_id'            => form_error('sch_session_id'),
+                'sch_name'                  => form_error('sch_name'),
+                'sch_phone'                 => form_error('sch_phone'),
+                'bank'                 => form_error('bank'),
+                'registre_commerce'                 => form_error('registre_commerce'),
+                'compte_contribuable'                 => form_error('compte_contribuable'),
+                'forme_jurique'                 => form_error('forme_jurique'),
+                'cnps_number'                 => form_error('cnps_number'),
+                'boite_postal'                 => form_error('boite_postal'),
+                'compt_bank'                 => form_error('compt_bank'),
+                'centre_impot'                 => form_error('centre_impot'),
+                'regime_imposition'                 => form_error('regime_imposition'),
+                'rccm'                 => form_error('rccm'),
+                'site_web'                 => form_error('site_web'),
+                'company_activity'                 => form_error('company_activity'),
+                'company_supplier'                 => form_error('company_supplier'),
+                'sch_start_month'           => form_error('sch_start_month'),
+                'sch_start_week'            => form_error('sch_start_week'),
+                'sch_address'               => form_error('sch_address'),
+                'sch_email'                 => form_error('sch_email'),
+                'sch_lang_id'               => form_error('sch_lang_id'),
+                'sch_currency_symbol'       => form_error('sch_currency_symbol'),
+                'sch_currency'              => form_error('sch_currency'),
+                'currency_place'            => form_error('currency_place'),
+                'sch_date_format'           => form_error('sch_date_format'),
+                'sch_is_rtl'                => form_error('sch_is_rtl'),
+                'theme'                     => form_error('theme'),
+                'adm_start_from'            => form_error('adm_start_from'),
+                'biometric_device'          => form_error('biometric_device'),
+                'biometric'                 => form_error('biometric'),
+                'adm_prefix'                => form_error('adm_prefix'),
+                'adm_no_digit'              => form_error('adm_no_digit'),
+                'staffid_start_from'        => form_error('staffid_start_from'),
+                'staffid_prefix'            => form_error('staffid_prefix'),
+                'staffid_no_digit'          => form_error('staffid_no_digit'),
+                'is_duplicate_fees_invoice' => form_error('is_duplicate_fees_invoice'),
+                'attendence_type'           => form_error('attendence_type'),
+                'fee_due_days'              => form_error('fee_due_days'),
+            );
+            $array = array('status' => 'fail', 'error' => $data);
+            echo json_encode($array);
+        } else {
+            $setting_result = $this->setting_model->getSetting();
+
+            $data = array(
+                'id'                        => $this->input->post('sch_id'),
+                'attendence_type'           => $this->input->post('attendence_type'),
+                'session_id'                => $this->input->post('sch_session_id'),
+                'name'                      => $this->input->post('sch_name'),
+                'director'                      => $this->input->post('director'),
+                'director_title'                      => $this->input->post('director_title'),
+                'phone'                     => $this->input->post('sch_phone'),
+                'dise_code'                 => $this->input->post('sch_dise_code'),
+                'rccm'                 => $this->input->post('rccm'),
+                'site_web'                 => $this->input->post('site_web'),
+                'company_activity'                 => $this->input->post('company_activity'),
+                'company_supplier'                 => $this->input->post('company_supplier'),
+                'bank'                 => $this->input->post('bank'),
+                'registre_commerce'                 => $this->input->post('registre_commerce'),
+                'compte_contribuable'                 => $this->input->post('compte_contribuable'),
+                'forme_jurique'                 => $this->input->post('forme_jurique'),
+                'cnps_number'                 => $this->input->post('cnps_number'),
+                'boite_postal'                 => $this->input->post('boite_postal'),
+                'compt_bank'                 => $this->input->post('compt_bank'),
+                'regime_imposition'                 => $this->input->post('regime_imposition'),
+                'centre_impot'                 => $this->input->post('centre_impot'),
+                'start_month'               => $this->input->post('sch_start_month'),
+                'start_week'                => $this->input->post('sch_start_week'),
+                'address'                   => $this->input->post('sch_address'),
+                'email'                     => $this->input->post('sch_email'),
+                'lang_id'                   => $this->input->post('sch_lang_id'),
+                'timezone'                  => $this->input->post('sch_timezone'),
+                'date_format'               => $this->input->post('sch_date_format'),
+                'is_rtl'                    => $this->input->post('sch_is_rtl'),
+                'currency'                  => $this->input->post('sch_currency'),
+                'currency_symbol'           => $this->input->post('sch_currency_symbol'),
+                'currency_place'            => $this->input->post('currency_place'),
+                'fee_due_days'              => $this->input->post('fee_due_days'),
+                'theme'                     => $this->input->post('theme'),
+                'adm_start_from'            => $this->input->post('adm_start_from'),
+                'adm_prefix'                => $this->input->post('adm_prefix'),
+                'adm_no_digit'              => $this->input->post('adm_no_digit'),
+                'adm_auto_insert'           => $this->input->post('adm_auto_insert'),
+                'staffid_start_from'        => $this->input->post('staffid_start_from'),
+                'staffid_prefix'            => $this->input->post('staffid_prefix'),
+                'staffid_no_digit'          => $this->input->post('staffid_no_digit'),
+                'staffid_auto_insert'       => $this->input->post('staffid_auto_insert'),
+                'class_teacher'             => $this->input->post('class_teacher'),
+                'biometric_device'          => $this->input->post('biometric_device'),
+                'biometric'                 => $this->input->post('biometric'),
+                'is_duplicate_fees_invoice' => $this->input->post('is_duplicate_fees_invoice'),
+                'app_primary_color_code'    => $this->input->post('app_primary_color_code'),
+                'app_secondary_color_code'  => $this->input->post('app_secondary_color_code'),
+                'mobile_api_url'            => $this->input->post('mobile_api_url'),
+                'my_question'               => $this->input->post('my_question'),
+                'reminder_enabled'          => $this->input->post('reminder_enabled') ? 1 : 0,
+                'reminder_before_days'      => $this->input->post('reminder_before_days'),
+                'reminder_on_due_date'      => $this->input->post('reminder_on_due_date') ? 1 : 0,
+                'reminder_after_days_1'     => $this->input->post('reminder_after_days_1'),
+                'reminder_after_days_2'     => $this->input->post('reminder_after_days_2'),
+                'reminder_after_days_3'     => $this->input->post('reminder_after_days_3'),
+                'reminder_sender_email'     => $this->input->post('reminder_sender_email'),
+                'reminder_sender_name'     => $this->input->post('reminder_sender_name'),
             );
             $this->session->userdata['admin']['is_rtl'] = $this->input->post('sch_is_rtl');
             $language_result                            = $this->language_model->get($this->input->post('sch_lang_id'));
@@ -352,7 +708,6 @@ class Schsettings extends Admin_Controller
                 }
             }
 
-            $data['adm_update_status'];
             $this->setting_model->add($data);
             $this->load->helper('lang');
             $this->session->userdata['admin']['date_format']     = $this->input->post('sch_date_format');
@@ -366,7 +721,6 @@ class Schsettings extends Admin_Controller
             $defoultlang                                         = $this->setting_model->get_stafflang($staff_id);
 
             if ($defoultlang['lang_id'] != 0) {
-
                 set_language($defoultlang['lang_id']);
             } else {
                 set_language($this->input->post('sch_lang_id'));
@@ -389,8 +743,8 @@ class Schsettings extends Admin_Controller
             $array = array('success' => false, 'error' => $data);
             echo json_encode($array);
         } else {
-
             $id = $this->input->post('id');
+            $entreprise_id = $this->get_entreprise_id();
 
             if (isset($_FILES["file"]) && !empty($_FILES['file']['name'])) {
                 $fileInfo = pathinfo($_FILES["file"]["name"]);
@@ -398,7 +752,11 @@ class Schsettings extends Admin_Controller
                 move_uploaded_file($_FILES["file"]["tmp_name"], "./uploads/school_content/logo/app_logo/" . $img_name);
             }
 
-            $data_record = array('id' => $id, 'app_logo' => $img_name);
+            $data_record = array(
+                'id' => $id,
+                'app_logo' => $img_name,
+                'entreprise_id' => $entreprise_id
+            );
 
             $this->setting_model->add($data_record);
             $array = array('success' => true, 'error' => '', 'message' => 'Record Updated Successfully');
@@ -411,9 +769,7 @@ class Schsettings extends Admin_Controller
         $adm_start_from = $this->input->post('adm_start_from');
         $adm_no_digit   = $this->input->post('adm_no_digit');
         if ($adm_no_digit != "") {
-
             if (strlen($adm_start_from) == $adm_no_digit) {
-
                 return true;
             }
             $this->form_validation->set_message('check_admission_digit', 'Admission no must be ' . $adm_no_digit . ' digit long');
@@ -427,9 +783,7 @@ class Schsettings extends Admin_Controller
         $adm_start_from   = $this->input->post('staffid_start_from');
         $staffid_no_digit = $this->input->post('staffid_no_digit');
         if ($staffid_no_digit != "") {
-
             if (strlen($adm_start_from) == $staffid_no_digit) {
-
                 return true;
             }
             $this->form_validation->set_message('check_staff_id_digit', $this->lang->line('staff_id_start_from_must_be') . ' ' . strlen($adm_start_from) . ' ' . $this->lang->line('digit_long'));
