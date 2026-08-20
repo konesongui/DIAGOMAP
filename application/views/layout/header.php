@@ -1905,6 +1905,13 @@ if (!$this->config->item('SSLK') == "") {
 
                 $('.notification-category-panel').removeClass('active');
                 $('#' + category + 'CategoryPanel').addClass('active');
+
+                // Forcer le dropdown à rester ouvert — Bootstrap peut parfois le fermer
+                var $dropdownLi = $('#globalNotificationToggle').closest('.dropdown');
+                if ($dropdownLi.length) {
+                    $dropdownLi.addClass('open');
+                    $('#globalNotificationToggle').attr('aria-expanded', 'true');
+                }
             });
 
             // ===== GESTION DES ONGLETS POUR LES ADMISSIONS =====
@@ -1915,6 +1922,13 @@ if (!$this->config->item('SSLK') == "") {
 
                 $('#enquiryCategoryPanel .tab-btn:not([data-tab^="leave-"])').removeClass('active');
                 $(this).addClass('active');
+
+                // Ensure dropdown stays open after switching tabs
+                var $dropdownLi2 = $('#globalNotificationToggle').closest('.dropdown');
+                if ($dropdownLi2.length) {
+                    $dropdownLi2.addClass('open');
+                    $('#globalNotificationToggle').attr('aria-expanded', 'true');
+                }
 
                 $('#enquiryCategoryPanel .tab-content:not([id^="tabLeave"])').removeClass('active');
                 $('#tab' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Content').addClass('active');
