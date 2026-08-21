@@ -1,0 +1,129 @@
+GUIDE DE DÉMARRAGE RAPIDE - Système de Présence QR Code
+======================================================
+
+🚀 INSTALLATION EN 3 ÉTAPES
+
+1. Créer la base de données
+   └─ Ouvrez : http://localhost/diagoma/install_qrcode.php
+   └─ Cliquez sur "Installer"
+   └─ Vérifiez le message "Installation réussie"
+
+2. Ajouter les routes
+   └─ Ouvrez : application/config/routes.php
+   └─ Ajoutez à la fin du fichier :
+   
+       $route['admin/qrattendance/display'] = 'admin/Qrattendance/display_qr';
+       $route['admin/qrattendance/scan'] = 'admin/Qrattendance/scan_page';
+       $route['admin/qrattendance/process'] = 'admin/Qrattendance/process_scan';
+       $route['admin/qrattendance/today'] = 'admin/Qrattendance/today_attendance';
+       $route['admin/qrattendance/report'] = 'admin/Qrattendance/attendance_report';
+
+3. Supprimez le fichier d'installation
+   └─ Supprimez : install_qrcode.php (pour des raisons de sécurité)
+
+✅ C'est terminé ! Le système est prêt à l'emploi.
+
+---
+
+📱 UTILISATION
+
+POUR L'ADMIN :
+  ✓ Afficher le QR code : http://localhost/diagoma/admin/qrattendance/display_qr
+    → Afficher sur un écran dans l'entrée de l'entreprise
+  
+  ✓ Voir les présences : http://localhost/diagoma/admin/qrattendance/today_attendance
+    → Tableau temps réel des arrivées/départs
+  
+  ✓ Rapport détaillé : http://localhost/diagoma/admin/qrattendance/attendance_report
+    → Filtrer par date et employé
+    → Exporter en CSV
+
+POUR LES EMPLOYÉS :
+  ✓ Scanner le QR code avec leur téléphone
+  ✓ Entrer : Numéro d'employé + Mot de passe
+  ✓ Première entrée = Arrivée ✓
+  ✓ Deuxième entrée = Départ ✓
+  ✓ L'heure est automatiquement enregistrée
+
+---
+
+🔐 SÉCURITÉ
+
+✓ Authentification par identifiants (Employé + Mot de passe)
+✓ Token sécurisé pour chaque QR
+✓ Une seule arrivée/départ par jour
+✓ Support bcrypt et MD5
+✓ Timestamps précis
+
+---
+
+📊 DONNÉES ENREGISTRÉES
+
+Pour chaque présence :
+  • staff_id : ID de l'employé
+  • attendance_date : Date
+  • arrival_time : Heure d'arrivée (HH:MM:SS)
+  • departure_time : Heure de départ (HH:MM:SS)
+  • scan_date : Timestamp complet
+  • status : État (arrival/departure/complete)
+
+---
+
+🎨 COULEURS
+
+  Bleu : #28669e
+  Jaune : #fec32e
+
+Modifiez dans les fichiers de vues si vous le souhaitez.
+
+---
+
+📁 FICHIERS CRÉÉS
+
+Controller :
+  └─ application/controllers/admin/Qrattendance.php
+
+Vues :
+  ├─ application/views/admin/qrattendance/display_qr.php
+  ├─ application/views/admin/qrattendance/scan_page.php
+  ├─ application/views/admin/qrattendance/today_attendance.php
+  └─ application/views/admin/qrattendance/attendance_report.php
+
+Base de données :
+  └─ Table : staff_attendance_qr
+
+Documentation :
+  ├─ QRCODE_ATTENDANCE_GUIDE.md (complet)
+  └─ install_qrcode.php (script d'installation)
+
+---
+
+❓ FAQ
+
+Q: Le QR code ne scanne pas ?
+R: Vérifiez que la URL est accessible depuis le mobile. 
+   Utilisez http://localhost/diagoma/admin/qrattendance/scan_page?token=...
+
+Q: Erreur "Employé non trouvé" ?
+R: Vérifiez que l'employé existe dans la table staff avec un employee_id
+
+Q: Mot de passe incorrect ?
+R: Assurez-vous que le champ password existe et que l'employé a la bonne valeur
+
+Q: Aucune présence enregistrée ?
+R: Vérifiez que la table staff_attendance_qr a été créée avec install_qrcode.php
+
+---
+
+🎯 PROCHAINES ÉTAPES
+
+Optionnel - Améliorer le système :
+  □ Ajouter une notification email après chaque présence
+  □ Ajouter la géolocalisation GPS
+  □ Ajouter une capture de photo (biométrie)
+  □ Synchroniser avec la paie automatiquement
+  □ Créer un dashboard analytics
+
+---
+
+Pour plus de détails, consultez : QRCODE_ATTENDANCE_GUIDE.md
