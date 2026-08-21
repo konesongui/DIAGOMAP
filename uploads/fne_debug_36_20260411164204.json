@@ -1,0 +1,52 @@
+{
+    "invoiceType": "sale",
+    "paymentMethod": "cash",
+    "template": "B2C",
+    "isRne": false,
+    "clientNcc": "",
+    "clientCompanyName": "NEXANS",
+    "clientPhone": "2250151390201",
+    "clientEmail": "songuikone207@gmail.com",
+    "pointOfSale": "DIAGOMA",
+    "establishment": "INTENDANT",
+    "commercialMessage": "Merci pour votre confiance",
+    "footer": "Service client: cm@cmeexpertises.com",
+    "foreignCurrency": "",
+    "foreignCurrencyRate": 0,
+    "items": [
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00721",
+            "description": "Piles Energizer ( 6 paquets AAA4 et 5 Paquet AA4 )",
+            "quantity": 11,
+            "amount": 4500,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00722",
+            "description": "Clés USB 2Go",
+            "quantity": 10,
+            "amount": 4500,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00724",
+            "description": "Support plateau modem",
+            "quantity": 3,
+            "amount": 20000,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        }
+    ],
+    "discount": 0
+}

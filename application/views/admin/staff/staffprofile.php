@@ -3,70 +3,222 @@
 $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 ?>
 <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    .staffprofile-modern,
+    .staffprofile-modern .content,
+    .staffprofile-modern .content-wrapper {
+        font-family: 'Manrope', sans-serif;
+    }
+
+    .staffprofile-modern {
+        background: radial-gradient(1200px 500px at 8% -10%, #e8f2fc 0%, #f5f8fb 50%, #f4f6f8 100%);
+    }
+
+    .staffprofile-modern .content-header {
+        margin-bottom: 14px;
+    }
+
+    .staffprofile-modern .content-header h1 {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        background: linear-gradient(130deg, #1b4f80 0%, #2d6ea8 100%);
+        color: #fff;
+        font-size: 22px;
+        font-weight: 800;
+        box-shadow: 0 14px 30px rgba(27, 79, 128, 0.25);
+    }
+
+    .staffprofile-modern .studentsidetopfixed {
+        background: #fff;
+        border: 1px solid #dce7f3;
+        border-radius: 14px;
+        box-shadow: 0 10px 24px rgba(20, 49, 77, 0.12);
+    }
+
+    .staffprofile-modern .classtap {
+        background: linear-gradient(125deg, #163a5d 0%, #1b4f80 100%);
+        color: #fff;
+        border-radius: 14px 14px 0 0;
+        margin: 0;
+        padding: 12px 14px;
+        font-weight: 700;
+        letter-spacing: .3px;
+    }
+
+    .staffprofile-modern .studenttaps {
+        border-bottom: 1px solid #e3edf7;
+        background: #f7fafd;
+        padding: 6px;
+    }
+
+    .staffprofile-modern .studenttaps > li > a {
+        border-radius: 10px;
+        color: #2f4e6b;
+        font-weight: 600;
+        padding: 8px 10px;
+    }
+
+    .staffprofile-modern .studenttaps > li.active > a,
+    .staffprofile-modern .studenttaps > li.active > a:focus,
+    .staffprofile-modern .studenttaps > li.active > a:hover {
+        background: #1b4f80;
+        color: #fff;
+    }
+
+    .staffprofile-modern .studentname {
+        border-bottom: 1px solid #edf3f9;
+    }
+
+    .staffprofile-modern .studentname a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        color: #264765;
+        transition: all .2s ease;
+    }
+
+    .staffprofile-modern .studentname a:hover {
+        background: #eff6fc;
+        color: #163a5d;
+    }
+
+    .staffprofile-modern .studentname .icon img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #d4e4f3;
+    }
+
+    .staffprofile-modern .box.box-primary,
+    .staffprofile-modern .nav-tabs-custom {
+        border: 1px solid #dbe8f4;
+        border-radius: 16px;
+        box-shadow: 0 12px 28px rgba(20, 49, 77, 0.11);
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .staffprofile-modern .box-profile {
+        padding: 20px 16px;
+    }
+
+    .staffprofile-modern .profile-user-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 4px solid #dbe8f5;
+        box-shadow: 0 10px 22px rgba(27, 79, 128, 0.2);
+    }
+
+    .staffprofile-modern .profile-username {
+        margin-top: 12px;
+        font-size: 22px;
+        font-weight: 800;
+        color: #183b5e;
+    }
+
+    .staffprofile-modern .list-group-item {
+        border-left: none;
+        border-right: none;
+        border-color: #e9f0f7;
+        padding: 10px 0;
+        font-size: 13px;
+    }
+
+    .staffprofile-modern .list-group-item b {
+        color: #2f4e6b;
+        font-weight: 700;
+    }
+
+    .staffprofile-modern .text-aqua {
+        color: #1f5c92 !important;
+        font-weight: 600;
+    }
+
+    .staffprofile-modern .nav-tabs-custom > .nav-tabs {
+        background: #f6f9fc;
+        border-bottom: 1px solid #dbe7f3;
+        padding: 10px 10px 0;
+    }
+
+    .staffprofile-modern .nav-tabs-custom > .nav-tabs > li {
+        margin-right: 6px;
+    }
+
+    .staffprofile-modern .nav-tabs-custom > .nav-tabs > li > a {
+        border-radius: 10px 10px 0 0;
+        border: 1px solid transparent;
+        color: #32526f;
+        font-weight: 700;
+        padding: 10px 12px;
+    }
+
+    .staffprofile-modern .nav-tabs-custom > .nav-tabs > li.active > a,
+    .staffprofile-modern .nav-tabs-custom > .nav-tabs > li.active > a:hover,
+    .staffprofile-modern .nav-tabs-custom > .nav-tabs > li.active > a:focus {
+        background: linear-gradient(130deg, #1b4f80 0%, #2d6ea8 100%);
+        color: #fff;
+        border-color: #1b4f80;
+    }
+
+    .staffprofile-modern .nav-tabs-custom > .tab-content {
+        padding: 16px;
+    }
+
+    .staffprofile-modern .table > tbody > tr > td,
+    .staffprofile-modern .table > tbody > tr > th {
+        border-top: 1px solid #e7eef6;
+        padding: 11px 10px;
+        vertical-align: middle;
+    }
+
+    .staffprofile-modern .table-hover > tbody > tr:hover {
+        background-color: #f3f8fd;
+    }
+
+    .staffprofile-modern .btn-primary,
+    .staffprofile-modern .btn-info {
+        background: #1b4f80;
+        border-color: #1b4f80;
+    }
+
+    .staffprofile-modern .btn-primary:hover,
+    .staffprofile-modern .btn-info:hover {
+        background: #163f66;
+        border-color: #163f66;
+    }
+
+    @media (max-width: 991px) {
+        .staffprofile-modern .content-header h1 {
+            font-size: 18px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .staffprofile-modern .nav-tabs-custom > .nav-tabs {
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+    }
+
     .checked{
         color:orange;
     }
     .col-align--top{vertical-align: top;}
 </style>
-<style type='text/css'>
-    bod, html {
-        margin: 0;
-        padding: 0;
-    }
-    bod {
-        color: black;
-        display: table;
-        font-family: Georgia, serif;
-        font-size: 24px;
-        text-align: center;
-    }
-    .container {
-        color: black;
-        display: table;
-        font-family: Georgia, serif;
-        font-size: 24px;
-        text-align: center;
-        /*border: 20px solid tan;*/
-        width: 750px;
-        height: 563px;
-        display: table-cell;
-        vertical-align: middle;
-    }
-    .logo {
-        color: tan;
-    }
-
-    .marquee {
-        border: 5px solid black;
-        color: black;
-        font-size: 30px;
-        margin: 20px;
-    }
-    .assignment {
-        margin: 10px;
-        text-align: justify;
-    }
-    .code {
-        margin-left: 400px;
-    }
-    .person {
-        border-bottom: 2px solid black;
-        font-size: 32px;
-        font-style: italic;
-        margin: 20px auto;
-        width: 400px;
-    }
-    .reason {
-        margin: 20px;
-    }
-</style>
-<div class="content-wrapper">
-    <div class="row">  
-        <div class="col-md-12"> 
+<div class="content-wrapper staffprofile-modern">
+    <div class="row">
+        <div class="col-md-12">
             <section class="content-header">
                 <h1><i class="fa fa-sitemap"></i> <?php echo $this->lang->line('human_resource'); ?></h1>
             </section>
-        </div> 
+        </div>
         <div >
             <?php if ($this->rbac->hasPrivilege('can_see_other_users_profile', 'can_view')) { ?>
                 <a id="sidebarCollapse" class="studentsideopen"><i class="fa fa-navicon"></i></a>
@@ -103,7 +255,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                                 <?php
                                 foreach ($stafflist as $skey => $svalue) {
-                                   
+
                                     if ($rolet_value['id'] == $svalue["role_id"]) {
 
                                         if (!empty($svalue["image"])) {
@@ -115,7 +267,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 }else{
 												$image="default_female.jpg";
                                                 }
-                                           
+
                                         }
                                         ?>
                                         <div class="studentname">
@@ -128,14 +280,14 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 }
                                 ?>
                             </div>
-                        <?php } ?>      
+                        <?php } ?>
                     </div>
                 </div>
-            </aside> 
-        </div></div>  
-    <section class="content">
+            </aside>
+        </div></div>
+    <section class="content" style="padding-top: 8px;">
         <div class="row">
-            <div class="col-md-3">                
+            <div class="col-md-3">
                 <div class="box box-primary" <?php
                 if ($staff["is_active"] == 0) {
                     echo "style='background-color:#f0dddd;'";
@@ -143,7 +295,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                 ?>>
                     <div class="box-body box-profile">
                         <?php
-						
+
                         $image = $staff['image'];
                         if (!empty($image)) {
 
@@ -155,13 +307,13 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 								$file = "default_female.jpg";
 							}
 
-                            
+
                         }
                         ?>
                         <img class="profile-user-img img-responsive img-circle" src="<?php echo base_url() . "uploads/staff_images/" . $file ?>" alt="User profile picture">
                         <h3 class="profile-username text-center"><?php echo $staff['name'] . " " . $staff['surname']; ?></h3>
 <?php if($staff['user_type']=='Teacher'){ ?>
-                        
+
                          <?php if ($rate_canview == 1) { ?><center><h3><?php
                                     $stage = (int) ($rate);
                                     $stagehalf = "";
@@ -182,11 +334,11 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                           ?></h3></center>
                             <center><h5><?php echo substr($rate, 0, 3); ?> average based on <?php echo $reviews; ?> reviews.</h5></center> <?php } } ?>
                         <ul class="list-group list-group-unbordered">
-							
+
                             <li class="list-group-item listnoback">
                                 <b><?php echo $this->lang->line('staff_id'); ?></b> <a class="pull-right text-aqua"><?php echo $staff['employee_id']; ?></a>
                             </li>
-						
+
                             <li class="list-group-item listnoback">
                                 <b><?php echo $this->lang->line('role'); ?></b> <a class="pull-right text-aqua"><?php echo $staff['user_type']; ?></a>
                             </li>
@@ -198,6 +350,10 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             <li class="list-group-item listnoback">
                                 <b><?php echo $this->lang->line('department'); ?></b> <a class="pull-right text-aqua"><?php echo $staff['department']; ?></a>
                             </li>
+
+                                <li class="list-group-item listnoback">
+                                    <b>Responsable</b> <a class="pull-right text-aqua"><?php echo $staff['responsable']; ?></a>
+                                </li>
 							<?php } if ($sch_setting->staff_epf_no) {  ?>
                           <!--  <li class="list-group-item listnoback">
                                 <b><?php echo $this->lang->line('epf_no'); ?></b> <a class="pull-right text-aqua"><?php echo $staff['epf_no']; ?></a>
@@ -231,7 +387,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     if (!empty($staff["date_of_joining"]) && $staff["date_of_joining"]!='0000-00-00') {
                                         echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($staff['date_of_joining']));
                                     }
-                                    ?></a> 
+                                    ?></a>
                             </li>
                             <?php } if (($staff["is_active"] == 0)) { ?>
                                 <li class="list-group-item listnoback">
@@ -277,7 +433,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                         <?php if($staff['user_type']==2){ ?>
                        <!-- <li class=""><a href="#reviews" data-toggle="tab" aria-expanded="true"><?php echo 'Reviews'; ?></a></li>-->
                         <?php
-                      
+
                      }
                         $userdata = $this->customlib->getUserData();
                         $logged_in_User = $this->customlib->getLoggedInUserData();
@@ -298,18 +454,18 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                          }else{
                             $a=true;
                          }
-                           
+
                         }
-                    
+
                         ?>
                         <?php
-                        
+
                         if($enable_disable==1){
                         if ($staff["is_active"] == 1) {
                             if ($this->rbac->hasPrivilege('disable_staff', 'can_view')) {
                                  if($logged_in_User_Role->id == 7){
                                 if ($a) {
-                                    ?> 
+                                    ?>
                                     <li class="pull-right"><a  class="text-red" data-toggle="tooltip" data-placement="bottom"  title="<?php echo $this->lang->line('disable'); ?>" onclick="disable_staff('<?php echo $id; ?>');"></i> <i class="fa fa-thumbs-o-down"></i></a></li>
 
 
@@ -317,7 +473,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <?php
                                 }
                             }else{
-                                ?> 
+                                ?>
                                     <li class="pull-right"><a href="<?php echo base_url('admin/staff/disablestaff/' . $id); ?>" class="text-red" data-toggle="tooltip" data-placement="bottom"  title="<?php echo $this->lang->line('disable'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure_disable_record');?>')"></i> <i class="fa fa-thumbs-o-down"></i></a></li>
 
 
@@ -330,10 +486,10 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             if ($a) {
                                 ?>
 
-                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/delete/' . $id); ?>" class="text-red" data-toggle="tooltip" data-placement="bottom"  title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure_delete_record'); ?>');"></i><i class="fa fa-trash"></i></a></li>  
+                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/delete/' . $id); ?>" class="text-red" data-toggle="tooltip" data-placement="bottom"  title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure_delete_record'); ?>');"></i><i class="fa fa-trash"></i></a></li>
 
 
-                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/enablestaff/' . $id); ?>" class="text-green" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('enable'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure').' '.$this->lang->line('you_want_to_enable_this_record'); ?>');"><i class="fa fa-thumbs-o-up"></i></a></li>  
+                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/enablestaff/' . $id); ?>" class="text-green" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('enable'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure').' '.$this->lang->line('you_want_to_enable_this_record'); ?>');"><i class="fa fa-thumbs-o-up"></i></a></li>
 
 
                                 <?php
@@ -342,15 +498,15 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             if($this->rbac->hasPrivilege('staff', 'can_delete')) {
                           ?>
 
-                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/delete/' . $id); ?>" class="text-red" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure_delete_record'); ?>');"></i><i class="fa fa-trash"></i></a></li>  
-                            <?php } 
+                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/delete/' . $id); ?>" class="text-red" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure_delete_record'); ?>');"></i><i class="fa fa-trash"></i></a></li>
+                            <?php }
                             if($this->rbac->hasPrivilege('disable_staff', 'can_view')) {
                             ?>
 
-                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/enablestaff/' . $id); ?>" class="text-green" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('enable'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure').' '.$this->lang->line('you_want_to_enable_this_record'); ?>');"><i class="fa fa-thumbs-o-up"></i></a></li>  
+                                <li class="pull-right"><a href="<?php echo base_url('admin/staff/enablestaff/' . $id); ?>" class="text-green" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('enable'); ?>" onclick="return confirm('<?php echo $this->lang->line('are_you_sure').' '.$this->lang->line('you_want_to_enable_this_record'); ?>');"><i class="fa fa-thumbs-o-up"></i></a></li>
 
 
-                                <?php   
+                                <?php
                             }
                         }
                         }}
@@ -362,7 +518,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                              ?>
                                 <a href="#" class="change_password text-green" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line('change_password'); ?>" ></i> <i class="fa fa-key"></i></a>
 
-                        <?php 
+                        <?php
                         }
                          ?>
 
@@ -378,7 +534,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                                 <li class="pull-right"><a href="<?php echo base_url('admin/staff/edit/' . $id); ?>" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line("edit"); ?>" title="<?php echo $this->lang->line('edit'); ?>" class="text-light" ><i class="fa fa-pencil"></i></a></li>
                                 <?php
-                            } 
+                            }
                             }else{
 
                                 ?>
@@ -386,9 +542,9 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                                 <li class="pull-right"><a href="<?php echo base_url('admin/staff/edit/' . $id); ?>" data-toggle="tooltip" data-placement="bottom" title="<?php echo $this->lang->line("edit"); ?>" title="<?php echo $this->lang->line('edit'); ?>" class="text-light" ><i class="fa fa-pencil"></i></a></li>
                                 <?php
-                           
+
                             }
-                            
+
                         }
                         ?>
 
@@ -399,7 +555,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             <div class="tshadow mb25 bozero">
                                 <div class="table-responsive around10 pt0">
                                     <table class="table table-hover table-striped tmb0">
-                                        <tbody>  
+                                        <tbody>
 											<?php if ($sch_setting->staff_phone) {  ?>
                                             <tr>
                                                 <td><?php echo $this->lang->line('phone'); ?></td>
@@ -442,7 +598,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 <td><?php echo $this->lang->line('mother_name'); ?></td>
                                                 <td><?php echo $staff['mother_name']; ?></td>
                                             </tr>
-											<?php } if ($sch_setting->staff_qualification) {  ?>	
+											<?php } if ($sch_setting->staff_qualification) {  ?>
                                             <tr>
                                                 <td><?php echo $this->lang->line('qualification'); ?></td>
                                                 <td><?php echo $staff['qualification']; ?></td>
@@ -482,7 +638,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                                 echo $display_field;
                                                             }
                                                             ?>
-                                                        </td> 
+                                                        </td>
                                                     </tr>
 
                                                     <?php
@@ -491,11 +647,11 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             ?>
                                         </tbody>
                                     </table>
-                                </div> 
-                            </div> 
-                            <div class="tshadow mb25 bozero">   
+                                </div>
+                            </div>
+                            <div class="tshadow mb25 bozero">
                                 <h3 class="pagetitleh2"><?php echo $this->lang->line('address'); ?> <?php echo $this->lang->line('detail'); ?></h3>
-                                <div class="table-responsive around10 pt0">  
+                                <div class="table-responsive around10 pt0">
                                     <table class="table table-hover table-striped tmb0"><tbody>
 											<?php if ($sch_setting->staff_current_address) {  ?>
                                             <tr>
@@ -511,9 +667,9 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         </tbody>
                                     </table>
                                 </div>
-                            </div> 
-							<?php if ($sch_setting->staff_account_details) {  ?>							
-                            <div class="tshadow mb25 bozero">      
+                            </div>
+							<?php if ($sch_setting->staff_account_details) {  ?>
+                            <div class="tshadow mb25 bozero">
                                 <h3 class="pagetitleh2"><?php echo $this->lang->line('bank_account_details'); ?></h3>
                                 <div class="table-responsive around10 pt10">
                                     <table class="table table-hover table-striped tmb0">
@@ -539,13 +695,13 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             <tr>
                                                 <td><?php echo $this->lang->line('ifsc_code'); ?></td>
                                                 <td><?php echo $staff['ifsc_code']; ?></td>
-                                            </tr> 
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 							<?php } if ($sch_setting->staff_social_media) {  ?>
-                            <div class="tshadow mb25  bozero">    
+                            <div class="tshadow mb25  bozero">
                                 <h3 class="pagetitleh2"><?php echo $this->lang->line('social_media'); ?></h3>
                                 <div class="table-responsive around10 pt0">
                                     <table class="table table-hover table-striped tmb0">
@@ -570,7 +726,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         </tbody>
                                     </table>
                                 </div>
-                            </div> 
+                            </div>
 							<?php } ?>
                         </div>
                         <div class="tab-pane" id="payroll">
@@ -581,12 +737,12 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('net_salary'); ?> <?php echo $this->lang->line('paid'); ?></h5>
                                         <h4><?php
                                             if (!empty($salary["net_salary"])) {
-                                                echo $currency_symbol . number_format($salary["net_salary"],2) ;	
-												
+                                                echo $currency_symbol . number_format($salary["net_salary"],2) ;
+
                                             } else {
                                                 echo $currency_symbol . "0.00";
                                             }
-                                            ?></h4> 
+                                            ?></h4>
                                         <div class="icon mt12font40">
                                             <i class="fa fa-money"></i>
                                         </div>
@@ -600,12 +756,12 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <h4><?php
                                             if (!empty($salary["basic_salary"])) {
                                                 $basic_salary = $salary["basic_salary"] + $salary["earnings"];
-												
+
 												echo $currency_symbol . number_format($basic_salary,2) ;
                                             } else {
                                                 echo $currency_symbol . "0.00";
                                             }
-                                            ?></h4> 
+                                            ?></h4>
                                         <div class="icon mt12font40">
                                             <i class="fa fa-money"></i>
                                         </div>
@@ -622,31 +778,31 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             } else {
                                                 echo $currency_symbol . "0.00";
                                             }
-                                            ?></h4> 
+                                            ?></h4>
                                         <div class="icon mt12font40">
                                             <i class="fa fa-money"></i>
                                         </div>
                                     </div>
                                 </div><!--./col-md-3-->
                                 <div class="col-md-3 col-sm-6">
-                                    <div class="staffprofile"> 
+                                    <div class="staffprofile">
                                         <h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('deduction'); ?></h5>
-                                        <h4><?php 
-										$deduction	=	$salary["deduction"] + $salary["tax"];				
-										echo $currency_symbol . number_format($deduction,2); ?> </h4> 
+                                        <h4><?php
+										$deduction	=	$salary["deduction"] + $salary["tax"];
+										echo $currency_symbol . number_format($deduction,2); ?> </h4>
                                         <div class="icon mt12font40">
                                             <i class="fa fa-money"></i>
                                         </div>
                                     </div>
                                 </div><!--./col-md-3-->
-                            </div>                           
-                            <div class="table-responsive">  
+                            </div>
+                            <div class="table-responsive">
                              <div class="download_label"><?php echo $this->lang->line('details_for'); ?> <?php echo $staff["name"] . " " . $staff["surname"]; ?></div>
                                 <table class="table table-hover table-striped example">
 
                                     <thead>
                                         <tr>
-                                            <th class="text text-left"><?php echo $this->lang->line('payslip'); ?> #</th> 
+                                            <th class="text text-left"><?php echo $this->lang->line('payslip'); ?> #</th>
                                             <th class="text text-left"><?php echo $this->lang->line('month'); ?> - <?php echo $this->lang->line('year') ?><span></span></th>
                                             <th class="text text-left"><?php echo $this->lang->line('date'); ?></th>
                                             <th class="text text-left"><?php echo $this->lang->line('mode'); ?></th>
@@ -670,7 +826,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             <tr>
                                                 <td>
                                                     <a data-toggle="popover" href="#" class="detail_popover" data-original-title="" title=""><?php echo $payroll_value['id'] ?></a>
-                                                    <div class="fee_detail_popover" style="display: none"><?php echo $payroll_value['remark']; ?></div>                          
+                                                    <div class="fee_detail_popover" style="display: none"><?php echo $payroll_value['remark']; ?></div>
                                                 </td>
                                                 <td><?php echo $payroll_value['month'] . " - " . $payroll_value['year']; ?></td>
                                                 <td><?php echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($payroll_value['payment_date'])); ?></td>
@@ -698,9 +854,9 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <?php } ?>
                                     </tbody>
                                 </table>
-                            </div>  
-                        </div>  
-                        <?php if ($sch_setting->staff_upload_documents) {  ?>                     
+                            </div>
+                        </div>
+                        <?php if ($sch_setting->staff_upload_documents) {  ?>
                         <div class="tab-pane" id="documents">
                             <div class="timeline-header no-border">
                                 <div class="row">
@@ -710,7 +866,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             <div class="alert alert-info"><?php echo $this->lang->line("no_record_found"); ?></div>
                                         </div>
                                     <?php } else { ?>
-                                        <?php if (!empty($staff["resume"])) { ?>  
+                                        <?php if (!empty($staff["resume"])) { ?>
                                             <div class="col-md-3 col-sm-6">
                                                 <div class="staffprofile">
                                                     <h5><?php echo $this->lang->line('resume'); ?></h5>
@@ -731,7 +887,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             </div><!--./col-md-3-->
                                         <?php } ?>
 
-                                        <?php if (!empty($staff["joining_letter"])) { ?> 
+                                        <?php if (!empty($staff["joining_letter"])) { ?>
                                             <div class="col-md-3 col-sm-6">
                                                 <div class="staffprofile">
                                                     <h5><?php echo $this->lang->line('joining_letter'); ?></h5>
@@ -744,7 +900,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                         ?>
                                                         <a href="<?php echo base_url(); ?>admin/staff/doc_delete/<?php echo $staff['id'] . "/2/" . $staff['joining_letter']; ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
                                                             <i class="fa fa-remove"></i>
-                                                        </a> 
+                                                        </a>
                                                     <?php } ?>
                                                     <div class="icon">
                                                         <i class="fa fa-file-archive-o"></i>
@@ -752,7 +908,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 </div>
                                             </div><!--./col-md-3-->
                                         <?php } ?>
-                                        <?php if (!empty($staff["resignation_letter"])) { ?> 
+                                        <?php if (!empty($staff["resignation_letter"])) { ?>
                                             <div class="col-md-3 col-sm-6">
                                                 <div class="staffprofile">
                                                     <h5>resignation_letter</h5>
@@ -764,7 +920,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                     ) {
                                                         ?>
                                                         <a href="<?php echo base_url(); ?>admin/staff/doc_delete/<?php echo $staff['id'] . "/3/" . $staff['resignation_letter']; ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
-                                                            <i class="fa fa-remove"></i></a> 
+                                                            <i class="fa fa-remove"></i></a>
                                                     <?php } ?>
                                                     <div class="icon">
                                                         <i class="fa fa-file-archive-o"></i>
@@ -772,7 +928,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 </div>
                                             </div><!--./col-md-3-->
                                         <?php } ?>
-                                        <?php if (!empty($staff["other_document_file"])) { ?> 
+                                        <?php if (!empty($staff["other_document_file"])) { ?>
                                             <div class="col-md-3 col-sm-6">
                                                 <div class="staffprofile">
                                                     <h5><?php echo $this->lang->line('other_documents'); ?></h5>
@@ -784,7 +940,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                     ) {
                                                         ?>
                                                         <a href="<?php echo base_url(); ?>admin/staff/doc_delete/<?php echo $staff['id'] . "/4/" . $staff['other_document_file']; ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
-                                                            <i class="fa fa-remove"></i></a> 
+                                                            <i class="fa fa-remove"></i></a>
                                                     <?php } ?>
                                                     <div class="icon">
                                                         <i class="fa fa-file-archive-o"></i>
@@ -793,16 +949,16 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                             </div><!--./col-md-3-->
                                         <?php } ?>
                                     <?php } ?>
-                                </div><!--./row-->    
+                                </div><!--./row-->
 
                             </div>
                             </table>
-                        </div> 
+                        </div>
                     <?php } ?>
 
                         <div class="tab-pane" id="timelineh">
                             <div>                   <?php if ($this->rbac->hasPrivilege('staff_timeline', 'can_add')) { ?>
-                                    <input type="button" id="myTimelineButton"  class="btn btn-sm btn-primary pull-right " value="<?php echo $this->lang->line('add') ?>" /> 
+                                    <input type="button" id="myTimelineButton"  class="btn btn-sm btn-primary pull-right " value="<?php echo $this->lang->line('add') ?>" />
                                 <?php } ?>
                             </div>
                             <br/>
@@ -821,12 +977,12 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                                             <?php
                                             foreach ($timeline_list as $key => $value) {
-                                                ?>      
+                                                ?>
                                                 <li class="time-label">
                                                     <span class="bg-blue">    <?php
                                                         echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value['timeline_date']));
                                                         ?></span>
-                                                </li> 
+                                                </li>
                                                 <li>
                                                     <i class="fa fa-list-alt bg-blue"></i>
                                                     <div class="timeline-item">
@@ -838,25 +994,25 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                         <?php } ?>
                                                         <h3 class="timeline-header text-aqua"> <?php echo $value['title']; ?> </h3>
                                                         <div class="timeline-body">
-                                                            <?php echo $value['description']; ?> 
+                                                            <?php echo $value['description']; ?>
 
                                                         </div>
 
                                                     </div>
                                                 </li>
-                                            <?php } ?> 
-                                            <li><i class="fa fa-clock-o bg-gray"></i></li> 
-                                        <?php } ?> 
+                                            <?php } ?>
+                                            <li><i class="fa fa-clock-o bg-gray"></i></li>
+                                        <?php } ?>
                                     </ul>
                                 </div>
                             </div>
-                        </div>  
+                        </div>
                         <div class="tab-pane" id="attendance">
                             <div class="row">
                                 <div class="col-lg-3 col-md-3 col-sm-6 col20per">
                                     <div class="staffprofile">
                                         <h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('present'); ?></h5>
-                                        <h4><?php echo count($countAttendance['Present']); ?></h4> 
+                                        <h4><?php echo count($countAttendance['Present']); ?></h4>
                                         <div class="icon">
                                             <i class="fa  fa-check-square-o"></i>
                                         </div>
@@ -866,7 +1022,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <div class="staffprofile">
 
                                         <h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('late'); ?></h5>
-                                        <h4><?php echo count($countAttendance['Late']); ?></h4>  
+                                        <h4><?php echo count($countAttendance['Late']); ?></h4>
                                         <div class="icon">
                                             <i class="fa  fa-check-square-o"></i>
                                         </div>
@@ -875,7 +1031,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 <div class="col-lg-3 col-md-3 col-sm-6 col20per">
                                     <div class="staffprofile">
                                         <h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('absent'); ?></h5>
-                                        <h4><?php echo count($countAttendance['Absent']); ?></h4>  
+                                        <h4><?php echo count($countAttendance['Absent']); ?></h4>
                                         <div class="icon">
                                             <i class="fa  fa-check-square-o"></i>
                                         </div>
@@ -884,7 +1040,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 <div class="col-lg-3 col-md-3 col-sm-6 col20per">
                                     <div class="staffprofile">
                                         <h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('half_day'); ?></h5>
-                                     <h4><?php echo count($countAttendance['Half Day']); ?></h4>  
+                                     <h4><?php echo count($countAttendance['Half Day']); ?></h4>
                                         <div class="icon">
                                             <i class="fa  fa-check-square-o"></i>
                                         </div>
@@ -893,7 +1049,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 <div class="col-lg-3 col-md-3 col-sm-6 col20per">
                                     <div class="staffprofile">
 									<h5><?php echo $this->lang->line('total'); ?> <?php echo $this->lang->line('holiday'); ?></h5>
-                                 <h4><?php echo count($countAttendance['Holiday']); ?></h4>  
+                                 <h4><?php echo count($countAttendance['Holiday']); ?></h4>
                                         <div class="icon">
                                             <i class="fa  fa-check-square-o"></i>
                                         </div>
@@ -903,7 +1059,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             <div class="row">
                                 <div class="col-md-3 col-sm-3">
                                     <form id="" action="" method="">
-                                        <div class="form-group"> 
+                                        <div class="form-group">
                                             <label class="sess18"><?php echo $this->lang->line('year'); ?></label>
                                             <div class="sessyearbox">
                                                 <select class="form-control" style="margin-top: -5px;" name="year" onchange="ajax_attendance('<?php echo $staff["id"]; ?>', this.value)">
@@ -916,16 +1072,16 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                         ?> value="<?php echo $yearvalue["year"]; ?>"><?php echo $yearvalue["year"]; ?></option>
                                                         <?php } ?>
                                                 </select>
-                                            </div> 
+                                            </div>
 											<span class="text-danger"><?php echo form_error('year'); ?></span>
-                                        </div>  
+                                        </div>
                                     </form>
                                 </div>
                                 <div class="col-md-9 col-sm-9">
                                     <div class="halfday pull-right">
                                         <?php
                                         foreach ($attendencetypeslist as $key_type => $value_type) {
-                                            ?> 
+                                            ?>
                                             <b>
                                                 <?php
                                                 $att_type = str_replace(" ", "_", strtolower($value_type['type']));
@@ -957,7 +1113,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                         <tbody>
                                             <?php
                                             $j = 0;
-                                         
+
                                             for ($i = 1; $i <= 31; $i++) {
                                                 ?>
                                                 <tr>
@@ -966,18 +1122,18 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                     foreach ($monthlist as $key => $value) {
                                                         $datemonth = date("m", strtotime($value));
                                                         $att_dates = date("Y") . "-" . $datemonth . "-" . sprintf("%02d", $i);
-                                                     
+
                                                         ?>
                                                         <td>
-                                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="#" style="color:#333"><?php															
+                                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="#" style="color:#333"><?php
                                                                     if (array_key_exists($att_dates, $resultlist)) {
                                                                         if(!empty($resultlist[$att_dates]["key"])){
-																				echo $resultlist[$att_dates]["key"]; 
+																				echo $resultlist[$att_dates]["key"];
 																		}else{
-																			
+
 																		}
                                                                     }
-                                                                    ?></a></span>                                                        
+                                                                    ?></a></span>
                                                         </td>
                                                     <?php
                                                      } ?>
@@ -985,7 +1141,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 <?php
                                                 $j++;
                                             }
-                                            ?>   
+                                            ?>
                                         </tbody>
                                     </table>
                                 </div>
@@ -995,7 +1151,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                         <div class="tab-pane" id="reviews">
                             <div class="row">
                             </div>
-                            <div class="timeline-header no-border">                                
+                            <div class="timeline-header no-border">
                                 <div class="table-responsive" style="clear: both;">
                                     <div class="download_label"><?php echo $this->lang->line('details_for'); ?> <?php echo $staff["name"] . " " . $staff["surname"]; ?></div>
                                     <table class="table table-striped table-bordered table-hover example">
@@ -1007,7 +1163,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                 <th><?php echo $this->lang->line('comment'); ?></th>
                                             </tr>
                                         </thead>
-                                        <tbody> 
+                                        <tbody>
                                             <?php foreach ($user_reviewlist as $value) { ?>
                                                 <tr>
                                                     <td><?php
@@ -1049,16 +1205,16 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                         echo "0";
                                                     }
                                                     ?></p>
-                                                <p><?php echo $this->lang->line('available'); ?>: <?php echo $ldvalue["alloted_leave"] - $ldvalue["approve_leave"] ?></p>  
+                                                <p><?php echo $this->lang->line('available'); ?>: <?php echo $ldvalue["alloted_leave"] - $ldvalue["approve_leave"] ?></p>
                                                 <div class="icon">
                                                     <i class="fa fa-plane"></i>
                                                 </div>
                                             </div>
-                                        </div><!--./col-md-3-->       
+                                        </div><!--./col-md-3-->
                                         <?php
                                     }
                                 }
-                                ?> 
+                                ?>
                             </div>
                             <div class="timeline-header no-border">
                                 <div class="download_label"><?php echo $this->lang->line('details_for'); ?> <?php echo $staff["name"] . " " . $staff["surname"]; ?></div>
@@ -1094,7 +1250,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                                         <?php if (!empty($value['document_file'])) { ?>
                                                             <a href="<?php echo base_url(); ?>admin/staff/download/<?php echo $value['staff_id'] . "/" . $value['document_file']; ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('download'); ?>">
                                                                 <i class="fa fa-download"></i>
-                                                            </a>   
+                                                            </a>
                                                         <?php } ?>
                                                     </td>
                                                 </tr>
@@ -1103,63 +1259,61 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     </table>
                                 </div>
                             </div>
-                        </div>                      
+                        </div>
                     </div>
                 </div>
             </div>
     </section>
 </div>
 
-<div id="leavedetails" class="modal fade " role="dialog">
+<div id="leavedetails" class="modal fade" role="dialog">
     <div class="modal-dialog modal-dialog2 modal-lg">
-        <div class="modal-dialog modal-dialog2 modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title"><?php echo $this->lang->line('details'); ?></h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <form role="form" id="leavedetails_form" action="">
-                            <div class="col-md-12 table-responsive">
-                                <table class="table mb0 table-striped table-bordered examples">
-                                    <tr>
-                                        <th width="15%"><?php echo $this->lang->line('name'); ?></th>
-                                        <td width="35%"><span id='name'></span></td>
-                                        <th width="15%"><?php echo $this->lang->line('staff_id'); ?></th>
-                                        <td width="35%"><span id="employee_id"></span>
-                                            <span class="text-danger"><?php echo form_error('leave_request_id'); ?></span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th><?php echo $this->lang->line('leave'); ?></th>
-                                        <td><span id='leave_from'></span> - <label for="exampleInputEmail1"> </label><span id='leave_to'> </span> (<span id='days'></span>)
-                                            <span class="text-danger"><?php echo form_error('leave_from'); ?></span></td>
-                                        <th><?php echo $this->lang->line('leave_type'); ?></th>
-                                        <td><span id="leave_type"></span>
-                                            <input id="leave_request_id" name="leave_request_id" placeholder="" type="hidden" class="form-control" />
-                                            <span class="text-danger"><?php echo form_error('leave_request_id'); ?></span></td>
-                                    </tr>
-                                    <tr>
-                                        <th><?php echo $this->lang->line('status'); ?></th>
-                                        <td>
-                                            <span id="status"></span>
-                                        </td>
-                                        <th><?php echo $this->lang->line('apply'); ?> <?php echo $this->lang->line('date'); ?></th>
-                                        <td><span id="applied_date"></span></td>
-                                    </tr>
-                                    <tr>
-                                        <th><?php echo $this->lang->line('reason'); ?></th>
-                                        <td><span id="reason"> </span></td>
-                                        <th><?php echo $this->lang->line('note'); ?></th>
-                                        <td>
-                                            <span id="remark"> </span>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </form>
-                    </div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><?php echo $this->lang->line('details'); ?> <span id="prints"></span></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <form role="form" id="leavedetails_form" action="">
+                        <div class="col-md-12 table-responsive">
+                            <table class="table mb0 table-striped table-bordered examples">
+                                <tr>
+                                    <th width="15%"><?php echo $this->lang->line('name'); ?></th>
+                                    <td width="35%"><span id='name'></span></td>
+                                    <th width="15%"><?php echo $this->lang->line('staff_id'); ?></th>
+                                    <td width="35%"><span id="employee_id"></span></td>
+                                </tr>
+                                <tr>
+                                    <th><?php echo $this->lang->line('leave'); ?></th>
+                                    <td><span id='leave_from'></span> - <span id='leave_to'></span> (<span id='days'></span>)</td>
+                                    <th><?php echo $this->lang->line('leave_type'); ?></th>
+                                    <td><span id="leave_type"></span></td>
+                                </tr>
+                                <tr>
+                                    <th><?php echo $this->lang->line('status'); ?></th>
+                                    <td><span id="status"></span></td>
+                                    <th><?php echo $this->lang->line('apply'); ?> <?php echo $this->lang->line('date'); ?></th>
+                                    <td><span id="applied_date"></span></td>
+                                </tr>
+                                <tr>
+                                    <th><?php echo $this->lang->line('reason'); ?></th>
+                                    <td><span id="reason"></span></td>
+                                    <th><?php echo $this->lang->line('note'); ?></th>
+                                    <td><span id="remark"></span></td>
+                                </tr>
+                                <!-- LIGNE POUR LE BOUTON DE TÉLÉCHARGEMENT -->
+                                <tr id="certificate_row" style="display:none;">
+                                    <th></th>
+                                    <td colspan="3">
+                                        <a href="#" id="download_certificate" class="btn btn-success" target="_blank">
+                                            <i class="fa fa-file-pdf-o"></i> Télécharger l'attestation de congé
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1167,7 +1321,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 </div>
 
 <div class="modal fade" id="myTimelineModal" role="dialog">
-    <div class="modal-dialog modal-sm400">      
+    <div class="modal-dialog modal-sm400">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -1175,9 +1329,9 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             </div>
 
                     <form  id="timelineform" name="timelineform" method="post" action="<?php echo base_url() . "admin/timeline/add_staff_timeline" ?>"  enctype="multipart/form-data">
-                         <div class="modal-body pt0 pb0">   
+                         <div class="modal-body pt0 pb0">
                             <?php echo $this->customlib->getCSRF(); ?>
-                            <div id='timeline_hide_show'>                                                    
+                            <div id='timeline_hide_show'>
                                 <input type="hidden" name="staff_id" value="<?php echo $staff["id"] ?>" id="staff_id">
                                 <h4></h4>
                                 <div class="">
@@ -1212,14 +1366,14 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     </div>
                                 </div>
                             </div>
-                          </div>  
+                          </div>
                             <div class="modal-footer" style="clear:both">
                                 <button type="submit"  class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
 
-                                <button type="reset" id="reset" style="display: none"  class="btn btn-info pull-right">Reset</button>                            
+                                <button type="reset" id="reset" style="display: none"  class="btn btn-info pull-right">Reset</button>
                             </div>
-                        </form>                                     
-              
+                        </form>
+
         </div>
     </div>
 </div>
@@ -1318,7 +1472,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
     </div>
 </div>
 
-<script type="text/javascript"> 
+<script type="text/javascript">
 
     function disable_staff(id){
        $('#disablemodal').modal({
@@ -1379,7 +1533,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                         errorMsg(message);
                     } else {
 
-                        successMsg(data.message);                        
+                        successMsg(data.message);
                         window.location.reload(true);
                     }
 
@@ -1396,7 +1550,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
         $("#disablebtn").on('submit', (function (e) {
             var staff_id = $("#staff_id").val();
             e.preventDefault();
-            $.ajax({ 
+            $.ajax({
                 url: "<?php echo site_url('admin/staff/disablestaff/') ?>" + staff_id,
                 type: "POST",
                 data: new FormData(this),
@@ -1589,49 +1743,51 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             content: function () {
                 return $(this).closest('td').find('.fee_detail_popover').html();
             }
-        });        
+        });
     });
 
     function getRecord(id) {
-        $('input:radio[name=status]').attr('checked', false);
-        var base_url = '<?php echo base_url() ?>';
+        var base_url = '<?php echo base_url(); ?>';
         $.ajax({
             url: base_url + 'admin/leaverequest/leaveRecord',
             type: 'POST',
             data: {id: id},
             dataType: "json",
             success: function (result) {
-                $("#prints").html("<a href='#' class='pull-right modal-title moprintblack ' onclick='printDatas(" + id + ")'  title='Print'><i class='fa fa-print'></i></a>");
-                $("#testdat").html(result);
-                $('inputs[name="leave_request_id"]').val(result.id);
-                $('#name').html(result.name + ' ' + result.surname);
-                $('#leave_from').html(result.leavefrom);
-                $('#leave_to').html(result.leaveto);
-                $('#leave_type').html(result.type);
-                $('#reason').html(result.employee_remark);
-                $('#applied_date').html(result.date);
-                $('#days').html(result.leave_days + ' Days');
-                $("#remark").html(result.admin_remark);
-                $("#employee_id").html(' ' + result.employee_id);
-                $("#status").html(' ' + result.status);
+                // Remplir les champs du modal
+                $('#name').text(result.name + ' ' + result.surname);
+                $('#employee_id').text(result.employee_id);
+                $('#leave_from').text(result.leavefrom);
+                $('#leave_to').text(result.leaveto);
+                $('#leave_type').text(result.type);
+                $('#reason').text(result.employee_remark);
+                $('#applied_date').text(result.date);
+                $('#days').text(result.leave_days + ' jours');
+                $('#remark').text(result.admin_remark);
+                $('#status').text(result.status);
 
+                // Afficher le bouton de téléchargement si le statut est "approve"
+                if (result.status == 'approve') {
+                    var pdfUrl = base_url + 'admin/leaverequest/generate_leave_certificate/' + result.id;
+                    $('#download_certificate').attr('href', pdfUrl);
+                    $('#certificate_row').show();
+                } else {
+                    $('#certificate_row').hide();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log("Erreur AJAX: " + error);
+                alert("Impossible de charger les détails du congé.");
             }
         });
-
-        $('#leavedetails').modal({
-            show: true,
-            backdrop: 'static',
-            keyboard: false
-        });
+        $('#leavedetails').modal('show');
     }
-    ;
-
     function ajax_attendance(id, year) {
         var base_url = '<?php echo base_url() ?>';
         $.ajax({
             url: base_url + 'admin/staff/ajax_attendance/' + id,
             type: 'POST',
-            data: {id: id, year: year},          
+            data: {id: id, year: year},
             success: function (result) {
 
                 $("#ajaxattendance").html(result);
@@ -1647,7 +1803,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             url: base_url + 'admin/payroll/payslipView',
             type: 'POST',
             data: {payslipid: id},
-           
+
             success: function (result) {
                 $("#print").html("<a href='#' class='pull-right modal-title moprintblack ' onclick='printData(" + id + ")'  title='Print'><i class='fa fa-print'></i></a>");
                 $("#testdata").html(result);

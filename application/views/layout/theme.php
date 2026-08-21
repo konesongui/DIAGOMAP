@@ -6,12 +6,10 @@ if ($this->customlib->getRTL() != "") {
         ?>
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/rtl/bootstrap-rtl/css/bootstrap-rtl.min.css"/>
         <!-- Theme RTL style -->
-        <link rel="stylesheet" href="<?php echo base_url(); ?>backend/rtl/dist/css/white-rtl.css" /> 
+        <link rel="stylesheet" href="<?php echo base_url(); ?>backend/rtl/dist/css/white-rtl.css" />
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/rtl/dist/css/AdminLTE-rtl.min.css" />
-
         <link rel="stylesheet" href="<?php echo base_url(); ?>backend/rtl/dist/css/skins/_all-skins-rtl.min.css" />
         <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
         <?php
     } else {
         ?>
@@ -32,7 +30,6 @@ if ($theme == "white") {
     <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/themes/white/ss-main.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/css/main.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
     <?php
 } elseif ($theme == "default") {
     ?>
@@ -40,7 +37,6 @@ if ($theme == "white") {
     <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/themes/default/skins/_all-skins.min.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/themes/default/ss-main.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
     <?php
 } elseif ($theme == "red") {
     ?>
@@ -63,5 +59,12 @@ if ($theme == "white") {
     <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/themes/gray/ss-main-light.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <?php
+} elseif ($theme == "chic") {  // 🔥 NOUVEAU THEME CHIC
+    ?>
+    <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/css/style-main.css">
+    <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/themes/chic/skins/skin-chic.css">
+    <link rel="stylesheet" href="<?php echo base_url(); ?>backend/dist/themes/chic/ss-main-chic.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <?php
 }
-
+?>

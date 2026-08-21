@@ -884,6 +884,16 @@ class Report extends Admin_Controller
         $this->load->view('layout/footer');
     }
 
+    public function commercial()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/commercial');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/commercial');
+        $this->load->view('layout/footer');
+    }
+
     public function journal_compt()
     {
         $this->session->set_userdata('top_menu', 'Reports');
@@ -894,10 +904,92 @@ class Report extends Admin_Controller
         $this->load->view('layout/footer');
     }
 
-    public function ecriture_compt()
+    public function journal_compt_simplifie()
     {
         $this->session->set_userdata('top_menu', 'Reports');
-        $this->session->set_userdata('sub_menu', 'Reports/ecriture_comptable');
+        $this->session->set_userdata('sub_menu', 'Reports/journal_comptable_simplifie');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+    public function grands_livre()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/bilan_comptable');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function rapports_annuel()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/rapport_annuel');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function rapports_mensuel()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/rapport_mensuel');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function balance_compt()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/balance_comptes');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function balance_agee()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/balance_agee_client');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function declare_tva()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/tva');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+
+
+    public function tableau_flux()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/flux');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+
+    public function bilan_compt()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/bilan_comptable');
         $this->session->set_userdata('subsub_menu', '');
         $this->load->view('layout/header');
         $this->load->view('reports/finance');
@@ -944,11 +1036,45 @@ class Report extends Admin_Controller
         $this->load->view('layout/footer');
     }
 
+    public function compte_result()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/compte_resultat');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
+    public function facture_client()
+    {
+        if (!$this->rbac->hasPrivilege('rapport_commercial', 'can_view')) {
+            access_denied();
+        }
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/recapt_facture_client');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
+
     public function income()
     {
         $this->session->set_userdata('top_menu', 'Reports');
         $this->session->set_userdata('sub_menu', 'Reports/finance');
         $this->session->set_userdata('subsub_menu', 'Reports/finance/income');
+        $data['searchlist'] = $this->customlib->get_searchtype();
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/income', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function commercial_report()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/commercial');
+        $this->session->set_userdata('subsub_menu', 'Reports/commercial/commercial');
         $data['searchlist'] = $this->customlib->get_searchtype();
         $this->load->view('layout/header', $data);
         $this->load->view('reports/income', $data);
@@ -996,6 +1122,15 @@ class Report extends Admin_Controller
         $this->load->view('layout/footer', $data);
     }
 
+    public function transfer()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/transfer');
+        $this->session->set_userdata('subsub_menu', '');
+        $this->load->view('layout/header');
+        $this->load->view('reports/finance');
+        $this->load->view('layout/footer');
+    }
     public function caisse()
     {
         // var_dump($_POST['search_type']);
@@ -1034,12 +1169,11 @@ class Report extends Admin_Controller
         $this->load->view('reports/caisse', $data);
         $this->load->view('layout/footer', $data);
     }
-
-    public function ecriture_comptable()
+    public function compte_resultat()
     {
         $this->session->set_userdata('top_menu', 'Reports');
         $this->session->set_userdata('sub_menu', 'Reports/finance');
-        $this->session->set_userdata('subsub_menu', 'Reports/finance/ecriture_comptable');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/compte_resultat');
         $data['searchlist']  = $this->customlib->get_searchtype();
         $data['date_type']   = $this->customlib->date_type();
         $data['date_typeid'] = '';
@@ -1063,13 +1197,368 @@ class Report extends Admin_Controller
         $data['payment_mode'] = $this->payment_mode;
         $data['sch_setting'] = $this->sch_setting_detail;
 
-        $results              = $this->journal_model->get();
-        $data['journal'] = $results;
+        $results              = $this->journal_model->getjournal_simplifie();
+        $data['comptes'] = $results;
         $this->load->view('layout/header', $data);
-        $this->load->view('reports/ecriture_comptable', $data);
+        $this->load->view('reports/compte_resultat', $data);
         $this->load->view('layout/footer', $data);
     }
 
+    public function rapport_annuel()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/rapport_annuel');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/rapport_annuel', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function rapport_mensuel()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/rapport_mensuel');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/rapport_mensuel', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+
+    public function bilan_comptable()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/bilan_comptable');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/bilan_comptable', $data);
+        $this->load->view('layout/footer', $data);
+    }
+    public function balance_comptes()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/balance_comptes');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/balance_comptes', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function tva()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/tva');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/tva', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function flux()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/flux');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/flux', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function balance_agee_client()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/balance_agee_client');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/balance_agee_client', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+
+    public function grand_livre()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/grand_livre');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getbilan();
+        $data['comptes'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/grand_livre', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function recapt_facture_client()
+    {
+
+        if (!$this->rbac->hasPrivilege('rapport_commercial', 'can_view')) {
+            access_denied();
+        }
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/recapt_facture_client');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->recapt_bill_model->getbilan();
+        $data['bill'] = $results;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/recapt_facture_client', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function journal_comptable_simplifie()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/journal_comptable_simplifie');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $results              = $this->journal_model->getjournal_simplifie();
+        $data['journal'] = $results;
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/journal_comptable_simplifie', $data);
+        $this->load->view('layout/footer', $data);
+    }
 
     public function journal_comptable()
     {
@@ -1101,8 +1590,44 @@ class Report extends Admin_Controller
 
         $results              = $this->journal_model->get();
         $data['journal'] = $results;
+
         $this->load->view('layout/header', $data);
         $this->load->view('reports/journal_comptable', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function rapport_transfer()
+    {
+        $this->session->set_userdata('top_menu', 'Reports');
+        $this->session->set_userdata('sub_menu', 'Reports/finance');
+        $this->session->set_userdata('subsub_menu', 'Reports/finance/transfer');
+        $data['searchlist']  = $this->customlib->get_searchtype();
+        $data['date_type']   = $this->customlib->date_type();
+        $data['date_typeid'] = '';
+
+        if (isset($_POST['search_type']) && $_POST['search_type'] != '') {
+
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+
+        } else {
+
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+
+        }
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label']        = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['payment_mode'] = $this->payment_mode;
+        $data['sch_setting'] = $this->sch_setting_detail;
+
+        $result              = $this->payroll_model->getbetweenpayrollReport($start_date, $end_date);
+        $data['payrollList'] = $result;
+        $this->load->view('layout/header', $data);
+        $this->load->view('reports/transfer', $data);
         $this->load->view('layout/footer', $data);
     }
 
@@ -2801,6 +3326,82 @@ class Report extends Admin_Controller
         echo json_encode($json_data);
     }
 
+    public function gettransferlistbydt()
+    {
+        $search_type = $this->input->post('search_type');
+        $date_from   = $this->input->post('date_from');
+        $date_to     = $this->input->post('date_to');
+
+        // var_dump($search_type);
+        // exit;
+
+        if ($search_type == "") {
+            $dates               = $this->customlib->get_betweendate('this_year');
+            $data['search_type'] = '';
+        } else {
+            $dates               = $this->customlib->get_betweendate($_POST['search_type']);
+            $data['search_type'] = $_POST['search_type'];
+        }
+
+        // var_dump($dates);
+        // var_dump($data['search_type']);
+        // exit;
+
+        $start_date = date('Y-m-d', strtotime($dates['from_date']));
+        $end_date   = date('Y-m-d', strtotime($dates['to_date']));
+
+        $data['label'] = date($this->customlib->getSchoolDateFormat(), strtotime($start_date)) . " " . $this->lang->line('to') . " " . date($this->customlib->getSchoolDateFormat(), strtotime($end_date));
+        $data['sch_setting'] = $this->sch_setting_detail;
+        $transferList   = $this->income_model->getcaisse("", $start_date, $end_date);
+        $m             = json_decode($transferList);
+        // $m   = $this->expense_model->search("", $start_date, $end_date);
+        // var_dump($start_date);
+        // var_dump($end_date);
+        // var_dump($data['label']);
+        // var_dump($m);
+        // exit;
+
+
+        $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
+        $dt_data         = array();
+        $grand_total     = 0;
+        if (!empty($m->data)) {
+            foreach ($m->data as $key => $value) {
+                $grand_total += $value->amount;
+
+                $row       = array();
+                // $row[]     = $value->income_name;
+                $row[]     = date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value->date));
+
+                $row[]     = $value->from_id;
+
+
+
+
+                $row[]     = $value->to_id;
+                //$row[]     = $value->exp_category;
+
+                $row[]     = $value->amount;
+                $row[]     = $value->date;
+                $dt_data[] = $row;
+            }
+
+
+            $footer_row[] = "";
+            $footer_row[] = "";
+            $footer_row[] = "<b style='color: black'>MONTANT TOTAL</b>";
+            $footer_row[] ="<b>" .  (number_format($grand_total, 2, '.', '')) ."<b>";
+            $dt_data[]    = $footer_row;
+        }
+
+        $json_data = array(
+            "draw"            => intval($m->draw),
+            "recordsTotal"    => intval($m->recordsTotal),
+            "recordsFiltered" => intval($m->recordsFiltered),
+            "data"            => $dt_data,
+        );
+        echo json_encode($json_data);
+    }
 
     public function getexpenselistbydt()
     {
@@ -2846,7 +3447,7 @@ class Report extends Admin_Controller
                 $grand_total += $value->amount;
 
                 $row       = array();
-                $row[]     = $value->income_name;
+               // $row[]     = $value->income_name;
                 $row[]     = date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value->date));
 
                 $row[]     = $value->name;
@@ -2860,12 +3461,12 @@ class Report extends Admin_Controller
                 $row[]     = $value->amount;
                 $dt_data[] = $row;
             }
-            $footer_row[] = "";
+
 
             $footer_row[] = "";
             $footer_row[] = "";
-            $footer_row[] = $this->lang->line('grand_total');
-            $footer_row[] = (number_format($grand_total, 2, '.', ''));
+            $footer_row[] = "<b style='color: black'>MONTANT TOTAL</b>";
+            $footer_row[] ="<b>" .  (number_format($grand_total, 2, '.', '')) ."<b>";
             $dt_data[]    = $footer_row;
         }
 
@@ -2910,6 +3511,7 @@ class Report extends Admin_Controller
         $expenseList   = $this->expense_model->search("", $start_date, $end_date);
         $data['sch_setting'] = $this->sch_setting_detail;
         $m             = json_decode($expenseList);
+
         $incomeList = $this->income_model->getIncomeWithReappro($start_date, $end_date);
 
 
@@ -2929,7 +3531,7 @@ class Report extends Admin_Controller
 
         foreach ($incomeList as $income) {
 
-            $grand_tota +=  $income['income']->amount;
+            $grand_tota +=  $income['income']->amount_re;
 
             // var_dump($income);
             // var_dump($income['income']->name);
@@ -2976,7 +3578,7 @@ class Report extends Admin_Controller
         if (!empty($m->data)) {
             foreach ($m->data as $key => $value) {
                 $grand_total += $value->amount;
-                $grand_tota += $value->income_amount_re;
+                $grand_tota += $value->amount_re;
 
                 $row3       = array();
                 $row3[]     = $value->income_name;
@@ -2996,9 +3598,11 @@ class Report extends Admin_Controller
 
             $footer_row4[] = "";
             $footer_row4[] = "";
-            $footer_row4[] = "<b style='color: black;font-family: Roboto Sans-Serif Helvetica Neue Helvetica Arial sans-serif bold;font-size: 15px'>Total des recettes</b>";
+            $footer_row4[] = "<b style='color: black;font-family: Roboto Sans-Serif Helvetica Neue Helvetica Arial sans-serif bold;font-size: 15px'>TOTAL DES RECETTES</b>";
 
-            $footer_row4[] = (number_format("", 2, '.', '')); $footer_row4[] = (number_format($grand_totae, 2, '.', '')); $footer_row[] = (number_format($grand_total, 2, '.', ''));
+            $footer_row4[] = (number_format("", 2, '.', ''));
+            $footer_row4[] = (number_format($grand_tota, 2, '.', ''));
+            $footer_row4[] = (number_format($grand_tota, 2, '.', ''));
 
             $footer_row4[] = "";
 
@@ -3011,9 +3615,11 @@ class Report extends Admin_Controller
             $footer_row5[] = "";
             $footer_row5[] = "";
 
-            $footer_row5[] = "<b style='color: black;font-family: Roboto Sans-Serif Helvetica Neue Helvetica Arial sans-serif bold;font-size: 15px'>Total des dépenses</b>";
+            $footer_row5[] = "<b style='color: black;font-family: Roboto Sans-Serif Helvetica Neue Helvetica Arial sans-serif bold;font-size: 15px'>TOTAL DES DEPENSES</b>";
 
-            $footer_row5[] = (number_format("", 2, '.', '')); $footer_row5[] = (number_format($grand_total, 2, '.', '')); $footer_row[] = (number_format($grand_total, 2, '.', ''));
+            $footer_row5[] = (number_format("", 2, '.', ''));
+            $footer_row5[] = (number_format($grand_total, 2, '.', ''));
+            $footer_row5[] = (number_format($grand_total, 2, '.', ''));
 
             $footer_row5[] = "";
 
@@ -3026,9 +3632,10 @@ class Report extends Admin_Controller
 
             $footer_row6[] = "";
             $footer_row6[] = "";
-            $footer_row6[] = "<b style='color: black;font-family: Roboto Sans-Serif Helvetica Neue Helvetica Arial sans-serif bold;font-size: 15px'>Solde Total</b> ($currency_symbol)";
+            $footer_row6[] = "<b style='color: black;font-family: Roboto Sans-Serif Helvetica Neue Helvetica Arial sans-serif bold;font-size: 15px'>SOLDE TOTAL</b> ($currency_symbol)";
 
-            $footer_row6[] = (number_format("", 2, '.', '')); $footer_row6[] = (number_format($grand_totae - $grand_total, 2, '.', '')); $footer_row[] = (number_format($grand_total, 2, '.', ''));
+            $footer_row6[] = (number_format("", 2, '.', ''));
+            $footer_row6[] = (number_format($grand_tota - $grand_total, 2, '.', ''));
 
             $footer_row6[] = "";
 
@@ -3247,7 +3854,7 @@ class Report extends Admin_Controller
                 $total_amount = "<b>" . $value->total_amount . "</b>";
                 $grd_total += $value->total_amount;
                 $row       = array();
-                $row[]     = $value->exp_category;
+             //   $row[]     = $value->exp_category;
                 $row[]     = $expense_id;
                 $row[]     = $expense_name;
                 $row[]     = $expense_date;

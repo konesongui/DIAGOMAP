@@ -8,7 +8,7 @@ class Project_model extends CI_Model{
 
 	function __consturct(){
 	parent::__construct();
-	
+	   
 	}
     public function Add_ProjectData($data){
         $this->db->insert('project', $data);

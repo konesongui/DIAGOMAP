@@ -27,21 +27,23 @@ class Order_model extends CI_Model {
 
     /**
      * Ajoute une nouvelle commande avec ses articles
-     * 
+     *
      * @param array $data Les données de la commande
      * @return int|bool L'ID de la commande créée ou false en cas d'erreur
      */
     public function add($data)
-    {   
-        // var_dump($data);
-        // exit;
+    {
         $this->db->trans_start();
 
         try {
             // Préparation des données de la commande
+            $entreprise_id = isset($data['entreprise_id']) ? (int)$data['entreprise_id'] : (int)$this->session->userdata('entreprise_id');
+
             $order_data = [
-                'order_number'=> $this->generateOrderNumber(),
+                'entreprise_id' => $entreprise_id,
+                'order_number'=> $this->generateOrderNumber($entreprise_id),
                 'customer_id' => $data['customer_id'],
+                'user_name' => $data['user_name'],
                 'designation' => $data['designation'],
                 'order_date'  => date('Y-m-d', strtotime($data['order_date'])),
                 'valid_until' => ((isset($data['valid_until']) && !empty($data['valid_until'])) ? date('Y-m-d', strtotime($data['valid_until'])) : null),
@@ -96,42 +98,106 @@ class Order_model extends CI_Model {
     /**
      * Génère un numéro unique pour une commande
      * Format: CMD-YYYYMM-XXXX où XXXX est un numéro séquentiel
-     * 
+     *
      * @return string
      */
-    private function generateOrderNumber()
+    private function generateOrderNumber($entreprise_id = 0)
     {
-        $prefix = 'CMD';  // CMD pour Commande
-        $date = date('Ym');  // Format YYYYMM
-        
-        // Recherche le dernier numéro pour ce mois
+        $prefix = 'CMD';
+        $date = date('Ym');
+
         $this->db->like('order_number', $prefix . '-' . $date, 'after');
+        if ($entreprise_id > 0 && in_array('entreprise_id', $this->db->list_fields($this->table))) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $query = $this->db->get($this->table);
-        
+
         if ($query->num_rows() > 0) {
-            // Extrait le numéro séquentiel de la dernière commande
             $last_ref = $query->row()->order_number;
             $sequence = intval(substr($last_ref, -4)) + 1;
         } else {
-            // Première commande du mois
             $sequence = 1;
         }
-        
-        // Formate le numéro séquentiel sur 4 chiffres
+
         $sequence_padded = str_pad($sequence, 4, '0', STR_PAD_LEFT);
-        
+
         return $prefix . '-' . $date . '-' . $sequence_padded;
     }
 
     /**
      * Récupère une commande avec ses articles
-     * 
+     *
      * @param int $order_id ID de la commande
      * @return array|null Les données de la commande et ses articles
      */
-    public function getOrderWithItems($order_id)
+    public function getOrderWithItems_250526($order_id)
+    {
+        // Récupération de la commande
+        $this->db->select('orders.*, clients.item_supplier as customer_name,
+        clients.lastname as customer_last_name, clients.email as customer_email,
+        orders.user_name');
+        $this->db->from($this->table);
+        $this->db->join('clients', 'clients.id = orders.customer_id');
+        $this->db->where('orders.id', $order_id);
+        $order = $this->db->get()->row_array();
+
+        if (!$order) {
+            return null;
+        }
+
+        // Récupération des articles
+        $this->db->select('
+            order_items.*,
+            item_category.item_category as category_name,
+            item.name as item_name
+        ');
+        $this->db->from($this->items_table);
+        $this->db->join('item_category', 'item_category.id = order_items.category_id');
+        $this->db->join('item', 'item.id = order_items.item_id');
+        $this->db->where('order_id', $order_id);
+        $this->db->order_by('position', 'ASC');
+        $items = $this->db->get()->result_array();
+
+        $order['items'] = $items;
+        return $order;
+    }
+    public function getOrderWithItems($order_id) {
+        $this->db->select('orders.*, clients.item_supplier as customer_name, clients.lastname as customer_last_name, clients.email as customer_email, clients.phone as customer_phone');
+        $this->db->from('orders');
+        $this->db->join('clients', 'clients.id = orders.customer_id');
+        $this->db->where('orders.id', $order_id);
+        $order = $this->db->get()->row_array();
+
+        if ($order) {
+            $this->db->select('
+            order_items.*,
+            item_category.item_category as category_name,
+            item.name as item_name,
+            services.name as service_name,
+            services.duration as service_duration
+        ');
+            $this->db->from('order_items');
+            $this->db->join('item_category', 'item_category.id = order_items.category_id', 'left');
+            $this->db->join('item', 'item.id = order_items.item_id', 'left');
+            $this->db->join('services', 'services.id = order_items.service_id', 'left');
+            $this->db->where('order_items.order_id', $order_id);
+            $this->db->order_by('order_items.position', 'ASC');
+            $items = $this->db->get()->result_array();
+
+            // Normalisation : pour les services, on remplace item_name par service_name
+            foreach ($items as &$item) {
+                if ($item['item_type'] == 'service') {
+                    $item['item_name'] = $item['service_name'];
+                    $item['category_name'] = null;
+                }
+            }
+            $order['items'] = $items;
+        }
+        return $order;
+    }
+    public function getOrderWithItems_($order_id)
     {
         // Récupération de la commande
         $this->db->select('orders.*, clients.item_supplier as customer_name,
@@ -164,7 +230,7 @@ class Order_model extends CI_Model {
 
     /**
      * Met à jour le statut d'une commande
-     * 
+     *
      * @param int $order_id ID de la commande
      * @param int $status Nouveau statut
      * @return bool
@@ -180,16 +246,16 @@ class Order_model extends CI_Model {
 
     /**
      * Met à jour le statut d'une commande en annulée avec le motif
-     * 
+     *
      * @param int $order_id ID de la commande
      * @param string $reason Motif de l'annulation
      * @return bool
      */
     public function updateCancelStatus($order_id, $data)
-    {   
+    {
         $this->db->where('id', $order_id);
         return $this->db->update($this->table, [
-            'status'     => $data['status'], // 3 = Annulée
+            'status'     => $data['status'],
             'notes'      => $data['reason'],
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -197,7 +263,7 @@ class Order_model extends CI_Model {
 
     /**
      * Récupère l'état du stock pour un article
-     * 
+     *
      * @param int $item_id ID de l'article
      * @return object|null
      */
@@ -208,28 +274,63 @@ class Order_model extends CI_Model {
         return $query->row();
     }
 
-    public function getListData()
+    /**
+     * Méthode pour les admins (voient tout)
+     */
+    public function getListDataForAdmin()
+    {
+        return $this->_getListData(null);
+    }
+
+    /**
+     * Méthode pour les utilisateurs normaux (filtré)
+     */
+    public function getListDataForUser($username)
+    {
+        return $this->_getListData($username);
+    }
+
+    /**
+     * Méthode pour compatibilité (ancien code)
+     */
+    public function getListData($username = null)
+    {
+        return $this->_getListData($username);
+    }
+
+    /**
+     * Méthode privée commune
+     */
+    private function _getListData($username = null)
     {
         $draw = intval($this->input->post('draw'));
         $start = intval($this->input->post('start'));
         $length = intval($this->input->post('length'));
         $search = $this->input->post('search')['value'];
 
-        $total_records = $this->db->count_all($this->table);
+        // Compter le total selon le filtre utilisateur
+        if ($username !== null) {
+            $this->db->where('user_name', $username);
+        }
+        $total_records = $this->db->count_all_results($this->table);
 
         $this->db->start_cache();
-        
+
         $this->db->select('
             orders.*,
             clients.item_supplier as customer_name,
-            clients.lastname as customer_last_name,
             clients.email as customer_email,
             clients.phone as customer_phone,
             clients.address as customer_address
         ');
         $this->db->from($this->table);
         $this->db->join('clients', 'clients.id = orders.customer_id', 'left');
-        
+
+        // 🔹 FILTRAGE PAR UTILISATEUR SI SPÉCIFIÉ
+        if ($username !== null) {
+            $this->db->where('orders.user_name', $username);
+        }
+
         if($search) {
             $this->db->group_start();
             $this->db->like('orders.designation', $search);
@@ -238,20 +339,20 @@ class Order_model extends CI_Model {
             $this->db->or_like('clients.email', $search);
             $this->db->group_end();
         }
-        
+
         $this->db->stop_cache();
 
         $filtered_records = $this->db->get()->num_rows();
-        
+
         $this->db->order_by('orders.created_at', 'DESC');
         if($length != -1) {
             $this->db->limit($length, $start);
         }
 
         $query = $this->db->get();
-        
+
         $this->db->flush_cache();
-        
+
         $status_labels = [
             self::STATUS_PENDING => ['label' => 'En attente de validation', 'class' => 'label-warning'],
             self::STATUS_VALIDATED => ['label' => 'Validée', 'class' => 'label-success'],
@@ -264,7 +365,7 @@ class Order_model extends CI_Model {
         $data = [];
         foreach($query->result() as $row) {
             $status_info = isset($status_labels[$row->status]) ? $status_labels[$row->status] : ['label' => 'Inconnu', 'class' => 'label-default'];
-            
+
             $data[] = [
                 'id' => $row->id,
                 'order_number' => $row->order_number,
@@ -273,7 +374,7 @@ class Order_model extends CI_Model {
                 'delivery_term' => $row->delivery_term??'Non défini',
                 'delivery_location' => $row->delivery_location??'Non défini',
                 'customer' => [
-                    'name' => $row->customer_name.' '.$row->customer_last_name,
+                    'name' => $row->customer_name,
                     'email' => $row->customer_email,
                     'phone' => $row->customer_phone,
                     'address' => $row->customer_address
@@ -299,6 +400,7 @@ class Order_model extends CI_Model {
                     'label' => $status_info['label'],
                     'class' => $status_info['class']
                 ],
+                'user_name' => $row->user_name,
                 'validation' => [
                     'status' => $row->validation_status,
                     'notes' => $row->validation_notes,
@@ -317,8 +419,16 @@ class Order_model extends CI_Model {
     }
 
     /**
+     * Méthode pour tous (ancienne méthode)
+     */
+    public function getListData_()
+    {
+        return $this->_getListData(null);
+    }
+
+    /**
      * Met à jour une commande existante et ses articles
-     * 
+     *
      * @param array $data Les données de la commande à mettre à jour
      * @return bool
      */
@@ -335,6 +445,7 @@ class Order_model extends CI_Model {
             // Mise à jour des informations principales de la commande
             $order_data = [
                 'customer_id' => $data['customer'],
+                'user_name' => $data['user_name'],
                 'designation' => $data['designation'],
                 'order_date'  => date('Y-m-d', strtotime($data['order_date'])),
                 'valid_until' => ((isset($data['valid_until']) && !empty($data['valid_until'])) ? date('Y-m-d', strtotime($data['valid_until'])) : null),
@@ -383,14 +494,14 @@ class Order_model extends CI_Model {
 
     /**
      * Récupère les données de la commande formatées pour l'impression
-     * 
+     *
      * @param int $order_id ID de la commande
      * @return array|null Les données formatées de la commande
      */
     public function getOrderForPrint($order_id)
     {
         $order = $this->getOrderWithItems($order_id);
-        
+
         if (!$order) {
             return null;
         }
@@ -441,13 +552,13 @@ class Order_model extends CI_Model {
 
     /**
      * Valide une commande par le client
-     * 
+     *
      * @param int $order_id ID de la commande
      * @param array $data Données de validation
      * @return bool
      */
     public function validateOrder($order_id, $data)
-    {   
+    {
         $this->db->trans_start();
 
         try {
@@ -478,15 +589,13 @@ class Order_model extends CI_Model {
 
     /**
      * Rejette une commande par le client
-     * 
+     *
      * @param int $order_id ID de la commande
      * @param array $data Données de rejet
      * @return bool
      */
     public function rejectOrder($order_id, $data)
-    {   
-        // var_dump($data);
-        // exit;
+    {
         $this->db->trans_start();
 
         try {
@@ -497,7 +606,7 @@ class Order_model extends CI_Model {
             }
 
             $update_data = [
-                'status'     => self::STATUS_REJECTED, // 3 = Rejeté
+                'status'     => self::STATUS_REJECTED,
                 'notes'      => $data['reason'],
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -517,7 +626,7 @@ class Order_model extends CI_Model {
 
     /**
      * Vérifie si une commande a été validée par le client
-     * 
+     *
      * @param int $order_id ID de la commande
      * @return bool
      */
@@ -526,13 +635,13 @@ class Order_model extends CI_Model {
         $this->db->select('status, validated_at');
         $this->db->where('id', $order_id);
         $order = $this->db->get($this->table)->row();
-        
+
         return ($order && $order->status == self::STATUS_VALIDATED && $order->validated_at !== null);
     }
 
     /**
      * Vérifie si une commande a été rejetée par le client
-     * 
+     *
      * @param int $order_id ID de la commande
      * @return bool
      */
@@ -541,13 +650,13 @@ class Order_model extends CI_Model {
         $this->db->select('status, rejected_at');
         $this->db->where('id', $order_id);
         $order = $this->db->get($this->table)->row();
-        
+
         return ($order && $order->status == self::STATUS_REJECTED && $order->rejected_at !== null);
     }
 
     /**
      * Récupère les informations de validation d'une commande
-     * 
+     *
      * @param int $order_id ID de la commande
      * @return array|null
      */
@@ -557,4 +666,4 @@ class Order_model extends CI_Model {
         $this->db->where('id', $order_id);
         return $this->db->get($this->table)->row_array();
     }
-} 
+}

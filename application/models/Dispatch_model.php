@@ -52,8 +52,7 @@ class Dispatch_model extends MY_Model {
 
     public function dispatch_list() {
         $this->db->select('*');
-        //$this->db->where('type', 'dispatch');
-        $this->db->where('dispatch_receive.deleted', 1);
+        $this->db->where('type', 'dispatch');
         $this->db->from('dispatch_receive');
         $this->db->order_by('id', 'desc');
         $query = $this->db->get();
@@ -63,7 +62,6 @@ class Dispatch_model extends MY_Model {
     public function receive_list() {
         $this->db->select('*');
         $this->db->where('type', 'receive');
-        $this->db->where('dispatch_receive.deleted', 1);
         $this->db->order_by('id', 'desc');
         $this->db->from('dispatch_receive');
         $query = $this->db->get();
@@ -73,7 +71,7 @@ class Dispatch_model extends MY_Model {
     public function dis_rec_data($id, $type) {
         $this->db->select('*');
         $this->db->where('id', $id);
-        //$this->db->where('type', $type);
+        $this->db->where('type', $type);
         $this->db->from('dispatch_receive');
         $query = $this->db->get();
         return $query->row_array();
@@ -83,15 +81,15 @@ class Dispatch_model extends MY_Model {
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
-        /*if ($data['type'] == '') {
+        if ($data['type'] == 'dispatch') {
             $title = "Postal Dispatch";
         } else {
             $title = "Postal Receive";
-        }*/
+        }
         $this->db->where('id', $id);
-        //$this->db->where('type', $type);
+        $this->db->where('type', $type);
         $this->db->update($table, $data);
-        $message = UPDATE_RECORD_CONSTANT . " On Admission Enquiry   id " . $id;
+        $message = UPDATE_RECORD_CONSTANT . " On Admission Enquiry $title  id " . $id;
         $action = "Update";
         $record_id = $id;
         $this->log($message, $record_id, $action);
@@ -106,6 +104,73 @@ class Dispatch_model extends MY_Model {
         } else {
             //return $return_value;
         }
+    }
+
+    // ========================================== //
+// STATISTIQUES DES DISPATCH                   //
+// ========================================== //
+    public function get_stats($type = 'dispatch') {
+        $stats = array();
+
+        // Total
+        $this->db->select('COUNT(*) as total');
+        $this->db->from('dispatch_receive');
+        $this->db->where('type', $type);
+        $query = $this->db->get();
+        $stats['total'] = (int)$query->row()->total;
+
+        // Aujourd'hui
+        $today = date('Y-m-d');
+        $this->db->select('COUNT(*) as total');
+        $this->db->from('dispatch_receive');
+        $this->db->where('type', $type);
+        $this->db->where('date', $today);
+        $query = $this->db->get();
+        $stats['today'] = (int)$query->row()->total;
+
+        // En attente (exemple - vous pouvez adapter selon votre logique)
+        $stats['pending'] = 0;
+        $stats['processed'] = 0;
+
+        return $stats;
+    }
+
+// ========================================== //
+// RÉCUPÉRER LES DISPATCH FILTRÉS             //
+// ========================================== //
+    public function get_filtered($type = 'dispatch', $from = null, $date_from = null, $date_to = null) {
+        $this->db->select('*');
+        $this->db->from('dispatch_receive');
+        $this->db->where('type', $type);
+
+        if (!empty($from)) {
+            $this->db->like('from_title', $from);
+        }
+
+        if (!empty($date_from)) {
+            $this->db->where('date >=', $date_from);
+        }
+
+        if (!empty($date_to)) {
+            $this->db->where('date <=', $date_to);
+        }
+
+        $this->db->order_by('id', 'DESC');
+        $query = $this->db->get();
+        return $query->result_array();
+    }
+
+// ========================================== //
+// RÉCUPÉRER L'IMAGE D'UN DISPATCH            //
+// ========================================== //
+    public function get_image($type, $id) {
+        $this->db->select('image');
+        $this->db->from('dispatch_receive');
+        $this->db->where('id', $id);
+        $this->db->where('type', $type);
+        $query = $this->db->get();
+        $row = $query->row();
+        return $row->image ?? null;
     }
 
     public function image_update($type, $id, $img_name) {
@@ -129,10 +194,8 @@ class Dispatch_model extends MY_Model {
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
-        $this->db->where('id', $id)
-            ->set('deleted', '0');
-        $this->db->update('dispatch_receive');
-
+        $this->db->where('id', $id);
+        $this->db->delete('dispatch_receive');
         $message = DELETE_RECORD_CONSTANT . " On Postal Dispatch id " . $id;
         $action = "Delete";
         $record_id = $id;

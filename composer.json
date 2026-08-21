@@ -3,6 +3,16 @@
         "picqer/php-barcode-generator": "^2.2",
         "endroid/qr-code": "^3.9",
         "dompdf/dompdf": "^1.2",
-        "mpdf/mpdf": "^8.0"
+        "mpdf/mpdf": "^8.0",
+        "lonnieezell/scribe": "v1.0.0-beta.1",
+        "openai-php/client": "^0.20.0",
+        "symfony/http-client": "^7.4",
+        "nyholm/psr7": "^1.8",
+        "smalot/pdfparser": "^2.12"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }

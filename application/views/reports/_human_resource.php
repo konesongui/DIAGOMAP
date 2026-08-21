@@ -7,14 +7,14 @@
             <div class="">
                 <ul class="reportlists">
                     <?php if ($this->rbac->hasPrivilege('staff_report', 'can_view')) { ?>
-                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/human_resource/staff_report'); ?>"><a href="<?php echo base_url(); ?>report/staff_report"><i class="fa fa-file-text-o"></i> <?php echo $this->lang->line('staff') . " " . $this->lang->line('report'); ?></a></li>
+                        <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/human_resource/staff_report'); ?>"><a href="<?php echo base_url(); ?>report/staff_report"><i class="fa fa-file-text-o"></i> <?php echo $this->lang->line('staff_report'); ?></a></li>
                         <?php
                     }
                     if (($this->rbac->hasPrivilege('payroll_report', 'can_view'))) {
                         ?>
-                       <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/attendance/attendance_report'); ?>">
+                      <!-- <li class="col-lg-4 col-md-4 col-sm-6 <?php echo set_SubSubmenu('Reports/attendance/attendance_report'); ?>">
                             <a href="<?php echo base_url(); ?>admin/payroll/payrollreport"><i class="fa fa-file-text-o"></i> <?php echo $this->lang->line('payroll_report'); ?></a>
-                        </li>
+                        </li>-->
                     <?php } ?>
                 </ul>
             </div>

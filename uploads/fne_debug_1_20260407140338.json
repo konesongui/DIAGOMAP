@@ -1,0 +1,40 @@
+{
+    "invoiceType": "sale",
+    "paymentMethod": "cash",
+    "template": "B2C",
+    "isRne": false,
+    "clientCompanyName": "CNP-PPP",
+    "clientPhone": "2720303820",
+    "clientEmail": "ouattara.sanaba@gmail.com",
+    "pointOfSale": "PDV001",
+    "establishment": "ETABLISSEMENT001",
+    "commercialMessage": "Merci pour votre confiance",
+    "footer": "Service client: cm@cmeexpertises.com",
+    "foreignCurrency": "",
+    "foreignCurrencyRate": 0,
+    "items": [
+        {
+            "taxes": [
+                "TVA"
+            ],
+            "reference": "REF-00805",
+            "description": "test",
+            "quantity": 581,
+            "amount": 100,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVA"
+            ],
+            "reference": "REF-00805",
+            "description": "test",
+            "quantity": 6,
+            "amount": 100,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        }
+    ],
+    "discount": 0
+}

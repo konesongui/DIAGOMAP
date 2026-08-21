@@ -54,14 +54,14 @@
                                 <?php echo $this->customlib->getCSRF(); ?>
                                 
                                 <div class="form-group col-md-3">
-                                    <label for="exampleInputEmail1">Client</label><small class="req"> *</small>
+                                    <label for="exampleInputEmail1">Fournisseur</label><small class="req"> *</small>
 
                                     <select class="form-control " name="customer">
                                         <option value=""><?php echo $this->lang->line('select'); ?></option>
                                         <?php
-                                        foreach ($clients as $key => $client) {
+                                        foreach ($supplier as $key => $suppliers) {
                                             ?>
-                                            <option value="<?php echo $client['id']; ?>"><?php echo $client['item_supplier'] .' ' . $client['lastname']. ' (' . $client['phone'] . ')'; ?></option> 
+                                            <option value="<?php echo $suppliers['id']; ?>"><?php echo $suppliers['item_supplier'] .' ' . $suppliers['lastname']. ' (' . $suppliers['phone'] . ')'; ?></option>
                                             <?php
                                         }
                                         ?>

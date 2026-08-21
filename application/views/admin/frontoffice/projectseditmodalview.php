@@ -13,7 +13,7 @@
                 <div class="col-sm-4">
                     <div class="form-group">
                         <label for="pwd">Objectif</label><small class="req"> *</small>
-                        <input id="text" name="objet" placeholder="" type="text" class="form-control"  value="<?php echo set_value('objet', $projects_data['objet']); ?>" />
+                        <input id="text" name="objet" placeholder="" type="text" class="form-control"  value="<?php echo set_value('projet', $projects_data['projet']); ?>" />
                         <span class="text-danger"><?php echo form_error('objet'); ?></span>
                     </div>
                 </div>

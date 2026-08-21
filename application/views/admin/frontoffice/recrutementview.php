@@ -1,3 +1,8 @@
+<?php
+$currency_symbol = $this->customlib->getSchoolCurrencyFormat();
+$language = $this->customlib->getLanguage();
+$language_name = $language["short_code"];
+?>
 <div class="content-wrapper">
     <section class="content-header">
         <h1>
@@ -5,113 +10,67 @@
     </section>
     <section class="content">
         <div class="row">
-            <?php if ($this->rbac->hasPrivilege('recrutement', 'can_add')) {?>
-                <div class="col-md-4">
+            <?php if ($this->rbac->hasPrivilege('clients', 'can_add')) {?>
+                <div class="col-md-12">
                     <!-- Horizontal Form -->
                     <div class="box box-primary">
                         <div class="box-header with-border">
-                            <h3 class="box-title">Ajouter un recrutement</h3>
+                            <h3 class="box-title">Créer une nouvelle offre d'emploi</h3>
                         </div><!-- /.box-header -->
-                        <form id="form1" action="<?php echo site_url('admin/recrutement') ?>"   method="post" accept-charset="utf-8" enctype="multipart/form-data" >
+                        <form id="employeeform" action="<?php echo base_url() ?>admin/recrutements/create" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+
                             <div class="box-body">
-                                <?php echo $this->session->flashdata('msg') ?>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Département</label><small class="req"> *</small>
+                                <?php if ($this->session->flashdata('msg')) { ?>
+                                    <?php echo $this->session->flashdata('msg') ?>
+                                <?php } ?>
+                                <?php
+                                if (isset($error_message)) {
+                                    echo "<div class='alert alert-danger'>" . $error_message . "</div>";
+                                }
+                                ?>
+                                <?php echo $this->customlib->getCSRF(); ?>
 
-                                  <!--  <select name="purpose" class="form-control">
-                                        <option value=""><?php echo $this->lang->line('select'); ?> </option>
-                                        <?php foreach ($Purpose as $key => $value) {?>
-
-                                            <option value="<?php print_r($value['visitors_purpose']);?>"<?php if (set_value('purpose') == $value['visitors_purpose']) {?>selected=""<?php }?>><?php print_r($value['visitors_purpose']);?></option>
-                                        <?php }?>
-
-                                    </select>-->
-                                    <input type="text" class="form-control" value="<?php echo set_value('purpose'); ?>" name="purpose">
-
-                                    <span class="text-danger"><?php echo form_error('purpose'); ?></span>
+                                <div class="form-group col-md-4">
+                                    <label for="title" class="form-label">Titre du poste</label>
+                                    <input type="text" class="form-control" id="title" name="title" value="<?php echo set_value('title'); ?>" required>
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="pwd">Nom du post</label>  <small class="req"> *</small>
-                                    <input type="text" class="form-control" value="<?php echo set_value('name'); ?>" name="name">
-                                    <span class="text-danger"><?php echo form_error('name'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="pwd">Nom du candidat</label>  <small class="req"> *</small>
-                                    <input type="text" class="form-control" value="<?php echo set_value('name'); ?>" name="name">
-                                    <span class="text-danger"><?php echo form_error('name'); ?></span>
+                                <div class="form-group col-md-4">
+                                    <label for="department" class="form-label">Département</label>
+                                    <input type="text" class="form-control" id="department" name="department" value="<?php echo set_value('department'); ?>" required>
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="pwd"><?php echo $this->lang->line('phone'); ?></label>
-                                    <input type="text" class="form-control" value="<?php echo set_value('contact'); ?>" name="contact">
+                                <div class="form-group col-md-4">
+                                    <label for="location" class="form-label">Lieu</label>
+                                    <input type="text" class="form-control" id="location" name="location" value="<?php echo set_value('location'); ?>" required>
+                                </div>
 
+                                <div class="form-group col-md-4">
+                                    <label for="description" class="form-label">Description du poste</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" required><?php echo set_value('description'); ?></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="pwd"><?php echo $this->lang->line('icard'); ?></label>
-                                    <input type="text" class="form-control" value="<?php echo set_value('id_proof'); ?>" name="id_proof">
 
+                                <div class="form-group col-md-4">
+                                    <label for="deadline" class="form-label">Date limite de candidature</label>
+                                    <input type="date" class="form-control" id="deadline" name="deadline" value="<?php echo set_value('deadline'); ?>" required>
                                 </div>
-                                <div class="form-group" hidden>
-                                    <label for="email"><?php echo $this->lang->line('number_of_person'); ?></label>
-                                    <input type="text" class="form-control" value="<?php echo set_value('pepples'); ?>" name="pepples">
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-group">
-                                        <label for="pwd"><?php echo $this->lang->line('date'); ?></label><input type="text" id="date" class="form-control date" value="<?php echo set_value('date', date($this->customlib->getSchoolDateFormat())); ?>"  name="date" readonly="">
-                                        <span class="text-danger"><?php echo form_error('date'); ?></span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="pwd">Status du dossier</label>
-                                    <div class="bootstrap-timepicker">
-                                        <div class="form-group">
-                                            <div class="input-group">
-                                                <select name="status" class="form-control">
-                                                <option value=""><?php echo $this->lang->line('select'); ?> </option>
-                                                    <option value="En attente">En attente </option>
-                                                    <option value="Accepter">Accepter </option>
-                                                    <option value="Refuser">Refuser</option>
-                                             </select>
-                                                <!--<input type="text" name="status" class="form-control" id="status" value="<?php echo set_value('status'); ?>">-->
-                                                <div class="input-group-addon">
 
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="text-danger"><?php echo form_error('time'); ?></span>
+                                <div class="form-group col-md-4">
+                                    <label for="status" class="form-label">Statut</label>
+                                    <select class="form-control" id="status" name="status">
+                                        <option value="open" <?php echo set_select('status', 'open', TRUE); ?>>Ouvert</option>
+                                        <option value="closed" <?php echo set_select('status', 'closed'); ?>>Fermé</option>
+                                    </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="pwd">Heure</label>
-                                    <div class="bootstrap-timepicker">
-                                        <div class="form-group">
-                                            <div class="input-group">
-                                                <input type="text" name="in_time" class="form-control timepicker" id="stime_" value="<?php echo set_value('in_time'); ?>">
-                                                <div class="input-group-addon">
-                                                    <i class="fa fa-clock-o"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="text-danger"><?php echo form_error('out_time'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="pwd"><?php echo $this->lang->line('note'); ?></label>
-                                    <textarea class="form-control" id="description" name="note" name="note" rows="3"><?php echo set_value('note'); ?></textarea>
-                                    <span class="text-danger"><?php echo form_error('date'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputFile"><?php echo $this->lang->line('attach_document'); ?></label>
-                                    <div><input class="filestyle form-control" type='file' name='file'  />
-                                    </div>
-                                    <span class="text-danger"><?php echo form_error('file'); ?></span></div>
+
                             </div><!-- /.box-body -->
+
                             <div class="box-footer">
                                 <button type="submit" class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
                                 <button type="reset" class="btn btn-secondary bg-red">Annuler</button>
                             </div>
                         </form>
+
                     </div>
 
                 </div><!--/.col (right) -->
@@ -119,16 +78,16 @@
             <?php }?>
 
             <div class="col-md-<?php
-if ($this->rbac->hasPrivilege('recrutement', 'can_add')) {
+if ($this->rbac->hasPrivilege('clients', 'can_add')) {
     echo "8";
 } else {
     echo "12";
 }
 ?>">
                 <!-- general form elements -->
-                <div class="box box-primary">
+                <div class="box box-primary" hidden>
                     <div class="box-header ptbnull">
-                        <h3 class="box-title titlefix">Liste des candidats</h3>
+                        <h3 class="box-title titlefix">Liste des Offres d'emploi</h3>
                         <div class="box-tools pull-right">
                         </div><!-- /.box-tools -->
                     </div><!-- /.box-header -->
@@ -138,65 +97,47 @@ if ($this->rbac->hasPrivilege('recrutement', 'can_add')) {
                             <table class="table table-hover table-striped table-bordered example">
                                 <thead>
                                     <tr>
+                                        <th>Titre</th>
                                         <th>Département</th>
-                                        <th>Post</th>
-                                       <th>Nom du candidat</th>
-                                        <th>Téléphone</th>
-                                        <th>Cni</th>
+                                       <th>Lieu</th>
+                                        <th>Description</th>
+                                        <th>Date limite</th>
+                                        <th>Statut</th>
 
-                                       <th>Date</th>
-                                        <th>Heure</th>
-                                        <th>Status</th>
                                         <th class="text-right"><?php echo $this->lang->line('action'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-if (empty($visitor_list)) {
-    ?>
+                                    if (empty($joblist)) {
+                                        ?>
 
-                                        <?php
-} else {
-    foreach ($visitor_list as $key => $value) {
+                                                                            <?php
+                                    } else {
+                                        foreach ($joblist as $key => $value) {
 
-        ?>
+                                            ?>
                                             <tr>
-                                                <td class="mailbox-name"><?php echo $value['purpose']; ?></td>
-                                                <td class="mailbox-name"><?php echo $value['post']; ?></td>
-                                               <td class="mailbox-name"><?php echo $value['name']; ?> </td>
-                                                <td class="mailbox-name"><?php echo $value['contact']; ?> </td>
-                                                <td class="mailbox-name"><?php echo $value['id_proof']; ?> </td>
-                                                <td class="mailbox-name"> <?php echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value['date'])); ?></td>
-                                                <td class="mailbox-name"> <?php echo $value['in_time']; ?></td>
-                                                <td class="mailbox-name"> <?php echo $value['status']; ?></td>
-                                                <!-- <td class="mailbox-name"> <?php echo $value['out_time']; ?></td>-->
+                                                <td class="mailbox-name"><?php echo $value['title']; ?></td>
+                                                <td class="mailbox-name"><?php echo $value['department']; ?></td>
+                                               <td class="mailbox-name"><?php echo $value['location']; ?> </td>
+                                                <td class="mailbox-name"><?php echo $value['description']; ?> </td>
+                                                <td class="mailbox-name"><?php echo $value['deadline']; ?> </td>
+                                                <td class="mailbox-name"><?php echo $value['status']; ?> </td>
                                                 <td class="mailbox-date pull-right white-space-nowrap">
-                                                   <!-- <a data-placement="left"  onclick="getRecord(<?php echo $value['id']; ?>)" class="btn btn-default btn-xs" data-target="#visitordetails" data-toggle="modal"  title="<?php echo $this->lang->line('view'); ?>"><i class="fa fa-reorder"></i></a>-->
-                                                    <?php if ($value['image'] !== "") {?>
-                                                        <a data-placement="left" href="<?php echo base_url(); ?>admin/recrutement/download/<?php echo $value['image']; ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="" data-original-title="<?php echo $this->lang->line('download'); ?>">
-                                                            <i class="fa fa-download"></i>
-                                                        </a>  <?php }?>
-                                                    <?php if ($this->rbac->hasPrivilege('section', 'can_edit')) {?>
-                                                        <a data-placement="left" href="<?php echo base_url(); ?>admin/recrutement/edit/<?php echo $value['id']; ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
+                                                    <?php if ($this->rbac->hasPrivilege('section', 'can_edit')) { ?>
+                                                        <a data-placement="left" href="<?php echo base_url(); ?>admin/candidatures/edit/<?php echo $value['id']; ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
                                                             <i class="fa fa-pencil"></i>
                                                         </a>
-                                                    <?php }
-        ?>
+                                                    <?php } ?>
 
-                                                    <?php if ($this->rbac->hasPrivilege('section', 'can_delete')) {
-            ?>
-                                                        <?php if ($value['image'] !== "") {?><a data-placement="left" href="<?php echo base_url(); ?>admin/recrutement/imagesdelete/<?php echo $value['id']; ?>/<?php echo $value['image']; ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');" data-original-title="<?php echo $this->lang->line('delete'); ?>">
-                                                                <i class="fa fa-remove"></i>
-                                                            </a>
-                                                        <?php } else {?>
-                                                            <a data-placement="left" href="<?php echo base_url(); ?>admin/recrutement/delete/<?php echo $value['id']; ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');" data-original-title="<?php echo $this->lang->line('delete'); ?>">
-                                                                <i class="fa fa-remove"></i>
-                                                            </a>
-                                                            <?php
-}
-        }
-        ?>
+                                                    <?php if ($this->rbac->hasPrivilege('section', 'can_delete')) { ?>
+                                                        <a data-placement="left" href="<?php echo base_url(); ?>admin/candidatures/delete/<?php echo $value['id']; ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm'); ?>');">
+                                                            <i class="fa fa-remove"></i>
+                                                        </a>
+                                                    <?php } ?>
                                                 </td>
+
 
                                             </tr>
                                             <?php
@@ -233,24 +174,4 @@ if (empty($visitor_list)) {
 <link rel="stylesheet" href="<?php echo base_url(); ?>backend/plugins/timepicker/bootstrap-timepicker.min.css">
 <script src="<?php echo base_url(); ?>backend/plugins/timepicker/bootstrap-timepicker.min.js"></script>
 
-<script type="text/javascript">
 
-                                                                $(function () {
-
-                                                                    $(".timepicker").timepicker({
-
-                                                                    });
-                                                                });
-
-                                                                function getRecord(id) {
-                                                                    $.ajax({
-                                                                        url: '<?php echo base_url(); ?>admin/files/details/' + id,
-                                                                        success: function (result) {
-
-                                                                            $('#getdetails').html(result);
-                                                                        }
-
-                                                                    });
-                                                                }
-
-</script>

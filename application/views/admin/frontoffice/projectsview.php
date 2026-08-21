@@ -1,3 +1,22 @@
+<style>
+    .badge.bg-success {
+        background-color: #28a745 !important; /* Vert */
+        color: white !important;
+    }
+    .badge.bg-warning {
+        background-color: #ffc107 !important; /* Jaune */
+        color: black !important;
+    }
+    .badge.bg-danger {
+        background-color: #dc3545 !important; /* Rouge */
+        color: white !important;
+    }
+    .badge.bg-secondary {
+        background-color: #6c757d !important; /* Gris */
+        color: white !important;
+    }
+
+</style>
 <div class="content-wrapper">
     <section class="content-header">
         <h1><i class="fa fa-sitemap"></i> Liste des projets</h1>
@@ -48,6 +67,7 @@
                                 </div><span class="text-danger"><?php echo form_error('to_date'); ?></span>
                             </div>
                             <div class="col-sm-3 col-md-3">
+
                                 <div class="form-group">
                                     <label><?php echo $this->lang->line('status'); ?></label>
                                     <select  id="status" name="status" class="form-control" >
@@ -57,7 +77,7 @@
                                             echo "selected";
                                         }
                                         ?>><?php echo $this->lang->line('all') ?></option>
-                                        <?php foreach ($projects_status as $enkey => $envalue) {
+                                        <?php foreach ($enquiry_status as $enkey => $envalue) {
                                             ?>
                                             <option <?php
                                             if ($enkey == $status) {
@@ -95,95 +115,84 @@
                                             <thead>
                                             <tr>
                                                 <th>Nom du projet</th>
-                                                <th>Objectif</th>
+                                               <!-- <th>Objectif</th>-->
                                                 <th>Budget</th>
-                                                <!--<th>Date de création</th>-->
+                                                <th>Client</th>
+                                                <th>Chef de projet</th>
                                                 <th>Date du début</th>
                                                 <th>Date de fin</th>
-                                                <!--<th>Dernière mise à jour</th>-->
-                                                <th><?php echo $this->lang->line('next_follow_up_date'); ?></th>
+
                                                 <th><?php echo $this->lang->line('status'); ?></th>
                                                 <th class="text-right"><?php echo $this->lang->line('action'); ?></th>
                                             </tr>
                                             </thead>
-                                            <tbody>
                                             <?php
+                                            // Définition des statuts avec traduction
+                                            $config['enquiry_status'] = array(
+                                                'approve'       => lang('approve'),
+                                                'disapprove'    => lang('disapprove'),
+                                                'pending'       => lang('pending'),
+                                                'in_progress'   => lang('in_progress'),
+                                                'on_hold'       => lang('on_hold'),
+                                                'completed'     => lang('completed'),
+                                                'cancelled'     => lang('cancelled'),
+                                                'review'        => lang('review'),
+                                                'draft'         => lang('draft'),
+                                                'archived'      => lang('archived'),
+                                            );
 
-                                            if (empty($projects_list)) {
-                                                ?>
-                                                <?php
-                                            } else {
-                                                foreach ($projects_list as $key => $value) {
-                                                    $current_date = date("Y-m-d");
-                                                    $next_date = $value["next_date"];
-                                                    if (empty($next_date)) {
+                                            // Définition des couleurs associées aux statuts
+                                            $enquiry_status_colors = array(
+                                                'approve'       => 'success',   // vert
+                                                'disapprove'    => 'danger',    // rouge
+                                                'pending'       => 'warning',   // jaune
+                                                'in_progress'   => 'primary',   // bleu
+                                                'on_hold'       => 'secondary', // gris
+                                                'completed'     => 'success',   // vert
+                                                'cancelled'     => 'danger',    // rouge
+                                                'review'        => 'info',      // bleu clair
+                                                'draft'         => 'dark',      // noir/gris foncé
+                                                'archived'      => 'secondary', // gris
+                                            );
+                                            ?>
 
-                                                        $next_date = $value["follow_up_date"];
-                                                    }
-
-                                                    if ($next_date < $current_date) {
-                                                        $class = "class='danger'";
-                                                    } else {
-                                                        $class = "";
-                                                    }
+                                            <tbody>
+                                            <?php if (!empty($projects_list)): ?>
+                                                <?php foreach ($projects_list as $value): ?>
+                                                    <?php
+                                                    $status_key = $value["status"];
+                                                    $status_label = isset($config['status'][$status_key]) ? $config['status'][$status_key] : $status_key;
+                                                    $status_class = isset($status_colors[$status_key]) ? $status_colors[$status_key] : 'secondary';
                                                     ?>
-                                                    <tr <?php echo $class ?>>
-
-                                                        <!--<td class="mailbox-name"><?php echo $value['name']; ?></td>-->
-                                                        <td class="mailbox-name"><?php echo $value['projet']; ?></td>
-                                                        <td class="mailbox-name"><?php echo $value['objet']; ?></td>
-                                                        <td class="mailbox-name"><?php echo $value['code']; ?> </td>
-                                                        <!--<td class="mailbox-name"><?php echo $value['date']; ?></td>-->
-                                                        <td class="mailbox-name"><?php echo $value['start_date']; ?></td>
-                                                        <td class="mailbox-name"><?php echo $value['end_date']; ?></td>
-                                                        <td class="mailbox-name"> <?php
-                                                            if (!empty($next_date)) {
-                                                                echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($next_date));
-                                                            }
-                                                            ?></td>
-                                                       <!-- <td class="mailbox-name"> <?php
-                                                            if (!empty($value["followupdate"])) {
-                                                                echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value['followupdate']));
-                                                            }
-                                                            ?></td>-->
-                                                        <!--<td class="mailbox-name"><?php echo $value['source']; ?></td>-->
-                                                       <!-- <td class="mailbox-name"> <?php
-                                                            if (!empty($value["date"])) {
-                                                                echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value['date']));
-                                                            }
-                                                            ?></td>-->
-
-                                                    <!--    <td class="mailbox-name"> <?php
-                                                    if (!empty($next_date)) {
-                                                        echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($next_date));
-                                                    }
-                                                    ?></td>-->
-                                                        <td> <?php echo $projects_status[$value["status"]] ?></td>
-                                                        <td class="mailbox-date text-right white-space-nowrap">
-                                                            <?php if ($this->rbac->hasPrivilege('follow_up_admission_enquiry', 'can_view')) { ?>
-                                                                <a class="btn btn-default btn-xs" onclick="projects_up('<?php echo $value['id']; ?>', '<?php echo $value['status']; ?>');"  data-target="#projects_up" data-toggle="modal"  title="Suivi du projet">
-                                                                    <i class="fa fa-plus"></i>
-                                                                </a>
-                                                            <?php }
-                                                            ?>
-                                                            <?php if ($this->rbac->hasPrivilege('projet', 'can_edit')) { ?>
-                                                                <a  onclick="getRecord('<?php echo $value['id']; ?>', '<?php echo $value['status']; ?>')" class="btn btn-default btn-xs" data-target="#myModaledit" data-toggle="modal"   title="<?php echo $this->lang->line('edit'); ?>"><i class="fa fa-pencil"></i>
-                                                                </a>
-                                                            <?php }
-                                                            ?>
-                                                            <?php if ($this->rbac->hasPrivilege('projet', 'can_delete')) { ?>
-                                                                <a data-placement="left" href="#" class="btn btn-default btn-xs" data-toggle="tooltip" title="" onclick="delete_enquiry('<?php echo $value["id"] ?>')" data-original-title="<?php echo $this->lang->line('delete'); ?>">
-                                                                    <i class="fa fa-remove"></i>
-                                                                </a>
-                                                            <?php }
-                                                            ?>
+                                                    <tr>
+                                                        <td><?php echo $value['projet']; ?></td>
+                                                        <td><?php echo $value['montant']; ?></td>
+                                                        <td><?php echo $value['client']; ?></td>
+                                                        <td><?php echo $value['chef_projet']; ?></td>
+                                                        <td><?php echo $value['start_date']; ?></td>
+                                                        <td><?php echo $value['end_date']; ?></td>
+                                                        <td>
+                                                            <span class="badge bg-<?php echo $status_class; ?>">
+                                                                <?php echo $status_label; ?>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-right">
+                                                            <a class="btn btn-default btn-xs" onclick="projects_up('<?php echo $value['id']; ?>', '<?php echo $value['status']; ?>');" data-target="#projects_up" data-toggle="modal" title="Suivi du projet">
+                                                                <i class="fa fa-plus"></i>
+                                                            </a>
+                                                            <a onclick="getRecord('<?php echo $value['id']; ?>', '<?php echo $value['status']; ?>')" class="btn btn-default btn-xs" data-target="#myModaledit" data-toggle="modal" title="Modifier">
+                                                                <i class="fa fa-pencil"></i>
+                                                            </a>
+                                                            <a href="#" class="btn btn-default btn-xs" onclick="delete_enquiry('<?php echo $value["id"] ?>')" title="Supprimer">
+                                                                <i class="fa fa-remove"></i>
+                                                            </a>
                                                         </td>
                                                     </tr>
-                                                    <?php
-                                                }
-                                            }
-                                            ?>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
                                             </tbody>
+
+
                                         </table><!-- /.table -->
                                     </div>
                                 </div><!-- /.mail-box-messages -->
@@ -223,15 +232,22 @@
                                     <div class="col-sm-4">
                                         <div class="form-group">
                                             <label for="pwd">Budget</label><small class="req"> *</small>
-                                            <input id="text" autocomplete="off" name="code" placeholder="" type="text" class="form-control"  value="<?php echo set_value('code'); ?>" />
+                                            <input id="text" autocomplete="off" name="montant" placeholder="" type="text" class="form-control"  value="<?php echo set_value('montant'); ?>" />
                                         </div>
                                     </div>
                                     <div class="col-sm-4">
                                         <div class="form-group">
-                                            <label for="pwd">Date de création</label><small class="req"> *</small>
-                                            <input id="date" autocomplete="" name="date" placeholder="" type="date" class="form-control"  value="<?php echo set_value('date', date($this->customlib->getSchoolDateFormat())); ?>" />
+                                            <label for="pwd">Client</label><small class="req"> *</small>
+                                            <input id="text" autocomplete="off" name="client" placeholder="" type="text" class="form-control"  value="<?php echo set_value('client'); ?>" />
                                         </div>
                                     </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label for="pwd">Chef de projet</label><small class="req"> *</small>
+                                            <input id="text" autocomplete="off" name="chef_projet" placeholder="" type="text" class="form-control"  value="<?php echo set_value('chef_projet'); ?>" />
+                                        </div>
+                                    </div>
+
 
                                     <div class="col-sm-4" hidden>
                                         <div class="form-group">
@@ -239,7 +255,7 @@
                                             <input id="number" autocomplete="off" name="contact" placeholder="" type="text" class="form-control"  value="<?php echo set_value('contact'); ?>" />
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-4" hidden>
                                         <div class="form-group">
                                             <label>Objectif</label>
                                             <input type="text" value="<?php echo set_value('objet'); ?>" name="objet" class="form-control">
@@ -272,7 +288,7 @@
                                             <input id="date" autocomplete="" name="end_date" placeholder="" type="date" class="form-control"  value="<?php echo set_value('end_date', date($this->customlib->getSchoolDateFormat())); ?>" />
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-4" hidden>
                                         <div class="form-group">
                                             <label for="pwd">Dernière date mise a jour</label>
                                             <!--<label for="pwd"><?php echo $this->lang->line('next_follow_up_date'); ?></label>-->
@@ -280,12 +296,6 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-4">
-                                        <div class="form-group">
-                                            <label for="email"><?php echo $this->lang->line('description'); ?></label>
-                                            <textarea name="description" class="form-control" ><?php echo set_value('description'); ?></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-4" hidden>
                                         <div class="form-group">
                                             <label><?php echo $this->lang->line('assigned'); ?></label>
                                             <select name="assigned" class="form-control">
@@ -295,8 +305,24 @@
                                                 <?php }
                                                 ?>
                                             </select>
+
+
                                         </div><!--./form-group-->
                                     </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label for="pwd">Date</label><small class="req"> *</small>
+                                            <input id="date" autocomplete="" name="date" placeholder="" type="date" class="form-control"  value="<?php echo set_value('date', date($this->customlib->getSchoolDateFormat())); ?>" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label for="email"><?php echo $this->lang->line('description'); ?></label>
+                                            <textarea name="description" class="form-control" ><?php echo set_value('description'); ?></textarea>
+                                        </div>
+                                    </div>
+
+
                                     <div class="col-sm-3" hidden>
                                         <div class="form-group">
                                             <label for="pwd"><?php echo $this->lang->line('reference'); ?></label>

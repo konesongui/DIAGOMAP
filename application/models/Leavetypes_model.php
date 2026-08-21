@@ -56,6 +56,13 @@ class Leavetypes_model extends MY_model {
         }
     }
 
+    public function update($id, $data)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('leave_types', $data); // nom de la table selon ta BDD
+    }
+
+
     public function getLeaveType() {
 
         $query = $this->db->get('leave_types');

@@ -17,7 +17,7 @@ class Notification extends Admin_Controller
         if (!$this->rbac->hasPrivilege('panneau_notifications', 'can_view')) {
             access_denied();
         }
-        $this->session->set_userdata('top_menu', 'Communications');
+        $this->session->set_userdata('top_menu', 'receptioniste');
         $this->session->set_userdata('sub_menu', 'notification/index');
         $data['title'] = 'Notifications';
 

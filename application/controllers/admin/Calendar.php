@@ -13,6 +13,81 @@ class Calendar extends Admin_Controller
         $this->load->library('pagination');
     }
 
+    public function get_calendar_events()
+    {
+        // Récupération des paramètres GET
+        $staff_id      = $this->input->get('staff_id');
+        $leave_type_id = $this->input->get('leave_type_id');
+        $status        = $this->input->get('status');
+        $start_date    = $this->input->get('start_date');
+        $end_date      = $this->input->get('end_date');
+
+        // Construire la requête
+        $this->db->select('lr.*, s.name, s.surname');
+        $this->db->from('leave_requests lr');
+        $this->db->join('staff s', 's.id = lr.staff_id', 'left'); // à adapter
+
+        // Filtre : employé
+        if (!empty($staff_id)) {
+            $this->db->where('lr.staff_id', $staff_id);
+        }
+
+        // Filtre : type de congé (si vous avez une colonne leave_type_id)
+        if (!empty($leave_type_id)) {
+            $this->db->where('lr.leave_type_id', $leave_type_id);
+        }
+
+        // Filtre : statut
+        if (!empty($status)) {
+            $this->db->where('lr.status', $status);
+        } else {
+            // Par défaut, exclure les refusés (si vous le souhaitez)
+            $this->db->where('lr.status !=', 'disapprove');
+        }
+
+        // Filtre : période (chevauchement) - utilisez leave_from et leave_to
+        if (!empty($start_date) && !empty($end_date)) {
+            // Un congé est affiché si son intervalle [leave_from, leave_to] chevauche [start_date, end_date]
+            // Condition : leave_from <= end_date AND leave_to >= start_date
+            $this->db->where("lr.leave_from <= '{$end_date}' AND lr.leave_to >= '{$start_date}'");
+        } elseif (!empty($start_date)) {
+            // Si seule la date de début est fournie : on prend les congés qui finissent après cette date
+            $this->db->where("lr.leave_to >= '{$start_date}'");
+        } elseif (!empty($end_date)) {
+            // Si seule la date de fin est fournie : on prend les congés qui commencent avant cette date
+            $this->db->where("lr.leave_from <= '{$end_date}'");
+        }
+
+        // Exécution
+        $query = $this->db->get();
+        $leaves = $query->result_array();
+
+        // Formatage des événements FullCalendar
+        $events = [];
+        foreach ($leaves as $leave) {
+            $color = '#28a745'; // approuvé par défaut
+            if ($leave['status'] == 'pending')   $color = '#ffc107';
+            if ($leave['status'] == 'disapprove') $color = '#dc3545';
+
+            $events[] = [
+                'id'    => $leave['id'],
+                'title' => $leave['name'] . ' ' . $leave['surname'],
+                'start' => $leave['leave_from'],
+                'end'   => date('Y-m-d', strtotime($leave['leave_to'] . ' +1 day')), // FullCalendar exclut la fin, on ajoute 1 jour
+                'color' => $color,
+                'extendedProps' => [
+                    'status'          => $leave['status'],
+                    'leave_days'      => $leave['leave_days'],
+                    'employee_remark' => $leave['employee_remark'],
+                    'admin_remark'    => $leave['admin_remark'],
+                ]
+            ];
+        }
+
+        // Retourner le JSON
+        $this->output->set_content_type('application/json')->set_output(json_encode($events));
+    }
+
     public function events()
     {
 

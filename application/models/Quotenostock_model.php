@@ -156,10 +156,12 @@ class Quotenostock_model extends CI_Model {
 
         try {
             // Génération du numéro de devis
-            $quote_number = $this->generateQuoteNumber();
+            $entreprise_id = isset($data['entreprise_id']) ? (int)$data['entreprise_id'] : (int)$this->session->userdata('entreprise_id');
+            $quote_number = $this->generateQuoteNumber($entreprise_id);
 
             // Préparation des données du devis
             $quote_data = array(
+                'entreprise_id' => $entreprise_id,
                 'quote_number' => $quote_number,
                 'customer_id' => $data['customer_id'],
                 'quote_date' => $data['quote_date'],
@@ -380,13 +382,16 @@ class Quotenostock_model extends CI_Model {
      * 
      * @return string
      */
-    private function generateQuoteNumber()
+    private function generateQuoteNumber($entreprise_id = 0)
     {
         $prefix = 'DEV';  // DEV pour Devis
         $date = date('Ym');  // Format YYYYMM
 
-        // Recherche le dernier numéro pour ce mois
+        // Recherche le dernier numéro pour ce mois et cette entreprise
         $this->db->like('quote_number', $prefix . '-' . $date, 'after');
+        if ($entreprise_id > 0 && in_array('entreprise_id', $this->db->list_fields($this->table))) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $query = $this->db->get($this->table);

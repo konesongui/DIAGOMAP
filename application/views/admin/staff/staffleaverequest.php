@@ -1,4 +1,4 @@
-<div class="content-wrapper">  
+<div class="content-wrapper">
     <section class="content-header">
         <h1><i class="fa fa-sitemap"></i> <?php echo $this->lang->line('human_resource'); ?>
             <?php
@@ -6,22 +6,21 @@
                 ?>
                 <small class="pull-right"><a href="#addleave" onclick="addLeave()" role="button" class="btn btn-primary btn-sm checkbox-toggle pull-right edit_setting" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing"><?php echo $this->lang->line('add'); ?> <?php echo $this->lang->line('leave_request'); ?></a></small>
             <?php } ?></h1>
-
-
     </section>
+
     <!-- Main content -->
     <section class="content">
         <div class="row">
             <div class="col-md-12">
-
                 <div class="box box-primary">
                     <div class="box-header ptbnull">
-                        <h3 class="box-title titlefix"><?php echo $this->lang->line('approve_leave_request'); ?></h3> <?php
+                        <h3 class="box-title titlefix"><?php echo $this->lang->line('approve_leave_request'); ?></h3>
+                        <?php
                         if ($this->rbac->hasPrivilege('approve_leave_request', 'can_add')) {
                             ?>
                             <small class="pull-right"><a href="#addleave" onclick="addLeave()" role="button" class="btn btn-primary btn-sm checkbox-toggle pull-right edit_setting" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing"><?php echo $this->lang->line('add'); ?> <?php echo $this->lang->line('leave_request'); ?></a></small>
                         <?php } ?>
-                    </div><!-- /.box-header -->
+                    </div>
                     <div class="box-body">
                         <div class="row">
                             <div class="col-md-12">
@@ -29,92 +28,80 @@
                                     <div class="download_label"><?php echo $this->lang->line('approve_leave_request'); ?></div>
                                     <table class="table table-striped table-bordered table-hover example">
                                         <thead>
-
                                         <th>Nom et prénom</th>
                                         <th><?php echo $this->lang->line('leave_type'); ?></th>
                                         <th><?php echo $this->lang->line('leave'); ?> <?php echo $this->lang->line('date'); ?></th>
-                                        <!--<th><?php echo $this->lang->line('days'); ?></th>-->
                                         <th><?php echo $this->lang->line('apply'); ?> <?php echo $this->lang->line('date'); ?></th>
+                                        <th>Durée</th>
+                                        <th>Date de retour</th>
                                         <th><?php echo $this->lang->line('status'); ?></th>
                                         <th class="text-right no-print"><?php echo $this->lang->line('action'); ?></th>
-
                                         </thead>
                                         <tbody>
-                                            <?php
-                                            $i = 0;
-                                            foreach ($leave_request as $key => $value) {
-                                                ?>
-                                                <tr>   
-
-                                                    <td><span data-toggle="popover" class="detail_popover" data-original-title="" title=""><?php echo $value['name'] . " " . $value['surname']; ?></span>
-                                                        <div class="fee_detail_popover" style="display: none"><?php echo $this->lang->line('staff_id'); ?>: <?php echo $value['employee_id']; ?></div></td>
-                                                    <td><?php echo $value["type"] ?></td>
-                                                    <td><?php echo date($this->customlib->getSchoolDateFormat(), strtotime($value["leave_from"])) ?> - <?php echo date($this->customlib->getSchoolDateFormat(), strtotime($value["leave_to"])) ?></td>
-
-                                                   <!-- <td><?php echo $value["leave_days"]; ?></td>-->
-                                                    <td><?php echo date($this->customlib->getSchoolDateFormat(), strtotime($value["date"])); ?></td>
-                                                    <?php
-                                                    if ($value["status"] == "approve") {
-                                                        $label = "class='label label-success'";
-                                                    } else if ($value["status"] == "pending") {
-                                                        $label = "class='label label-warning'";
-                                                    } else if ($value["status"] == "disapprove") {
-                                                        $label = "class='label label-danger'";
-                                                    }
-                                                    ?>
-                                                    <td><span data-toggle="popover" class="detail_popover" data-original-title="" title=""><small <?php echo $label ?>><?php echo $status[$value["status"]]; ?></small></span>
-
-                                                        <div class="fee_detail_popover" style="display: none"><?php echo $this->lang->line('submitted_by'); ?>: <?php echo $value['applied_by']; ?></div></td>
-                                                    <td class="pull-right no-print">
-                                                        <a data-placement="left" href="#leavedetails" onclick="getRecord('<?php echo $value["id"] ?>')" role="button" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('view'); ?>" ><i class="fa fa-reorder"></i></a>
-
-                                                        <?php if ($value["applied_by"] == $this->customlib->getAdminSessionUserName()) { ?>
-                                                            <?php
-                                                            if ($this->rbac->hasPrivilege('approve_leave_request', 'can_edit')) {
-                                                                ?> 
-                                                                <a data-placement="left" href="#addleave" onclick="editRecord('<?php echo $value["id"] ?>')" role="button" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>" ><i class="fa fa-pencil"></i></a>
-                                                            <?php } ?>
-
-                                                        <?php } ?>
-                                                        <?php if (!empty($value['document_file'])) { ?>
-                                                            <a data-placement="left" href="<?php echo base_url(); ?>admin/staff/download/<?php echo $value['staff_id'] . "/" . $value['document_file']; ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('download'); ?>">
-                                                                <i class="fa fa-download"></i>
-                                                            </a>  
-                                                        <?php }
-                                                        ?>
-                                                        <?php if ($value["applied_by"] == $this->customlib->getAdminSessionUserName()) { ?>
-
-                                                            <a onclick="getDelete('<?php echo $value["id"] ?>')"  class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" ><i class="fa fa-remove"></i></a>
-
-
-                                                            <?php
-                                                        } else {
-
-                                                            if ($this->rbac->hasPrivilege('approve_leave_request', 'can_delete')) {
-                                                                ?> 
-                                                                <a onclick="getDelete('<?php echo $value["id"] ?>')"  class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" ><i class="fa fa-remove"></i></a>
-                                                            <?php } ?>
-                                                        <?php }
-                                                        ?>
-                                                    </td>
-
-                                                </tr>
+                                        <?php
+                                        $i = 0;
+                                        foreach ($leave_request as $key => $value) {
+                                            ?>
+                                            <tr>
+                                                <td><span data-toggle="popover" class="detail_popover" data-original-title="" title=""><?php echo $value['name'] . " " . $value['surname']; ?></span>
+                                                    <div class="fee_detail_popover" style="display: none"><?php echo $this->lang->line('staff_id'); ?>: <?php echo $value['employee_id']; ?></div></td>
+                                                <td><?php echo $value["type"] ?></td>
+                                                <td><?php echo date($this->customlib->getSchoolDateFormat(), strtotime($value["leave_from"])) ?> - <?php echo date($this->customlib->getSchoolDateFormat(), strtotime($value["leave_to"])) ?></td>
+                                                <td><?php echo date($this->customlib->getSchoolDateFormat(), strtotime($value["date"])); ?></td>
+                                                <td><?php echo $value["leave_days"] ?></td>
+                                                <td><?php echo $value["return_date"] ?></td>
                                                 <?php
-                                                $i++;
-                                            }
-                                            ?> 
+                                                if ($value["status"] == "approve") {
+                                                    $label = "class='label label-success'";
+                                                } else if ($value["status"] == "pending") {
+                                                    $label = "class='label label-warning'";
+                                                } else if ($value["status"] == "disapprove") {
+                                                    $label = "class='label label-danger'";
+                                                }
+                                                ?>
+                                                <td><span data-toggle="popover" class="detail_popover" data-original-title="" title=""><small <?php echo $label ?>><?php echo $status[$value["status"]]; ?></small></span>
+                                                    <div class="fee_detail_popover" style="display: none"><?php echo $this->lang->line('submitted_by'); ?>: <?php echo $value['applied_by']; ?></div></td>
+                                                <td class="pull-right no-print">
+                                                    <a data-placement="left" href="#leavedetails" onclick="getRecord('<?php echo $value["id"] ?>')" role="button" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('view'); ?>" ><i class="fa fa-reorder"></i></a>
+
+                                                    <?php if ($value["applied_by"] == $this->customlib->getAdminSessionUserName()) { ?>
+                                                        <?php
+                                                        if ($this->rbac->hasPrivilege('approve_leave_request', 'can_edit')) {
+                                                            ?>
+                                                            <a data-placement="left" href="#addleave" onclick="editRecord('<?php echo $value["id"] ?>')" role="button" class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>" ><i class="fa fa-pencil"></i></a>
+                                                        <?php } ?>
+                                                    <?php } ?>
+                                                    <?php if (!empty($value['document_file'])) { ?>
+                                                        <a data-placement="left" href="<?php echo base_url(); ?>admin/staff/download/<?php echo $value['staff_id'] . "/" . $value['document_file']; ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('download'); ?>">
+                                                            <i class="fa fa-download"></i>
+                                                        </a>
+                                                    <?php } ?>
+                                                    <?php if ($value["applied_by"] == $this->customlib->getAdminSessionUserName()) { ?>
+                                                        <a onclick="getDelete('<?php echo $value["id"] ?>')"  class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" ><i class="fa fa-remove"></i></a>
+                                                    <?php } else { ?>
+                                                        <?php if ($this->rbac->hasPrivilege('approve_leave_request', 'can_delete')) { ?>
+                                                            <a onclick="getDelete('<?php echo $value["id"] ?>')"  class="btn btn-default btn-xs" data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" ><i class="fa fa-remove"></i></a>
+                                                        <?php } ?>
+                                                    <?php } ?>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                            $i++;
+                                        }
+                                        ?>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
-                    </div>               
+                    </div>
                 </div>
-            </div> 
+            </div>
         </div>
     </section>
 </div>
 
+<!-- Modal des détails de la demande de congé -->
 <div id="leavedetails" class="modal fade" role="dialog">
     <div class="modal-dialog modal-dialog2 modal-lg">
         <div class="modal-content">
@@ -123,10 +110,9 @@
                 <h4 class="modal-title"><?php echo $this->lang->line('details'); ?></h4>
             </div>
             <div class="modal-body">
-
                 <div class="row">
                     <form role="form" id="leavedetails_form" action="">
-                        <div class="col-md-12 table-responsive">  
+                        <div class="col-md-12 table-responsive">
                             <table class="table mb0 table-striped table-bordered examples">
                                 <tr>
                                     <th width="15%"><?php echo $this->lang->line('name'); ?></th>
@@ -142,18 +128,21 @@
                                     <th><?php echo $this->lang->line('leave_type'); ?></th>
                                     <td><span id="leave_type"></span>
                                         <input id="leave_request_id" name="leave_request_id" placeholder="" type="hidden" class="form-control" />
-                                        <span class="text-danger"><?php echo form_error('leave_request_id'); ?></span></td>
+                                        <span class="text-danger"><?php echo form_error('leave_request_id'); ?></span>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th><?php echo $this->lang->line('leave'); ?></th>
-                                    <td><span id='leave_from'></span> - <label> </label><span id='leave_to'> </span>
-                                        <span class="text-danger"><?php echo form_error('leave_from'); ?></span></td>
-                                    <th><?php echo $this->lang->line('apply'); ?> <?php echo $this->lang->line('date'); ?></th>
-                                    <td><span id="applied_date"></span></td>
+                                    <td><span id='leave_from'></span> - <span id='leave_to'></span>
+                                        <span class="text-danger"><?php echo form_error('leave_from'); ?></span>
+                                    </td>
+                                    <th>Date de retour prévue</th>
+                                    <td><span id="return_date"></span></td>
                                 </tr>
                                 <tr>
-                                    <?php if ($this->rbac->hasPrivilege('approve_leave_request', 'can_edit')) {
-                                        ?>
+                                    <th><?php echo $this->lang->line('apply'); ?> <?php echo $this->lang->line('date'); ?></th>
+                                    <td><span id="applied_date"></span></td>
+                                    <?php if ($this->rbac->hasPrivilege('approve_leave_request', 'can_edit')) { ?>
                                         <th><?php echo $this->lang->line('status'); ?></th>
                                         <td>
                                             <label class="radio-inline">
@@ -163,46 +152,50 @@
                                                 <input type="radio" value="<?php echo "approve"; ?>" name="status"><?php echo $status["approve"]; ?>
                                             </label>
                                             <label class="radio-inline">
-                                                <input type="radio" value="<?php echo "disapprove"; ?>" name="status"><?php echo $status["disapprove"]; ?> 
+                                                <input type="radio" value="<?php echo "disapprove"; ?>" name="status"><?php echo $status["disapprove"]; ?>
                                             </label>
                                             <span class="text-danger"><?php echo form_error('status'); ?></span>
                                         </td>
-                                    <?php }
-                                    ?>
-
+                                    <?php } else { ?>
+                                        <th><?php echo $this->lang->line('status'); ?></th>
+                                        <td><span id="status"></span></td>
+                                    <?php } ?>
+                                </tr>
+                                <tr>
                                     <th><?php echo $this->lang->line('reason'); ?></th>
-                                    <td><span id="remark"> </span></td>
+                                    <td colspan="3"><span id="remark"></span></td>
                                 </tr>
                                 <tr>
                                     <th><?php echo $this->lang->line('note'); ?></th>
-                                </tr>
-                                <tr>
-                                    <td colspan=" 4">
-                                        <div id="reason">
-                                            <textarea class="form-control" style="resize: none;" rows="2" id="detailremark" name="detailremark" placeholder=""></textarea>
-                                            <span class="text-danger"><?php echo form_error('address'); ?></span>
-                                        </div>
+                                    <td colspan="3">
+                                        <textarea class="form-control" style="resize: none;" rows="2" id="detailremark" name="detailremark" placeholder=""></textarea>
+                                        <span class="text-danger"><?php echo form_error('address'); ?></span>
                                     </td>
                                 </tr>
-
                                 <tr>
-                                    <?php
-                                    if ($this->rbac->hasPrivilege('approve_leave_request', 'can_edit')) {
-                                        ?> 
-                                        <td colspan="4">
-                                            <button type="button" style="width: auto;"  class="btn btn-primary submit_schsetting pull-right" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing"> <?php echo $this->lang->line('save'); ?></button>
-                                        </td>
-                                    <?php } ?>
+                                    <td colspan="4" class="text-center" id="certificate_link_container" style="display: none;">
+                                        <a href="#" id="download_certificate" class="btn btn-success" target="_blank">
+                                            <i class="fa fa-file-pdf-o"></i> Télécharger l'attestation de congé
+                                        </a>
+                                    </td>
                                 </tr>
+                                <?php if ($this->rbac->hasPrivilege('approve_leave_request', 'can_edit')) { ?>
+                                    <tr>
+                                        <td colspan="4">
+                                            <button type="button" style="width: auto;" class="btn btn-primary submit_schsetting pull-right" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing"> <?php echo $this->lang->line('save'); ?></button>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
                             </table>
                         </div>
-                    </form>                  
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal d'ajout / édition de demande de congé -->
 <div id="addleave" class="modal fade " role="dialog">
     <div class="modal-dialog modal-dialog2 modal-lg">
         <div class="modal-content">
@@ -214,12 +207,10 @@
                 <div class="row">
                     <form role="form" id="addleave_form" method="post" enctype="multipart/form-data" action="">
                         <div class="form-group  col-xs-12 col-sm-12 col-md-12 col-lg-6">
-                            <label>
-                                <?php echo $this->lang->line('role'); ?></label><small class="req"> *</small>
-                            <select name="role" id="role"  class="form-control" onchange="getEmployeeName(this.value)">
+                            <label><?php echo $this->lang->line('role'); ?></label><small class="req"> *</small>
+                            <select name="role" id="role" class="form-control" onchange="getEmployeeName(this.value)">
                                 <option value="" ><?php echo $this->lang->line('select') ?></option>
-                                <?php foreach ($staffrole as $rolekey => $rolevalue) {
-                                    ?>
+                                <?php foreach ($staffrole as $rolekey => $rolevalue) { ?>
                                     <option value="<?php echo $rolevalue["id"] ?>"><?php echo $rolevalue["type"] ?></option>
                                 <?php } ?>
                             </select>
@@ -227,88 +218,75 @@
                         </div>
                         <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('name'); ?></label><small class="req"> *</small>
-                            <select name="empname" id="empname" value=""onchange="   getLeaveTypeDDL(this.value)"  class="form-control">
+                            <select name="empname" id="empname" value="" onchange="getLeaveTypeDDL(this.value)" class="form-control">
                                 <option value="" selected><?php echo $this->lang->line('select') ?></option>
-                            </select> 
+                            </select>
                             <span class="text-danger"><?php echo form_error('empname'); ?></span>
                         </div>
                         <div class="form-group  col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('apply'); ?> <?php echo $this->lang->line('date'); ?></label>
                             <input type="text" id="applieddate" name="applieddate" value="<?php echo date($this->customlib->getSchoolDateFormat()) ?>" class="form-control date">
                         </div>
-                        <div class="form-group  col-xs-12 col-sm-12 col-md-12 col-lg-6 ">
-                            <label>
-                                <?php echo $this->lang->line('leave_type'); ?></label><small class="req"> *</small>
+                        <div class="form-group  col-xs-12 col-sm-12 col-md-12 col-lg-6">
+                            <label><?php echo $this->lang->line('leave_type'); ?></label><small class="req"> *</small>
                             <div id="leavetypeddl">
                                 <select name="leave_type" id="leave_type" class="form-control" >
                                     <option value=""><?php echo $this->lang->line('select') ?></option>
-                                    <?php foreach ($leavetype as $leave_key => $leave_value) {
-                                        ?>
+                                    <?php foreach ($leavetype as $leave_key => $leave_value) { ?>
                                         <option value="<?php echo $leave_value["id"] ?>"><?php echo $leave_value["type"] ?></option>
-                                    <?php }
-                                    ?>
+                                    <?php } ?>
                                 </select>
                             </div>
                             <span class="text-danger"><?php echo form_error('leave_type'); ?></span>
                         </div>
-                          <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
+                        <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('leave'); ?> <?php echo $this->lang->line('from'); ?> <?php echo $this->lang->line('date'); ?></label><small class="req"> *</small>
-
-                                <input type="text" readonly id="leave_from_date" name="leave_from_date" class="form-control date" >
-                           
-                            <!-- /.input group -->
+                            <input type="text" readonly id="leave_from_date" name="leave_from_date" class="form-control date" >
                         </div>
-                         <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
+                        <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('leave'); ?> <?php echo $this->lang->line('to'); ?> <?php echo $this->lang->line('date'); ?></label><small class="req"> *</small>
-
-                                <input type="text" readonly id="leave_to_date" name="leave_to_date" class="form-control date" >
-                           
-                            <!-- /.input group -->
+                            <input type="text" readonly id="leave_to_date" name="leave_to_date" class="form-control date" >
                         </div>
-
+                        <!-- NOUVEAU CHAMP : Date de retour prévue -->
+                        <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
+                            <label>Date de retour prévue</label>
+                            <input type="text" id="return_date" name="return_date" class="form-control date" placeholder="Sélectionnez la date de retour">
+                        </div>
                         <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('reason'); ?></label><br/>
                             <textarea name="reason" id="reason" style="resize: none;" rows="4" class="form-control"></textarea>
                             <input type="hidden" name="leaverequestid" id="leaverequestid">
                         </div>
-
-                        <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6" id="reason">
+                        <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('note'); ?></label>
-
                             <textarea class="form-control" style="resize: none;" rows="4" id="remark" name="remark" placeholder=""></textarea>
                             <span class="text-danger"><?php echo form_error('remark'); ?></span>
-
                         </div>
                         <div class="form-group  col-xs-12 col-sm-12 col-md-12 col-lg-6">
                             <label><?php echo $this->lang->line('attach_document'); ?></label>
                             <input type="file" id="file" name="userfile" class="filestyle form-control">
-                            <input type="hidden" id="filename" name="filename" > 
+                            <input type="hidden" id="filename" name="filename" >
                         </div>
-
                         <div class="form-group  col-xs-12 col-sm-12 col-md-12 col-lg-6">
-                            <label><?php echo $this->lang->line('status'); ?> </label>
-                            <br/>
+                            <label><?php echo $this->lang->line('status'); ?> </label><br/>
                             <label class="radio-inline">
-
                                 <input type="radio" value="<?php echo "pending" ?>" name="addstatus" checked><?php echo $status["pending"] ?>
                             </label>
                             <label class="radio-inline">
-
-                                <input type="radio" value="<?php echo "approve" ?>"  name="addstatus" ><?php echo $status["approve"] ?></label>
+                                <input type="radio" value="<?php echo "approve" ?>" name="addstatus"><?php echo $status["approve"] ?>
+                            </label>
                             <label class="radio-inline">
-
-                                <input type="radio" value="<?php echo "disapprove" ?>"  name="addstatus"><?php echo $status["disapprove"] ?></label>
-
+                                <input type="radio" value="<?php echo "disapprove" ?>" name="addstatus"><?php echo $status["disapprove"] ?>
+                            </label>
                             <span class="text-danger"><?php echo form_error('addstatus'); ?></span>
                         </div>
                         <div class="clearfix"></div>
                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                             <button type="submit" class="btn btn-primary submit_addLeave pull-right" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing"> <?php echo $this->lang->line('save'); ?></button>
-                            <input type="reset"  name="resetbutton" id="resetbutton" style="display:none">
+                            <input type="reset" name="resetbutton" id="resetbutton" style="display:none">
                             <button type="button" style="display: none;" id="clearform" onclick="clearForm(this.form)" class="btn btn-primary submit_addLeave pull-right" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing"> <?php echo $this->lang->line('clear'); ?></button>
-
                         </div>
-                    </form>                  
+                    </form>
                 </div>
             </div>
         </div>
@@ -316,39 +294,9 @@
 </div>
 
 <script type="text/javascript">
-    /*--dropify--*/
     $(document).ready(function () {
-        // Basic
         $('.filestyle').dropify();
-    });
-    /*--end dropify--*/
-</script>
 
-<script type="text/javascript">
-
-    function getDelete(id) {
-        var result = confirm("<?php echo $this->lang->line('delete_confirm'); ?>");
-        if (result) {
-            $.ajax({
-                url: "<?php echo base_url(); ?>admin/leaverequest/remove/" + id,
-                type: "POST",
-
-                success: function (res)
-                {
-                    successMsg('<?php echo $this->lang->line("delete_message"); ?>');
-                    window.location.reload(true);
-                },
-                error: function (xhr) { // if error occured
-                    alert("Error occured.please try again");
-                },
-                complete: function () {
-
-                }
-            });
-        }
-    }
-
-    $(document).ready(function () {
         $('.detail_popover').popover({
             placement: 'right',
             title: '',
@@ -360,26 +308,49 @@
             }
         });
 
-      
-        $('#reservation').daterangepicker({
-            timePickerIncrement: 5, locale: {
-                format: calendar_date_time_format
-            }});
+        // Calcul automatique de la date de retour (leave_to + 1 jour)
+        $(document).on('change', '#leave_to_date', function() {
+            var leave_to = $(this).val();
+            if (leave_to) {
+                // Convertir la date au format YYYY-MM-DD
+                var parts = leave_to.split('/');
+                if (parts.length === 3) {
+                    var date = new Date(parts[2], parts[1]-1, parts[0]);
+                    date.setDate(date.getDate() + 1);
+                    var day = ("0" + date.getDate()).slice(-2);
+                    var month = ("0" + (date.getMonth() + 1)).slice(-2);
+                    var year = date.getFullYear();
+                    $('#return_date').val(day + '/' + month + '/' + year);
+                }
+            }
+        });
     });
 
-    function addLeave() {
+    function getDelete(id) {
+        var result = confirm("<?php echo $this->lang->line('delete_confirm'); ?>");
+        if (result) {
+            $.ajax({
+                url: "<?php echo base_url(); ?>admin/leaverequest/remove/" + id,
+                type: "POST",
+                success: function (res) {
+                    successMsg('<?php echo $this->lang->line("delete_message"); ?>');
+                    window.location.reload(true);
+                },
+                error: function (xhr) {
+                    alert("Error occured.please try again");
+                }
+            });
+        }
+    }
 
+    function addLeave() {
         $('input[type=text]').val('');
         $('textarea[name="reason"]').text('');
+        $('input[name="return_date"]').val('');
         $("#resetbutton").click();
         $("#clearform").click();
-
-        var date_format = '<?php echo $result = strtr($this->customlib->getSchoolDateFormat(), ['d' => 'dd', 'm' => 'mm', 'Y' => 'yyyy',]) ?>';
-
-       
-        var date = '<?php echo set_value('date', date($this->customlib->getSchoolDateFormat())); ?>';
+        var date = '<?php echo date($this->customlib->getSchoolDateFormat()); ?>';
         $('input[type=text][name=applieddate]').val(date);
-
         $('#addleave').modal({
             show: true,
             backdrop: 'static',
@@ -388,7 +359,6 @@
     }
 
     function getRecord(id) {
-
         $('input:radio[name=status]').attr('checked', false);
         var base_url = '<?php echo base_url() ?>';
         $.ajax({
@@ -397,7 +367,6 @@
             data: {id: id},
             dataType: "json",
             success: function (result) {
-
                 $('input[name="leave_request_id"]').val(result.id);
                 $('#employee_id').html(result.employee_id);
                 $('#name').html(result.name + ' ' + result.surname);
@@ -409,27 +378,33 @@
                 $('#applied_date').html(result.date);
                 $('#appliedby').html(result.applied_by);
                 $("#detailremark").text(result.admin_remark);
+                // Affichage de la date de retour
+                $('#return_date').html(result.return_date ? result.return_date : 'Non renseignée');
 
                 if (result.status == 'approve') {
                     $('input:radio[name=status]')[1].checked = true;
-
                 } else if (result.status == 'pending') {
                     $('input:radio[name=status]')[0].checked = true;
-
                 } else if (result.status == 'disapprove') {
                     $('input:radio[name=status]')[2].checked = true;
+                }
 
+                // Gérer l'affichage du lien de téléchargement de l'attestation (PDF)
+                if (result.status == 'approve') {
+                    var url = base_url + 'admin/leaverequest/generate_leave_certificate/' + result.id;
+                    $('#download_certificate').attr('href', url);
+                    $('#certificate_link_container').show();
+                } else {
+                    $('#certificate_link_container').hide();
                 }
             }
         });
-
         $('#leavedetails').modal({
             show: true,
             backdrop: 'static',
             keyboard: false
         });
     }
-    ;
 
     $(document).on('click', '.submit_schsetting', function (e) {
         var $this = $(this);
@@ -440,21 +415,16 @@
             data: $('#leavedetails_form').serialize(),
             dataType: 'json',
             success: function (data) {
-
                 if (data.status == "fail") {
-
                     var message = "";
                     $.each(data.error, function (index, value) {
-
                         message += value;
                     });
                     errorMsg(message);
                 } else {
-
                     successMsg(data.message);
                     window.location.reload(true);
                 }
-
                 $this.button('reset');
             }
         });
@@ -472,7 +442,6 @@
 
     $(document).ready(function (e) {
         $("#addleave_form").on('submit', (function (e) {
-
             e.preventDefault();
             $.ajax({
                 url: "<?php echo site_url("admin/leaverequest/addLeave") ?>",
@@ -482,8 +451,7 @@
                 contentType: false,
                 cache: false,
                 processData: false,
-                success: function (data)
-                {
+                success: function (data) {
                     if (data.status == "fail") {
                         var message = "";
                         $.each(data.error, function (index, value) {
@@ -500,9 +468,8 @@
     });
 
     function getEmployeeName(role) {
-        var ne = "";
         var base_url = '<?php echo base_url() ?>';
-        $("#empname").html('<option value=><?php echo $this->lang->line('select') ?></option>');
+        $("#empname").html('<option value=""><?php echo $this->lang->line('select') ?></option>');
         var div_data = "";
         $.ajax({
             type: "POST",
@@ -510,20 +477,17 @@
             data: {'role': role},
             dataType: "json",
             success: function (data) {
-                $.each(data, function (i, obj)
-                {
+                $.each(data, function (i, obj) {
                     div_data += "<option value='" + obj.id + "' >" + obj.name + " " + obj.surname + " " + "(" + obj.employee_id + ")</option>";
                 });
-
                 $('#empname').append(div_data);
             }
         });
     }
 
     function setEmployeeName(role, id = '') {
-        var ne = "";
         var base_url = '<?php echo base_url() ?>';
-        $("#empname").html("<option value=><?php echo $this->lang->line('select') ?></option>");
+        $("#empname").html("<option value=''><?php echo $this->lang->line('select') ?></option>");
         var div_data = "";
         $.ajax({
             type: "POST",
@@ -531,17 +495,10 @@
             data: {'role': role},
             dataType: "json",
             success: function (data) {
-                $.each(data, function (i, obj)
-                {
-                    if (obj.employee_id == id) {
-                        ne = 'selected';
-                    } else {
-                        ne = "";
-                    }
-
-                    div_data += "<option value='" + obj.id + "' " + ne + " >" + obj.name + " " + obj.surname + " " + "(" + obj.employee_id + ")</option>";
+                $.each(data, function (i, obj) {
+                    var selected = (obj.employee_id == id) ? 'selected' : '';
+                    div_data += "<option value='" + obj.id + "' " + selected + " >" + obj.name + " " + obj.surname + " " + "(" + obj.employee_id + ")</option>";
                 });
-
                 $('#empname').append(div_data);
             }
         });
@@ -560,12 +517,9 @@
     }
 
     function editRecord(id) {
-        var leave_from = '05/01/2018';
-        var leave_to = '05/10/2018';
         $('textarea[name="reason"]').text('');
         $('textarea[name="remark"]').text('');
         $('input:radio[name=addstatus]').attr('checked', false);
-
         var base_url = '<?php echo base_url() ?>';
         $.ajax({
             url: base_url + 'admin/leaverequest/leaveRecord',
@@ -573,79 +527,50 @@
             data: {id: id},
             dataType: "json",
             success: function (result) {
-
-                leave_from = result.leavefrom;
-                leave_to = result.leaveto;
-
                 setEmployeeName(result.staff_role, result.employee_id);
                 getLeaveTypeDDL(result.staff_id, result.lid);
                 $('#role').val(result.staff_role);
-
                 $('input[name="applieddate"]').val(result.date);
-                $('input[name="leavefrom"]').val(new Date(result.leave_from).toString(calendar_date_time_format));
-                $('input[name="filename"]').val(result.document_file);
-
-               $('#leave_from_date').val(result.leavefrom);
+                $('#leave_from_date').val(result.leavefrom);
                 $('#leave_to_date').val(result.leaveto);
-
+                // Remplir la date de retour dans le formulaire d'édition
+                $('input[name="return_date"]').val(result.return_date);
                 $('input[name="leaverequestid"]').val(id);
                 $('textarea[name="reason"]').text(result.employee_remark);
                 $('textarea[name="remark"]').text(result.admin_remark);
-
                 if (result.status == 'approve') {
                     $('input:radio[name=addstatus]')[1].checked = true;
-
                 } else if (result.status == 'pending') {
                     $('input:radio[name=addstatus]')[0].checked = true;
-
                 } else if (result.status == 'disapprove') {
                     $('input:radio[name=addstatus]')[2].checked = true;
-
                 }
-
-                $('#reservation').daterangepicker({
-                    startDate: leave_from,
-                    endDate: leave_to,
-                    timePickerIncrement: 5, locale: {
-                        format: calendar_date_time_format
-                    }
-                });
             }
         });
-        var date_format = '<?php echo $result = strtr($this->customlib->getSchoolDateFormat(), ['m' => 'mm', 'd' => 'dd', 'Y' => 'yyyy',]) ?>';
-
-
         $('#addleave').modal({
             show: true,
             backdrop: 'static',
             keyboard: false
         });
     }
-    ;
 
     function clearForm(oForm) {
         var elements = oForm.elements;
         for (i = 0; i < elements.length; i++) {
             field_type = elements[i].type.toLowerCase();
             switch (field_type) {
-
                 case "text":
                 case "password":
-
                 case "hidden":
-
                     elements[i].value = "";
                     break;
-
                 case "select-one":
                 case "select-multi":
                     elements[i].selectedIndex = "";
                     break;
-
                 default:
                     break;
             }
         }
     }
-
 </script>

@@ -4,7 +4,7 @@ namespace App\Controllers;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\ErrorCorrectionLevel;
-
+use CodeIgniter\Files\File;
 use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class BarcodeController extends Admin_Controller
@@ -12,6 +12,20 @@ class BarcodeController extends Admin_Controller
     public function index()
     {
         return view('qr_form');
+    }
+    public function generateQrCode($invoiceId)
+    {
+        $data = base_url("facture/view/" . $invoiceId); // ou des infos concaténées
+        $qrCode = QrCode::create($data);
+        $writer = new PngWriter();
+
+        $result = $writer->write($qrCode);
+
+        // Sauvegarder dans le dossier
+        $filename = WRITEPATH . 'qr/facture_' . $invoiceId . '.png';
+        $result->saveToFile($filename);
+
+        return $filename;
     }
 
     public function generateQr()

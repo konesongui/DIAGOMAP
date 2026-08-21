@@ -250,6 +250,7 @@ class Item extends Admin_Controller {
             'item_category_id' => $this->input->post('item_category_id'),
             'name' => $this->input->post('name'),
             'unit' => $this->input->post('unit'),
+            'unit_price' => $this->input->post('unit_price'),
             'description' => $this->input->post('description'),
         ];
 

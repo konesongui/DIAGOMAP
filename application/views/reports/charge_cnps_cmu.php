@@ -249,7 +249,7 @@ $moisEn = [
 
 
 
-                                    <td><?php echo $this->lang->line('grand_total'); ?> </td>
+                                    <td class="text text-left text-primary"><?php echo $this->lang->line('grand_total'); ?> </td>
 
                                     <td><?php echo (number_format($cmu, 2, '.', '')); ?> </td>
 

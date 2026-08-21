@@ -15,8 +15,8 @@ class Journal extends Admin_Controller {
         if (!$this->rbac->hasPrivilege('clients', 'can_view')) {
             access_denied();
         }
-        $this->session->set_userdata('top_menu', 'Income');
-        $this->session->set_userdata('sub_menu', 'journal/index');
+        $this->session->set_userdata('top_menu', 'Caisse');
+        $this->session->set_userdata('sub_menu', 'income/index');
         $data['title'] = 'Item Supplier List';
         $journal_result = $this->journal_model->get();
         $data['journal_comptablelist'] = $journal_result;

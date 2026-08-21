@@ -9,6 +9,11 @@
                 <div class="box box-primary">
                     <div class="box-header with-border">
                         <h3 class="box-title"><i class="fa fa-search"></i> <?php echo $this->lang->line('select_criteria'); ?></h3>
+                        <div class="box-tools pull-right">
+                            <a href="<?php echo site_url('admin/generatestaffcertificate/badgeqr'); ?>" class="btn btn-success btn-sm">
+                                <i class="fa fa-id-badge"></i> Nouveau design badge QR
+                            </a>
+                        </div>
                     </div>
                     <div class="box-body">
                         <div class="row">
@@ -65,6 +70,7 @@
                             <div class="box-header ptbnull">
                                 <h3 class="box-title titlefix"><i class="fa fa-users"></i> <?php echo $this->lang->line('staff'); ?> <?php echo $this->lang->line('list'); ?></h3>
                                 <button class="btn btn-info btn-sm printSelected pull-right" type="button" name="generate" title="<?php echo $this->lang->line('generate')." ".$this->lang->line('certificate'); ?>"><?php echo $this->lang->line('generate'); ?></button>
+                                <button class="btn btn-success btn-sm printSelectedQr pull-right" style="margin-right:8px;" type="button" name="generate_qr" title="Generer badge QR pour presence">Generer badge QR</button>
                             </div>
                             <div class="box-body table-responsive">
                                 <div class="tab-pane active table-responsive no-padding" id="tab_1">  
@@ -164,7 +170,7 @@
 </script>
 <script type="text/javascript">
     $(document).ready(function () {
-        $(document).on('click', '.printSelected', function () {
+        function generateSelectedCards(includeQr) {
             var array_to_print = [];
             var idCard = $("#id_card_id").val();
             $.each($("input[name='check']:checked"), function () {
@@ -180,12 +186,20 @@
                     url: '<?php echo site_url("admin/generatestaffcertificate/generatemultiple") ?>',
                     type: 'post',
                     dataType: "html",
-                    data: {'data': JSON.stringify(array_to_print),'id_card': idCard },
+                    data: {'data': JSON.stringify(array_to_print),'id_card': idCard, 'include_qr': includeQr ? 1 : 0 },
                     success: function (response) {
                         Popup(response);
                     }
                 });
             }
+        }
+
+        $(document).on('click', '.printSelected', function () {
+            generateSelectedCards(false);
+        });
+
+        $(document).on('click', '.printSelectedQr', function () {
+            generateSelectedCards(true);
         });
     });
 </script>

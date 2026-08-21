@@ -115,20 +115,25 @@ class Mailsmsconf {
             }  elseif ($send_for == "online_admission_fees_submission") {
 
                 $this->sendOnlineadmissionFees($chk_mail_sms, $sender_details, $chk_mail_sms['template'], $chk_mail_sms['subject'],$chk_mail_sms['template_id']);
-            } elseif ($send_for == "send_quote") {
+            } elseif ($send_for == "send_quotes") {
                 $this->CI->mailgateway->sendQuote($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
-            } elseif ($send_for == "send_delivery") {
+            }
+            elseif ($send_for == "send_delivery") {
                 $this->CI->mailgateway->sendDelivery($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
             } elseif ($send_for == "send_invoice") {
                 $this->CI->mailgateway->sendInvoice($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
             }elseif ($send_for == "send_quote_no_stock") {
                 $this->CI->mailgateway->sendQuoteNoStock($chk_mail_sms, $sender_details, $chk_mail_sms['template'] , $chk_mail_sms['subject']);
             }
-            else {
-                
+        } elseif ($send_for == "send_payslip") {
+            $this->CI->mailgateway->sendPayslip($chk_mail_sms, $sender_details, $chk_mail_sms['template'], $chk_mail_sms['subject']);
+        }
+
+        else {
+
             }
         }
-    } 
+
 
     public function mailsmsalumnistudent($sender_details) {
         if ($sender_details['email_value'] == 'yes') {
@@ -432,6 +437,112 @@ class Mailsmsconf {
                      $this->CI->smsgateway->sentOnlineadmissionStudentSMS($student_details, $template,$template_id);
                 }               
             
+        }
+    }
+    public function login_notification($user_data, $user_type = 'staff') {
+        // Utiliser Mailgateway pour envoyer l'email
+        $this->CI->load->library('mailgateway');
+        return $this->CI->mailgateway->sendLoginNotification($user_data, $user_type);
+    }
+
+    public function login_notification_15072026($user_data, $user_type = 'staff') {
+
+        // ===== LOG DE DÉBUT =====
+        log_message('debug', '=== DÉBUT login_notification ===');
+        log_message('debug', 'user_data: ' . print_r($user_data, true));
+        log_message('debug', 'user_type: ' . $user_type);
+
+        // Vérifier que l'email existe
+        if (empty($user_data['email'])) {
+            log_message('error', 'login_notification: Email vide');
+            return false;
+        }
+
+        log_message('debug', 'Email: ' . $user_data['email']);
+
+        // Récupérer les paramètres de l'école
+        $school_name = $this->CI->setting_model->getCurrentSchoolName();
+        log_message('debug', 'School name: ' . $school_name);
+
+        // Date et heure de connexion
+        $login_time = date('d/m/Y à H:i:s');
+        $ip_address = $this->CI->input->ip_address() ?: $_SERVER['REMOTE_ADDR'] ?? 'Inconnue';
+
+        // Récupérer le nom
+        $name = $user_data['name'] ?? 'Utilisateur';
+        if ($user_type == 'staff' && !empty($user_data['surname'])) {
+            $name = $user_data['name'] . ' ' . $user_data['surname'];
+        } elseif ($user_type == 'student') {
+            $name = $user_data['firstname'] ?? $user_data['name'] ?? 'Étudiant';
+        } elseif ($user_type == 'parent') {
+            $name = $user_data['guardian_name'] ?? 'Parent';
+        }
+
+        $subject = "🔐 Connexion réussie à " . $school_name;
+
+        $message = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; background-color: #f4f7fc; padding: 20px; }
+            .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .header { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px 30px; text-align: center; border-radius: 12px 12px 0 0; }
+            .header h1 { color: #FFD700; margin: 0; font-size: 22px; }
+            .body { padding: 25px 30px; }
+            .body h2 { color: #1e293b; margin-top: 0; }
+            .body p { color: #475569; line-height: 1.6; }
+            .info-box { background: #f8fafc; border-left: 4px solid #3B82F6; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+            .info-box p { margin: 5px 0; }
+            .footer { background: #f1f5f9; padding: 12px 30px; text-align: center; color: #94a3b8; font-size: 12px; border-radius: 0 0 12px 12px; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>🔐 Connexion réussie</h1>
+            </div>
+            <div class='body'>
+                <h2>Bonjour " . $name . " 👋</h2>
+                <p>Vous venez de vous connecter avec succès à la plateforme <strong>" . $school_name . "</strong>.</p>
+                <div class='info-box'>
+                    <p><strong>📅 Date et heure :</strong> " . $login_time . "</p>
+                    <p><strong>🖥️ Adresse IP :</strong> " . $ip_address . "</p>
+                    <p><strong>📧 Email :</strong> " . $user_data['email'] . "</p>
+                    <p><strong>👤 Type :</strong> " . ucfirst($user_type) . "</p>
+                </div>
+                <p style='color: #64748b; font-size: 14px;'>
+                    ⚠️ Si vous n'êtes pas à l'origine de cette connexion, contactez l'administrateur.
+                </p>
+            </div>
+            <div class='footer'>
+                &copy; " . date('Y') . " " . $school_name . " - Tous droits réservés.
+            </div>
+        </div>
+    </body>
+    </html>";
+
+        // ===== ENVOI AVEC LOGS DÉTAILLÉS =====
+        log_message('debug', '=== TENTATIVE D\'ENVOI ===');
+        log_message('debug', 'To: ' . $user_data['email']);
+        log_message('debug', 'Subject: ' . $subject);
+
+        $this->CI->load->library('email');
+        $this->CI->email->clear();
+        $this->CI->email->from($this->CI->config->item('smtp_user'), $school_name);
+        $this->CI->email->to($user_data['email']);
+        $this->CI->email->subject($subject);
+        $this->CI->email->message($message);
+
+        // Envoyer
+        $send = $this->CI->email->send();
+
+        if ($send) {
+            log_message('info', '✅ Email de connexion envoyé à ' . $user_data['email']);
+            return true;
+        } else {
+            log_message('error', '❌ Échec d\'envoi d\'email de connexion à ' . $user_data['email']);
+            log_message('error', 'Erreur SMTP: ' . $this->CI->email->print_debugger());
+            return false;
         }
     }
 

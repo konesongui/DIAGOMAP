@@ -64,6 +64,7 @@ class Roles extends Admin_Controller {
             $role_id = $this->input->post('role_id');
             $to_be_insert = array();
             $to_be_update = array();
+            $to_be_validate = array();
             $to_be_delete = array();
             foreach ($per_cat_post as $per_cat_post_key => $per_cat_post_value) {
                 $insert_data = array();
@@ -94,7 +95,7 @@ class Roles extends Admin_Controller {
                 }
             }
 
-            $this->role_model->getInsertBatch($role_id, $to_be_insert, $to_be_update, $to_be_delete);
+            $this->role_model->getInsertBatch($role_id, $to_be_insert, $to_be_update, $to_be_validate, $to_be_delete);
             redirect('admin/roles/permission/' . $id);
         }
 

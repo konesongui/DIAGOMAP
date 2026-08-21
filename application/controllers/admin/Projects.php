@@ -10,7 +10,7 @@ class Projects extends Admin_Controller {
         $this->load->library('form_validation');
         $this->load->model("enquiry_model");
         $this->config->load("payroll");
-        $this->projects_status = $this->config->item('projects_status');
+        $this->enquiry_status = $this->config->item('enquiry_status');
     }
 
     public function index() {
@@ -48,7 +48,7 @@ class Projects extends Admin_Controller {
             $projects_list[$key]["followup_by"] = isset($projects_up["followup_by"])?$projects_up["followup_by"]:'';
         }
         $data['projects_list'] = $projects_list;
-        $data['projects_status'] = $this->projects_status;
+        $data['enquiry_status'] = $this->enquiry_status;
         $data['Reference'] = $this->enquiry_model->get_reference();
         $data['sourcelist'] = $this->enquiry_model->getComplaintSource();
         $this->load->view('layout/header');
@@ -61,7 +61,7 @@ class Projects extends Admin_Controller {
             access_denied();
         }
         $this->form_validation->set_rules('name', $this->lang->line('name'), 'trim|xss_clean');
-        $this->form_validation->set_rules('code', $this->lang->line('code'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('montant', $this->lang->line('code'), 'trim|required|xss_clean');
         $this->form_validation->set_rules('source', $this->lang->line('source'), 'trim|xss_clean');
         $this->form_validation->set_rules('date', $this->lang->line('date'), 'trim|xss_clean');
         if ($this->form_validation->run() == FALSE) {
@@ -79,8 +79,10 @@ class Projects extends Admin_Controller {
                 'projet' => $this->input->post('projet'),
                 'start_date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('start_date'))),
                 'end_date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('end_date'))),
-                'code' => $this->input->post('code'),
+                'client' => $this->input->post('client'),
+                'chef_projet' => $this->input->post('chef_projet'),
                 'objet' => $this->input->post('objet'),
+                'montant' => $this->input->post('montant'),
                 'contact' => $this->input->post('contact'),
                 'address' => $this->input->post('address'),
                 'reference' => $this->input->post('reference'),
@@ -120,18 +122,90 @@ class Projects extends Admin_Controller {
         $data['id'] = $projects_id;
         $data['projects_data'] = $this->enquiry_model->getprojects_list($projects_id, $status);
         $data['next_date'] = $this->enquiry_model->next_projects_up_date($projects_id);
-        $data['projects_status'] = $this->projects_status;
+
+        $data['stff_list'] = $this->staff_model->get();
+        $data['enquiry_status'] = $this->enquiry_status;
         $this->load->view('admin/frontoffice/projects_up_modal', $data);
     }
 
-    function projects_up_insert() {
+    function projects_up_insert()
+    {
         if (!$this->rbac->hasPrivilege('follow_up_admission_enquiry', 'can_add')) {
             access_denied();
         }
 
-        $this->form_validation->set_rules('response', $this->lang->line('response'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('date', $this->lang->line('follow_up_date'), 'trim|required|xss_clean');
-        $this->form_validation->set_rules('follow_up_date', $this->lang->line('next_follow_up_date'), 'trim|required|xss_clean');
+        $this->form_validation->set_rules('titre', 'Titre', 'required|trim|xss_clean');
+
+        if ($this->form_validation->run() == FALSE) {
+            $msg = array(
+                'titre' => form_error('titre')
+            );
+            $array = array('status' => 'fail', 'error' => $msg, 'message' => '');
+        } else {
+            $admin = $this->customlib->getLoggedInUserData();
+
+            // 1️⃣ Insertion dans la table "projects" (ou ta table existante)
+            $projects_up = array(
+                'titre'       => $this->input->post('titre'),
+                'date'        => date('Y-m-d', strtotime($this->input->post('date'))),
+                'next_date'   => date('Y-m-d', strtotime($this->input->post('follow_up_date'))),
+                'response'    => $this->input->post('response'),
+                'note'        => $this->input->post('note'),
+                'start_date'  => $this->input->post('start_date'),
+                'due_date'    => $this->input->post('due_date'),
+                'priority'    => $this->input->post('priority'),
+                'followup_by' => $admin['username'],
+                'enquiry_id'  => $this->input->post('enquiry_id'),
+                'statut'  => $this->input->post('statut'),
+                'client'  => $this->input->post('client'),
+                'montant'  => $this->input->post('montant'),
+                'chef_projet'  => $this->input->post('chef_projet')
+            );
+
+            $project_id = $this->enquiry_model->add_projects_up($projects_up); // retourne l'ID inséré
+
+            // 2️⃣ Récupération des employés sélectionnés
+            $assigned_employees = $this->input->post('assigne'); // tableau d'IDs
+
+            if (!empty($assigned_employees)) {
+                foreach ($assigned_employees as $employee_id) {
+                    $this->db->insert('project_assignments', array(
+                        'project_id'  => $project_id,
+                        'employee_id' => $employee_id,
+                        'assigned_at' => date('Y-m-d H:i:s')
+                    ));
+                }
+            }
+
+            $array = array('status' => 'success', 'error' => '', 'message' => 'Tâche ajoutée avec succès');
+        }
+
+        echo json_encode($array);
+    }
+
+
+    public function deleted($id) {
+        if (!$this->rbac->hasPrivilege('projet', 'can_delete')) {
+            access_denied();
+        }
+        if (!empty($id)) {
+            $this->enquiry_model->follow_delete($id);
+            $array = array('status' => 'success', 'error' => '', 'message' => $this->lang->line('delete_message'));
+        }
+        echo json_encode($array);
+    }
+
+
+
+
+    function projects_up_insert_old() {
+        if (!$this->rbac->hasPrivilege('follow_up_admission_enquiry', 'can_add')) {
+            access_denied();
+        }
+
+        $this->form_validation->set_rules('response', $this->lang->line('response'), 'trim|xss_clean');
+        $this->form_validation->set_rules('date', $this->lang->line('follow_up_date'), 'trim|xss_clean');
+        $this->form_validation->set_rules('titre', $this->lang->line('next_follow_up_date'), 'trim|xss_clean');
         if ($this->form_validation->run() == FALSE) {
             $msg = array(
                 'response' => form_error('response'),
@@ -139,14 +213,22 @@ class Projects extends Admin_Controller {
                 'date' => form_error('date'),
             );
 
+
             $array = array('status' => 'fail', 'error' => $msg, 'message' => '');
         } else {
             $admin = $this->customlib->getLoggedInUserData();
+
+
             $projects_up = array(
                 'date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
                 'next_date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('follow_up_date'))),
                 'response' => $this->input->post('response'),
                 'note' => $this->input->post('note'),
+                'titre' => $this->input->post('titre'),
+
+                'start_date' => $this->input->post('start_date'),
+                'due_date' => $this->input->post('due_date'),
+                'priority' => $this->input->post('priority'),
                 'followup_by' => $admin['username'],
                 'enquiry_id' => $this->input->post('enquiry_id')
             );
@@ -160,6 +242,8 @@ class Projects extends Admin_Controller {
     function projects_up_list($id) {
         $data['id'] = $id;
         $data['projects_list'] = $this->enquiry_model->getprojects_up_list($id);
+
+        $data['stff_list'] = $this->staff_model->get();
         $this->load->view('admin/frontoffice/projectsuplist', $data);
     }
 
@@ -199,6 +283,9 @@ class Projects extends Admin_Controller {
             $projects_update = array(
                 'projet' => $this->input->post('projet'),
                 'objet' => $this->input->post('objet'),
+                'montant' => $this->input->post('montant'),
+                'client' => $this->input->post('client'),
+                'chef_projet' => $this->input->post('chef_projet'),
                 'start_date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('start_date'))),
                 'end_date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('end_date'))),
                 'address' => $this->input->post('address'),

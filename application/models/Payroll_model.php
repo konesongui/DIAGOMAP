@@ -13,6 +13,8 @@ class Payroll_model extends MY_Model
         $this->current_date    = $this->setting_model->getDateYmd();
     }
 
+
+
     public function searchEmployee($month, $year, $emp_name, $role)
     {
 
@@ -252,7 +254,7 @@ class Payroll_model extends MY_Model
     public function getPayslip($id)
     {
 
-        $query = $this->db->select("staff.name,staff.cnps_no,staff.surname,department.department_name as department,staff_designation.designation,staff.employee_id,staff_payslip.*")->join("staff", "staff.id = staff_payslip.staff_id")->join("staff_designation", "staff.designation = staff_designation.id", "left")->join("department", "staff.department = department.id", "left")->where("staff_payslip.id", $id)->get("staff_payslip");
+        $query = $this->db->select("staff.name,staff.cnps_no,staff.epf_no,staff.date_of_joining,staff.cmu_enfant,staff.cmu,staff.marital_status,staff.surname,department.department_name as department,staff_designation.designation,staff.employee_id,staff_payslip.*")->join("staff", "staff.id = staff_payslip.staff_id")->join("staff_designation", "staff.designation = staff_designation.id", "left")->join("department", "staff.department = department.id", "left")->where("staff_payslip.id", $id)->get("staff_payslip");
 
         return $query->row_array();
     }
@@ -295,7 +297,7 @@ class Payroll_model extends MY_Model
         }
         $data['staff.is_active'] = 1;
 
-        $query = $this->db->select('staff.id,staff.employee_id,staff.name,roles.name as user_type,staff.surname,staff_designation.designation,department.department_name as department,staff_payslip.*')->join("staff_payslip", "staff_payslip.staff_id = staff.id", "inner")->join("staff_designation", "staff.designation = staff_designation.id", "left")->join("department", "staff.department = department.id", "left")->join("staff_roles", "staff_roles.staff_id = staff.id", "left")->join("roles", "staff_roles.role_id = roles.id", "left")->where($data)->get("staff");
+        $query = $this->db->select('staff.id,staff.employee_id,staff.name,roles.name as user_type,staff.surname,staff.epf_no,staff.date_of_joining,staff.cmu_enfant,staff.cmu,staff_designation.designation,department.department_name as department,staff_payslip.*')->join("staff_payslip", "staff_payslip.staff_id = staff.id", "inner")->join("staff_designation", "staff.designation = staff_designation.id", "left")->join("department", "staff.department = department.id", "left")->join("staff_roles", "staff_roles.staff_id = staff.id", "left")->join("roles", "staff_roles.role_id = roles.id", "left")->where($data)->get("staff");
 
         return $query->result_array();
     }
@@ -327,9 +329,17 @@ class Payroll_model extends MY_Model
     {
 
         $condition = "date_format(staff_payslip.payment_date,'%Y-%m-%d') between '" . $start_date . "' and '" . $end_date . "'";
-        $query     = $this->db->select('staff.id,staff.employee_id,staff.name,roles.name as user_type,staff.surname,staff_designation.designation,department.department_name as department,staff_payslip.*')->join("staff_payslip", "staff_payslip.staff_id = staff.id", "inner")->join("staff_designation", "staff.designation = staff_designation.id", "left")->join("department", "staff.department = department.id", "left")->join("staff_roles", "staff_roles.staff_id = staff.id", "left")->join("roles", "staff_roles.role_id = roles.id", "left")->where($condition)->get("staff");
+        $query     = $this->db->select('staff.id,staff.employee_id,staff.name,roles.name as user_type,staff.surname,staff.epf_no,staff.date_of_joining,staff.cmu_enfant,staff.cmu,staff_designation.designation,department.department_name as department,staff_payslip.*')->join("staff_payslip", "staff_payslip.staff_id = staff.id", "inner")->join("staff_designation", "staff.designation = staff_designation.id", "left")->join("department", "staff.department = department.id", "left")->join("staff_roles", "staff_roles.staff_id = staff.id", "left")->join("roles", "staff_roles.role_id = roles.id", "left")->where($condition)->get("staff");
 
         return $query->result_array();
     }
+
+
+    /**
+     * Log l'envoi d'email dans la base de données
+     */
+
+
+
 
 }

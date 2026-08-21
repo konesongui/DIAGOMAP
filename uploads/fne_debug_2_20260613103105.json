@@ -1,0 +1,30 @@
+{
+    "invoiceType": "sale",
+    "paymentMethod": "cash",
+    "template": "B2C",
+    "isRne": false,
+    "clientNcc": "",
+    "clientCompanyName": "Trajet CI",
+    "clientPhone": "0757918127",
+    "clientEmail": "akrefranck@yahoo.fr",
+    "pointOfSale": "DIAGOMA",
+    "establishment": "INTENDANT",
+    "commercialMessage": "Merci pour votre confiance",
+    "footer": "Service client: cm@cmeexpertises.com",
+    "foreignCurrency": "",
+    "foreignCurrencyRate": 0,
+    "items": [
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00006",
+            "description": "DS-3E1326P-EI(O-STD) Switch PoE Smart",
+            "quantity": 1,
+            "amount": 4500000000,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        }
+    ],
+    "discount": 0
+}

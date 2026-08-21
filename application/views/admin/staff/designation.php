@@ -64,7 +64,7 @@
                             </div>
                             <div class="box-footer">
                                 <button type="submit" class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
-                                <button type="reset" class="btn btn-secondary bg-red">Annuler</button>
+                                <button type="reset"  class="btn btn-secondary bg-black"><i class="fa fa-refresh" aria-hidden="true"></i></button>
                             </div>
                         </form>
                     </div>   

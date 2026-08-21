@@ -13,7 +13,58 @@ class Follow extends Admin_Controller {
         $this->projects_status = $this->config->item('projects_status');
     }
 
-    public function index() {
+    public function index()
+    {
+        if (!$this->rbac->hasPrivilege('projet', 'can_view')) {
+            access_denied();
+        }
+
+        // Menus actifs
+        $this->session->set_userdata('top_menu', 'Service');
+        $this->session->set_userdata('sub_menu', 'admin/follow_projects');
+
+        // Liste du staff pour assignation
+        $data['staff_list'] = $this->staff_model->get();
+
+        // Statut par défaut
+        $status = $this->input->post('status') ?: 'active';
+
+        // Filtrage par date
+        $from_date = $this->input->post('from_date');
+        $to_date   = $this->input->post('to_date');
+
+        if (!empty($from_date) && !empty($to_date)) {
+            $date_from = date(
+                "Y-m-d",
+                $this->customlib->datetostrtotime($from_date)
+            );
+            $date_to = date(
+                "Y-m-d",
+                $this->customlib->datetostrtotime($to_date)
+            );
+
+            // Recherche filtrée
+            $follow_list = $this->enquiry_model->searchProjects(
+                null, // source non utilisé
+                $date_from,
+                $date_to,
+                $status
+            );
+        } else {
+            // Liste par défaut
+            $follow_list = $this->enquiry_model->getfollow_list(null, $status);
+        }
+
+        // Passage des données à la vue
+        $data['follow_list'] = $follow_list;
+        $data['projects_status'] = $this->projects_status;
+
+        $this->load->view('layout/header');
+        $this->load->view('admin/frontoffice/follow_projectsview', $data);
+        $this->load->view('layout/footer');
+    }
+
+    public function index_old() {
 
         if (!$this->rbac->hasPrivilege('projet', 'can_view')) {
             access_denied();

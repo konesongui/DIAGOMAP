@@ -12,8 +12,11 @@ class Expensehead_model extends MY_Model {
 
      public function getDatatableExpenseHead()
     {
-
-        $sql="SELECT * FROM `expense_head`  ";
+        $entreprise_id = $this->getCurrentEntrepriseId();
+        $sql="SELECT * FROM `expense_head`";
+        if ($entreprise_id > 0) {
+            $sql .= " WHERE expense_head.entreprise_id = " . (int) $entreprise_id;
+        }
         $this->datatables->query($sql)
         ->searchable('expense_head.exp_category')
         ->orderable('`expense_head`.`id`,`expense_head`.`exp_category`')
@@ -23,10 +26,11 @@ class Expensehead_model extends MY_Model {
 
     public function get($id = null) {
         $this->db->select()->from('expense_head');
+        $this->applyEntrepriseScope('expense_head');
         if ($id != null) {
-            $this->db->where('id', $id);
+            $this->db->where('expense_head.id', $id);
         } else {
-            $this->db->order_by('id');
+            $this->db->order_by('expense_head.id');
         }
         $query = $this->db->get();
         if ($id != null) {
@@ -69,6 +73,11 @@ class Expensehead_model extends MY_Model {
      * @param $data
      */
     public function add($data) {
+        $entreprise_id = $this->getCurrentEntrepriseId();
+        if ($entreprise_id > 0 && !isset($data['entreprise_id'])) {
+            $data['entreprise_id'] = $entreprise_id;
+        }
+
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================

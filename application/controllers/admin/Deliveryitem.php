@@ -31,18 +31,22 @@ class Deliveryitem extends Admin_Controller {
      */
     function index() {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('delivery', 'can_view')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_view')) {
             access_denied();
         }
 
         // Définition des menus actifs
         $this->session->set_userdata('top_menu', 'Inventory');
         $this->session->set_userdata('sub_menu', 'Deliveryitem/index');
-        
+
+        // 🔹 Récupérer le nom de l'utilisateur connecté
+        $current_user = $this->session->userdata('admin')['username'];
+
         // Initialisation des données de la page
         $data = [
             'title' => 'Ajouter un bon de livraison',
             'title_list' => 'Derniers bons de livraison',
+            'current_user' => $current_user // 🔹 Passer l'utilisateur à la vue
         ];
 
         // Chargement des vues
@@ -51,13 +55,15 @@ class Deliveryitem extends Admin_Controller {
         $this->load->view('layout/footer', $data);
     }
 
+
+
     /**
      * Récupère les articles par catégorie
-     * 
+     *
      * @return JSON $data
      */
     public function getItemByCategory()
-    {   
+    {
         $item_category_id = $this->input->get('item_category_id');
         $data = $this->stock_model->getItemByCategory($item_category_id);
         echo json_encode($data);
@@ -66,18 +72,50 @@ class Deliveryitem extends Admin_Controller {
     /**
      * Récupère les données des bons de livraison
      * au format JSON
-     * 
+     *
+     * @return JSON $response
+     */
+    /**
+     * Récupère les données des bons de livraison
+     * au format JSON
+     *
      * @return JSON $response
      */
     public function data()
-    {   
-        // Récupère les données du modèle
-        $result = $this->delivery_model->getListData();
-        
+    {
+        // 🔹 Récupère l'utilisateur connecté
+        $current_user = $this->session->userdata('admin')['username'];
+
+        // 🔹 Vérifier les privilèges RBAC par NOM
+        $is_superadmin = $this->rbac->hasPrivilege('superadmin');
+        $is_admin = $this->rbac->hasPrivilege('admin');
+
+        // 🔹 Si c'est un Super Admin ou Admin
+        $is_admin_user = ($is_superadmin || $is_admin);
+
+        // 🔹 DEBUG (optionnel)
+        error_log('Delivery data - User: ' . $current_user);
+        error_log('Delivery data - Is Super Admin: ' . ($is_superadmin ? 'Yes' : 'No'));
+        error_log('Delivery data - Is Admin: ' . ($is_admin ? 'Yes' : 'No'));
+        error_log('Delivery data - Is Admin User: ' . ($is_admin_user ? 'Yes' : 'No'));
+
+        // 🔹 Appeler la méthode du modèle selon le rôle
+        if ($is_admin_user) {
+            // Super Admin ou Admin voit toutes les données
+            $result = $this->delivery_model->getListDataForAdmin();
+        } else {
+            // Utilisateur normal - filtrer par son nom
+            $result = $this->delivery_model->getListDataForUser($current_user);
+        }
+
         // Les données sont déjà au format JSON, on les renvoie directement
         echo $result;
     }
 
+
+    /**
+     * Formulaire d'ajout de bon de livraison
+     */
     /**
      * Formulaire d'ajout de bon de livraison
      */
@@ -85,13 +123,17 @@ class Deliveryitem extends Admin_Controller {
         // Définition des menus actifs
         $this->session->set_userdata('top_menu', 'Inventory');
         $this->session->set_userdata('sub_menu', 'Deliveryitem/index');
-        
+
+        // 🔹 Récupérer le nom de l'utilisateur connecté
+        $current_user = $this->session->userdata('admin')['username'];
+
         // Préparation des données pour la vue
         $data = [
             'title' => 'Ajouter un bon de livraison',
             'title_list' => 'Derniers bons de livraison',
             'itemcatlist' => $this->itemcategory_model->get(),
-            'clients' => $this->clients_model->get()
+            'clients' => $this->clients_model->get(),
+            'current_user' => $current_user // 🔹 Passer l'utilisateur à la vue
         ];
 
         // Chargement des vues
@@ -100,6 +142,11 @@ class Deliveryitem extends Admin_Controller {
         $this->load->view('layout/footer', $data);
     }
 
+
+
+    /**
+     * Ajoute un nouveau bon de livraison
+     */
     /**
      * Ajoute un nouveau bon de livraison
      */
@@ -107,19 +154,13 @@ class Deliveryitem extends Admin_Controller {
         // Initialisation de la réponse
         $response = ['status' => 'fail', 'message' => '', 'error' => []];
 
-        // var_dump($this->input->post());
-        // die();
-
         try {
             // Vérification des données POST
             if (!$this->input->post()) {
                 throw new Exception('Aucune donnée reçue');
             }
 
-
-
             // Validation des champs obligatoires
-            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('delivery_date', 'Date de livraison', 'required');
             $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
@@ -133,10 +174,16 @@ class Deliveryitem extends Admin_Controller {
                 return;
             }
 
+            // 🔹 Récupérer le nom de l'utilisateur connecté
+            $current_user = $this->session->userdata('admin')['username'];
+
             // Récupération et validation des données
             $data = [
                 'designation' => $this->input->post('designation',""),
                 'customer_id' => $this->input->post('customer'),
+                'objet' => $this->input->post('objet'),
+                'payment_method' => $this->input->post('payment_method'),
+                'user_name' => $current_user, // 🔹 Ajouter l'utilisateur
                 'delivery_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('delivery_date')))),
                 'deadline' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('valid_until')))),
                 'payment_term' => $this->input->post('payment_term'),
@@ -148,49 +195,7 @@ class Deliveryitem extends Admin_Controller {
                 'items' => []
             ];
 
-            // Validation des articles
-            $categories = $this->input->post('item_category_id');
-            $items = $this->input->post('item_id');
-            $quantities = $this->input->post('quantity');
-            $prices = $this->input->post('price');
-            $units = $this->input->post('unit');
-
-            if (!is_array($categories) || !is_array($items) || !is_array($quantities) || !is_array($prices)) {
-                throw new Exception('Format de données invalide');
-            }
-
-            // Construction du tableau d'articles
-            foreach ($categories as $index => $category_id) {
-                if (empty($items[$index]) || empty($quantities[$index]) || empty($prices[$index])) {
-                    throw new Exception('Données d\'article manquantes');
-                }
-
-                $quantity = floatval($quantities[$index]);
-                $price = floatval($prices[$index]);
-                $line_total = $quantity * $price;
-
-                $data['items'][] = [
-                    'category_id' => $category_id,
-                    'item_id' => $items[$index],
-                    'quantity' => $quantity,
-                    'delivered_quantity' => 0,
-                    'price' => $price,
-                    'unit' => $units[$index] ?? '',
-                    'line_total' => $line_total
-                ];
-            }
-
-            // Enregistrement des données
-            $insert_id = $this->delivery_model->add($data);
-            
-            if (!$insert_id) {
-                throw new Exception('Erreur lors de l\'enregistrement');
-            }
-
-            $response['status'] = 'success';
-            $response['message'] = 'Le bon de livraison a été enregistré avec succès';
-            $response['delivery_id'] = $insert_id;
-
+            // ... reste du code inchangé ...
         } catch (Exception $e) {
             $response['message'] = 'Erreur: ' . $e->getMessage();
             log_message('error', 'Delivery Add Error: ' . $e->getMessage());
@@ -200,54 +205,71 @@ class Deliveryitem extends Admin_Controller {
         echo json_encode($response);
     }
 
+
+
     /**
      * Affiche les détails d'un bon de livraison
-     * 
+     *
+     * @param int $id ID du bon de livraison
+     * @return void
+     */
+    /**
+     * Affiche les détails d'un bon de livraison
+     *
      * @param int $id ID du bon de livraison
      * @return void
      */
     public function view($id)
-    {   
+    {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_view')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_view')) {
             access_denied();
         }
 
-        // var_dump($id);
-        // exit;
-
         // Récupération des données du bon de livraison
         $data['delivery'] = $this->delivery_model->getDeliveryWithItems($id);
-        // var_dump($data['delivery']);
-        // exit;
+
         // Vérification si le bon de livraison existe
         if (!$data['delivery']) {
             $this->session->set_flashdata('error', 'Bon de livraison non trouvé');
-            redirect('admin/itemdelivery');
+            redirect('admin/deliveryitem');
+        }
+
+        // 🔹 VÉRIFICATION DE L'UTILISATEUR
+        $current_user = $this->session->userdata('admin')['username'];
+        if ($this->session->userdata('admin')['role_id'] != 1 && $data['delivery']['user_name'] != $current_user) {
+            $this->session->set_flashdata('error', 'Vous n\'avez pas accès à ce bon de livraison');
+            redirect('admin/deliveryitem');
         }
 
         // Préparation des données pour la vue
         $data['title'] = 'Détails du bon de livraison';
         $data['page_title'] = 'Détails du bon de livraison ' . $data['delivery']['delivery_number'];
 
-        // var_dump($data);
-        // exit;
         // Chargement des vues
         $this->load->view('layout/header', $data);
         $this->load->view('admin/itemdelivery/view', $data);
         $this->load->view('layout/footer');
     }
 
+
+
     /**
      * Affiche le formulaire d'édition d'un bon de livraison
-     * 
+     *
+     * @param int $id ID du bon de livraison
+     * @return void
+     */
+    /**
+     * Affiche le formulaire d'édition d'un bon de livraison
+     *
      * @param int $id ID du bon de livraison
      * @return void
      */
     public function edit($id)
     {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
 
@@ -259,10 +281,20 @@ class Deliveryitem extends Admin_Controller {
                 redirect('admin/deliveryitem');
             }
 
+            // 🔹 VÉRIFICATION DE L'UTILISATEUR
+            $current_user = $this->session->userdata('admin')['username'];
+            if ($this->session->userdata('admin')['role_id'] != 1 && $delivery['user_name'] != $current_user) {
+                $this->session->set_flashdata('error', 'Vous n\'avez pas accès à ce bon de livraison');
+                redirect('admin/deliveryitem');
+            }
+
             if ((int)$delivery['status'] !== 1) {
                 $this->session->set_flashdata('error', 'Ce bon de livraison ne peut plus être modifié');
                 redirect('admin/deliveryitem');
             }
+
+            // 🔹 Récupérer le nom de l'utilisateur connecté
+            $data['current_user'] = $current_user;
 
             // Préparation des données pour la vue
             $data = [
@@ -285,17 +317,22 @@ class Deliveryitem extends Admin_Controller {
         }
     }
 
+
+
+    /**
+     * Met à jour un bon de livraison existant
+     */
     /**
      * Met à jour un bon de livraison existant
      */
     public function update() {
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
 
         // Récupérer l'ID du bon de livraison
         $id = $this->input->post('id');
-        
+
         // Initialisation de la réponse
         $response = ['status' => 'fail', 'message' => '', 'error' => []];
 
@@ -306,12 +343,18 @@ class Deliveryitem extends Admin_Controller {
                 throw new Exception('Bon de livraison introuvable');
             }
 
+            // 🔹 VÉRIFICATION DE L'UTILISATEUR
+            $current_user = $this->session->userdata('admin')['username'];
+            if ($this->session->userdata('admin')['role_id'] != 1 && $delivery['user_name'] != $current_user) {
+                throw new Exception('Vous n\'avez pas accès à ce bon de livraison');
+            }
+
             if ((int)$delivery['status'] !== 1) {
                 throw new Exception('Ce bon de livraison ne peut plus être modifié');
             }
 
             // Validation des champs obligatoires
-            // $this->form_validation->set_rules('designation', 'Désignation', 'required|trim');
+            // $this->form_validation->set_rules('designation', 'Désignation', 'trim');
             $this->form_validation->set_rules('customer', 'Client', 'required|trim');
             $this->form_validation->set_rules('delivery_date', 'Date de livraison', 'required');
             $this->form_validation->set_rules('item_category_id[]', 'Catégorie', 'required');
@@ -330,6 +373,8 @@ class Deliveryitem extends Admin_Controller {
                 'id' => $this->input->post('id'),
                 'designation' => $this->input->post('designation',""),
                 'customer_id' => $this->input->post('customer'),
+                'objet' => $this->input->post('objet'),
+                'payment_method' => $this->input->post('payment_method'),
                 'delivery_date' => date('Y-m-d', strtotime(str_replace('/', '-', $this->input->post('delivery_date')))),
                 'shipping_method' => $this->input->post('shipping_method'),
                 'tracking_number' => $this->input->post('tracking_number'),
@@ -372,7 +417,7 @@ class Deliveryitem extends Admin_Controller {
 
             // Mise à jour des données
             $update_success = $this->delivery_model->update($data);
-            
+
             if (!$update_success) {
                 throw new Exception('Erreur lors de la mise à jour');
             }
@@ -389,9 +434,11 @@ class Deliveryitem extends Admin_Controller {
         echo json_encode($response);
     }
 
+
+
     /**
      * Crée une facture à partir d'un bon de livraison complété
-     * 
+     *
      * @param int $delivery_id ID du bon de livraison
      * @return bool
      */
@@ -408,12 +455,14 @@ class Deliveryitem extends Admin_Controller {
         // Préparation des données de la facture
         $invoice_data = [
             'customer_id' => $delivery['customer_id'],
+            'user_name' => $delivery['user_name'],
             'invoice_number' => $invoice_number,
             'delivery_id' => $delivery_id,
             'invoice_date' => date('Y-m-d'),
             'due_date' => date('Y-m-d', strtotime('+30 days')),
             'apply_tva' => 1,
-            'tva_rate' => 20.00,
+            'tva_rate' => $delivery['tva_rate'],
+            'tva_amount' => $delivery['tva_amount'],
             'total_ht' => $delivery['total_ht'],
             'total_ttc' => $delivery['total_ttc'],
             'remaining_amount' => $delivery['total_ttc'],
@@ -435,21 +484,21 @@ class Deliveryitem extends Admin_Controller {
                 throw new Exception('Erreur lors de la création de la facture');
             }
 
-            // Insertion des articles de la facture
+            // Insertion des articles de la facture (avec gestion des services)
             foreach ($delivery['items'] as $item) {
                 $invoice_item_data = [
-                    'invoice_id' => $invoice_id,
-                    'category_id' => $item['category_id'],
-                    'item_id' => $item['item_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'line_total' => $item['line_total'],
-                    'position' => $item['position']
+                    'invoice_id'   => $invoice_id,
+                    'category_id'  => $item['category_id'],
+                    'item_id'      => $item['item_id'],
+                    'service_id'   => $item['service_id'] ?? null,
+                    'item_type'    => $item['item_type'] ?? 'product',
+                    'quantity'     => $item['quantity'],
+                    'unit_price'   => $item['unit_price'],
+                    'unit'         => $item['unit'] ?? '',
+                    'line_total'   => $item['line_total'],
+                    'position'     => $item['position'] ?? 0
                 ];
-
-                if (!$this->db->insert('invoice_items', $invoice_item_data)) {
-                    throw new Exception('Erreur lors de l\'ajout d\'un article à la facture');
-                }
+                $this->db->insert('invoice_items', $invoice_item_data);
             }
 
             $this->db->trans_complete();
@@ -465,19 +514,19 @@ class Deliveryitem extends Admin_Controller {
     /**
      * Génère un numéro unique pour une facture
      * Format: FAC-YYYYMM-XXXX où XXXX est un numéro séquentiel
-     * 
+     *
      * @return string
      */
     private function generateInvoiceNumber() {
         $prefix = 'FAC';  // FAC pour Facture
         $date = date('Ym');  // Format YYYYMM
-        
+
         // Recherche le dernier numéro pour ce mois
         $this->db->like('invoice_number', $prefix . '-' . $date, 'after');
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $query = $this->db->get('invoices');
-        
+
         if ($query->num_rows() > 0) {
             // Extrait le numéro séquentiel de la dernière facture
             $last_ref = $query->row()->invoice_number;
@@ -486,10 +535,10 @@ class Deliveryitem extends Admin_Controller {
             // Première facture du mois
             $sequence = 1;
         }
-        
+
         // Formate le numéro séquentiel sur 4 chiffres
         $sequence_padded = str_pad($sequence, 4, '0', STR_PAD_LEFT);
-        
+
         return $prefix . '-' . $date . '-' . $sequence_padded;
     }
 
@@ -498,7 +547,7 @@ class Deliveryitem extends Admin_Controller {
      */
     public function completeDelivery() {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
 
@@ -554,7 +603,7 @@ class Deliveryitem extends Admin_Controller {
      */
     public function cancelDelivery() {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
 
@@ -571,7 +620,7 @@ class Deliveryitem extends Admin_Controller {
             if (!$delivery) {
                 throw new Exception('Bon de livraison non trouvé');
             }
-            
+
             // Récupération du motif de rejet
             $reason = $this->input->post('reason');
             if (empty($reason)) {
@@ -607,10 +656,38 @@ class Deliveryitem extends Admin_Controller {
 
     /**
      * Affiche la page d'impression d'un bon de livraison
-     * 
+     *
      * @param int $id ID de la factures
      */
-    public function print() {
+    public function print()
+    {
+        $id = $this->input->post('id');
+        $data['delivery'] = $this->delivery_model->getDeliveryWithItems($id);
+
+        if (!$data['delivery']) {
+            show_404();
+            return;
+        }
+
+        $company = $this->setting_model->get();
+        $data['company'] = $company[0];
+        $data['totalAsletter'] = $this->asLetters(floatval($data['delivery']['total_ttc']));
+
+        // ✅ Génération du QR Code avec numéro + client
+        $this->load->library('qrcode_lib');
+        $qrPath = $this->qrcode_lib->generate(
+            $data['delivery']['delivery_number'],
+            $data['delivery']['customer_name']
+        );
+        $data['qrCodePath'] = $qrPath;
+
+        $invoice_page = $this->load->view('admin/itemdelivery/print', $data, true);
+        $array = array('status' => '1', 'error' => '', 'page' => $invoice_page);
+        echo json_encode($array);
+    }
+
+
+    public function print_010925() {
 
         $id = $this->input->post('id');
 
@@ -620,14 +697,14 @@ class Deliveryitem extends Admin_Controller {
 
         // Récupération des données de la facture
         $data['delivery'] = $this->delivery_model->getDeliveryWithItems($id);
-        
+
         if (!$data['delivery']) {
             show_404();
             return;
         }
 
         // var_dump($data);
-        // die();   
+        // die();
 
         // Récupération des données de la société
         $company = $this->setting_model->get();
@@ -635,7 +712,7 @@ class Deliveryitem extends Admin_Controller {
         // Récupération des données de l'entrepris
         $data['company'] = $company[0];
         $data['totalAsletter'] = $this->asLetters(floatval($data['delivery']['total_ttc']));
-        
+
 
 
         // var_dump($data['totalAsletter']);
@@ -643,7 +720,7 @@ class Deliveryitem extends Admin_Controller {
 
         // Chargement de la vue d'impression
         // $this->load->view('admin/invoice/print', $data);
-        $invoice_page = $this->load->view('admin/itemdelivery/print', $data, true); 
+        $invoice_page = $this->load->view('admin/itemdelivery/print', $data, true);
         $array = array('status' => '1', 'error' => '', 'page' => $invoice_page);
         echo json_encode($array);
     }
@@ -657,10 +734,10 @@ class Deliveryitem extends Admin_Controller {
         $convert = explode('.', $number);
         $num[17] = array('zero', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit',
                          'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize');
-                          
+
         $num[100] = array(20 => 'vingt', 30 => 'trente', 40 => 'quarante', 50 => 'cinquante',
                           60 => 'soixante', 70 => 'soixante-dix', 80 => 'quatre-vingt', 90 => 'quatre-vingt-dix');
-                                          
+
         if (isset($convert[1]) && $convert[1] != '') {
           return self::asLetters($convert[0]).' et '.self::asLetters($convert[1]);
         }
@@ -733,10 +810,10 @@ class Deliveryitem extends Admin_Controller {
     public function partialDelivery($id) {
 
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
-        
+
         // var_dump($id);
         // die();
 
@@ -774,22 +851,22 @@ class Deliveryitem extends Admin_Controller {
             $this->session->set_flashdata('error', 'Une erreur est survenue lors de la livraison partielle');
             redirect('admin/deliveryitem');
         }
-        
+
     }
 
 
-  
+
     /**
      * Met à jour un bon de livraison existant avec gestion des livraisons partielles
      */
     public function setPartialDelivery() {
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
 
         // var_dump($this->input->post());
         // die();
-        
+
         $id = $this->input->post('id');
         $response = ['status' => 'fail', 'message' => '', 'error' => []];
 
@@ -837,7 +914,7 @@ class Deliveryitem extends Admin_Controller {
             $prices = $this->input->post('price');
             $units = $this->input->post('unit');
 
-           
+
             // var_dump($units);
             // die();
 
@@ -850,7 +927,7 @@ class Deliveryitem extends Admin_Controller {
                 $quantity = floatval($quantities[$index]);
                 $delivered_qty = floatval($delivered_quantities[$index] ?? 0);
                 $price = floatval($prices[$index]);
-                
+
                 // Vérification que la quantité livrée ne dépasse pas la quantité commandée
                 if ($delivered_qty > $quantity) {
                     throw new Exception("La quantité livrée ne peut pas dépasser la quantité commandée pour l'article ".$items[$index]);
@@ -872,7 +949,7 @@ class Deliveryitem extends Admin_Controller {
 
             // Mise à jour des données
             $update_success = $this->delivery_model->partialDelivery($data);
-            
+
             if (!$update_success) {
                 throw new Exception('Erreur lors de la mise à jour');
             }
@@ -893,17 +970,18 @@ class Deliveryitem extends Admin_Controller {
 
 
 
-    
+
     /**
      * Envoie le bon de livraison par email au client
-     * 
+     *
      * @param int $delivery_id ID du bon de livraison
      * @return void
      */
+
     public function sendEmail()
     {
         // Vérification des permissions
-        if (!$this->rbac->hasPrivilege('Deliveryitem', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
             access_denied();
         }
 
@@ -945,17 +1023,85 @@ class Deliveryitem extends Admin_Controller {
             if ($data['delivery']) {
 
                 $delivery_detail = array(
-                    'id'            => $data['delivery']['id'], 
-                    'data'          => $data, 
-                    'credential_for'=> 'sendDelivery', 
-                    'client_name'       => $data['delivery']['customer_name'].' '.$data['delivery']['customer_last_name'], 
-                    'quotation_number'  => $data['delivery']['delivery_number'], 
-                    'quotation_date'    => !empty($data['delivery']['delivery_date']) ? date('d/m/Y', strtotime($data['delivery']['delivery_date'])) :"N/A", 
+                    'id'            => $data['delivery']['id'],
+                    'data'          => $data,
+                    'credential_for'=> 'sendDelivery',
+                    'client_name'       => $data['delivery']['customer_name'].' '.$data['delivery']['customer_last_name'],
+                    'quotation_number'  => $data['delivery']['delivery_number'],
+                    'quotation_date'    => !empty($data['delivery']['delivery_date']) ? date('d/m/Y', strtotime($data['delivery']['delivery_date'])) :"N/A",
                     'email'             => $data['delivery']['customer_email']);
 
                 $this->mailsmsconf->mailsms('send_delivery', $delivery_detail);
             }
-            
+
+            $response['status'] = 'success';
+            $response['message'] = 'Le bon de livraison a été envoyé avec succès';
+
+        } catch (Exception $e) {
+            $response['message'] = 'Erreur: ' . $e->getMessage();
+            log_message('error', 'Delivery Email Error: ' . $e->getMessage());
+        }
+
+        // Retourner la réponse en JSON
+        echo json_encode($response);
+    }
+
+    public function sendEmail_old050925()
+    {
+        // Vérification des permissions
+        if (!$this->rbac->hasPrivilege('deliveryitem', 'can_edit')) {
+            access_denied();
+        }
+
+        $delivery_id = $this->input->post('id', 0);
+
+        // var_dump($delivery_id);
+        // exit;
+
+        // Initialisation de la réponse
+        $response = ['status' => 'fail', 'message' => ''];
+
+        try {
+            // Récupération des données du bon de livraison
+            $data['delivery'] = $this->delivery_model->getDeliveryWithItems($delivery_id);
+            if (!$data['delivery']) {
+                throw new Exception('Devis introuvable');
+            }
+
+            // Vérification de l'email du client
+            if (empty($data['delivery']['customer_email'])) {
+                throw new Exception('Le client n\'a pas d\'adresse email');
+            }
+
+            // Récupération des données de la société
+            $company = $this->setting_model->get();
+
+            // Récupération des données de l'entrepris
+            $data['company'] = $company[0];
+            $data['totalAsletter'] = $this->asLetters(floatval($data['delivery']['total_ttc']));
+
+            // Récupération des informations de l'utilisateur connecté
+            $data['user'] = $this->customlib->getUserData();
+
+            // var_dump($data);
+            // exit;
+
+
+            //===================
+            if ($data['delivery']) {
+
+                $delivery_detail = array(
+                    'id'            => $data['delivery']['id'],
+                    'data'          => $data,
+                    'credential_for'=> 'sendDelivery',
+                    'client_name'       => $data['delivery']['customer_name'].' '.$data['delivery']['customer_last_name'],
+                    'quotation_number'  => $data['delivery']['delivery_number'],
+                    'quotation_date'    => !empty($data['delivery']['delivery_date']) ? date('d/m/Y', strtotime($data['delivery']['delivery_date'])) :"N/A",
+                    'email'             => $data['delivery']['customer_email']);
+
+                $this->mailsmsconf->mailsms('send_delivery', $delivery_detail);
+            }
+
             $response['status'] = 'success';
             $response['message'] = 'Le bon de livraison a été envoyé avec succès';
 

@@ -49,6 +49,10 @@
 }
 </style>-->
 <?php $i=0; ?>
+<?php
+$include_qr_badge = isset($include_qr) && $include_qr;
+$qr_map = isset($qr_codes) && is_array($qr_codes) ? $qr_codes : array();
+?>
 
 <?php
 if($id_card[0]->enable_vertical_card)
@@ -60,6 +64,8 @@ if($id_card[0]->enable_vertical_card)
             <?php
             foreach ($staffs as $staff_key => $staff_value) {
             $i++;
+            $staff_qr_data_uri = isset($qr_map[$staff_value->id]) ? $qr_map[$staff_value->id] : '';
+            $manual_code = str_pad((string)$staff_value->id, 6, '0', STR_PAD_LEFT);
             ?>
             <td valign="top" class="width32">
                 <table cellpadding="0" cellspacing="0" width="100%" style="background: <?php echo $id_card[0]->header_color; ?>;">
@@ -180,6 +186,13 @@ if($id_card[0]->enable_vertical_card)
                                 <td class="text-center" colspan="7" style="border: 0px solid black; height: 5px; padding: 3px; text-align: center; font-size: 14px; font-family: 'Arial Narrow'">
                                     <b><em><?= strtoupper($sch_setting->address) ?><br/><?= strtoupper($sch_setting->rccm) ?>-<?= strtoupper($sch_setting->bank) ?>:  <?= strtoupper($sch_setting->compt_bank) ?><br/>Tèl: 0757918127</em></b><br>
                                     <p style="font-family: 'Arial Narrow'"><?php echo $id_card[0]->generated_code; ?></p>
+                                    <?php if ($include_qr_badge && !empty($staff_qr_data_uri)) { ?>
+                                        <div style="margin-top:8px; text-align:center;">
+                                            <img src="<?php echo $staff_qr_data_uri; ?>" alt="QR Presence" style="width:90px; height:90px;" />
+                                            <div style="font-size:11px;">Scan presence</div>
+                                            <div style="font-size:12px; font-weight:700; letter-spacing:1px; border:1px dashed #999; display:inline-block; padding:2px 8px; border-radius:4px; margin-top:3px;"><?php echo $manual_code; ?></div>
+                                        </div>
+                                    <?php } ?>
 
                                 </td>
                             </tr>
@@ -211,6 +224,8 @@ if($id_card[0]->enable_vertical_card)
             <?php
             foreach ($staffs as $staff_key => $staff_value) {
             $i++;
+            $staff_qr_data_uri = isset($qr_map[$staff_value->id]) ? $qr_map[$staff_value->id] : '';
+            $manual_code = str_pad((string)$staff_value->id, 6, '0', STR_PAD_LEFT);
             ?>
             <td valign="top" class="width32">
                 <table cellpadding="0" cellspacing="0" width="100%" class="tc-container" style="background: #efefef;">
@@ -236,6 +251,15 @@ if($id_card[0]->enable_vertical_card)
                   <tr>
                         <td valign="top" style="color: #fff;font-size: 16px; padding: 2px 0 0; position: relative; z-index: 1;background: <?php echo $id_card[0]->header_color ?>;text-transform: uppercase;"><?php echo $id_card[0]->title ?></td>
                     </tr>
+                    <?php if ($include_qr_badge && !empty($staff_qr_data_uri)) { ?>
+                    <tr>
+                        <td valign="top" align="center" style="padding-top:8px; position:relative; z-index:1;">
+                            <img src="<?php echo $staff_qr_data_uri; ?>" alt="QR Presence" style="width:85px; height:85px;" />
+                            <div style="font-size:11px; color:#333;">Scan presence</div>
+                            <div style="font-size:12px; font-weight:700; letter-spacing:1px; border:1px dashed #999; display:inline-block; padding:2px 8px; border-radius:4px; margin-top:3px;"><?php echo $manual_code; ?></div>
+                        </td>
+                    </tr>
+                    <?php } ?>
                     <tr>
                         <td valign="top">
                             <div class="staround">

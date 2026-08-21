@@ -27,21 +27,20 @@ class Quote_model extends CI_Model {
 
     /**
      * Ajoute un nouveau devis avec ses articles
-     * 
-     * @param array $data Les données du devis
-     * @return int|bool L'ID du devis créé ou false en cas d'erreur
+     * (Cette méthode est conservée pour compatibilité, mais le contrôleur utilise sa propre logique)
      */
     public function add($data)
-    {   
-        // var_dump($data);
-        // exit;
+    {
         $this->db->trans_start();
 
         try {
-            // Préparation des données de le devis
+            $entreprise_id = isset($data['entreprise_id']) ? (int)$data['entreprise_id'] : (int)$this->session->userdata('entreprise_id');
+
             $quote_data = [
-                'quote_number'=> $this->generateQuoteNumber(),
+                'entreprise_id' => $entreprise_id,
+                'quote_number'=> $this->generateQuoteNumber($entreprise_id),
                 'customer_id' => $data['customer_id'],
+                'user_name' => $data['user_name'],
                 'designation' => $data['designation'],
                 'quote_date'  => date('Y-m-d', strtotime($data['quote_date'])),
                 'valid_until' => ((isset($data['valid_until']) && !empty($data['valid_until'])) ? date('Y-m-d', strtotime($data['valid_until'])) : null),
@@ -57,20 +56,20 @@ class Quote_model extends CI_Model {
                 'created_at'  => $data['created_at'],
             ];
 
-            // Insertion de le devis
             $this->db->insert($this->table, $quote_data);
             $quote_id = $this->db->insert_id();
 
             if (!$quote_id) {
-                throw new Exception('Erreur lors de la création de le devis');
+                throw new Exception('Erreur lors de la création du devis');
             }
 
-            // Insertion des articles
             foreach ($data['items'] as $position => $item) {
                 $item_data = [
                     'quote_id' => $quote_id,
                     'category_id' => $item['category_id'],
                     'item_id' => $item['item_id'],
+                    'service_id' => isset($item['service_id']) ? $item['service_id'] : null,
+                    'item_type' => isset($item['item_type']) ? $item['item_type'] : 'product',
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['price'],
                     'unit' => $item['unit'],
@@ -79,7 +78,7 @@ class Quote_model extends CI_Model {
                 ];
 
                 if (!$this->db->insert($this->items_table, $item_data)) {
-                    throw new Exception('Erreur lors de l\'ajout d\'un article à le devis');
+                    throw new Exception('Erreur lors de l\'ajout d\'un article au devis');
                 }
             }
 
@@ -94,48 +93,42 @@ class Quote_model extends CI_Model {
     }
 
     /**
-     * Génère un numéro unique pour une commande
-     * Format: CMD-YYYYMM-XXXX où XXXX est un numéro séquentiel
-     * 
-     * @return string
+     * Génère un numéro unique pour un devis
      */
-    private function generateQuoteNumber()
+    private function generateQuoteNumber($entreprise_id = 0)
     {
-        $prefix = 'DEV';  // DEV pour Devis
-        $date = date('Ym');  // Format YYYYMM
-        
-        // Recherche le dernier numéro pour ce mois
+        $prefix = 'DEV';
+        $date = date('Ym');
+
         $this->db->like('quote_number', $prefix . '-' . $date, 'after');
+        if ($entreprise_id > 0 && in_array('entreprise_id', $this->db->list_fields($this->table))) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $query = $this->db->get($this->table);
-        
+
         if ($query->num_rows() > 0) {
-            // Extrait le numéro séquentiel de la dernière commande
             $last_ref = $query->row()->quote_number;
             $sequence = intval(substr($last_ref, -4)) + 1;
         } else {
-            // Première commande du mois
             $sequence = 1;
         }
-        
-        // Formate le numéro séquentiel sur 4 chiffres
+
         $sequence_padded = str_pad($sequence, 4, '0', STR_PAD_LEFT);
-        
         return $prefix . '-' . $date . '-' . $sequence_padded;
     }
 
     /**
-     * Récupère une commande avec ses articles
-     * 
-     * @param int $quote_id ID de le devis
-     * @return array|null Les données de le devis et ses articles
+     * Récupère un devis avec ses articles (produits et services)
+     *
+     * @param int $quote_id ID du devis
+     * @return array|null
      */
     public function getQuoteWithItems($quote_id)
     {
-        // Récupération de le devis
-        $this->db->select('quotes.*, clients.item_supplier as customer_name,
-            clients.lastname as customer_last_name, clients.email as customer_email, clients.phone as customer_phone, clients.address as customer_address, clients.comptec');
+        // Récupération des informations générales du devis
+        $this->db->select('quotes.*, clients.item_supplier as customer_name, clients.lastname as customer_last_name, clients.email as customer_email, clients.phone as customer_phone, clients.address as customer_address, clients.comptec');
         $this->db->from($this->table);
         $this->db->join('clients', 'clients.id = quotes.customer_id');
         $this->db->where('quotes.id', $quote_id);
@@ -145,29 +138,42 @@ class Quote_model extends CI_Model {
             return null;
         }
 
-        // Récupération des articles
+        // Récupération des articles (produits et services)
         $this->db->select('
             quote_items.*,
             item_category.item_category as category_name,
-            item.name as item_name
+            item.name as item_name,
+            services.name as service_name,
+            services.duration as service_duration
         ');
         $this->db->from($this->items_table);
-        $this->db->join('item_category', 'item_category.id = quote_items.category_id');
-        $this->db->join('item', 'item.id = quote_items.item_id');
-        $this->db->where('quote_id', $quote_id);
-        $this->db->order_by('position', 'ASC');
+        $this->db->join('item_category', 'item_category.id = quote_items.category_id', 'left');
+        $this->db->join('item', 'item.id = quote_items.item_id', 'left');
+        $this->db->join('services', 'services.id = quote_items.service_id', 'left');
+        $this->db->where('quote_items.quote_id', $quote_id);
+        $this->db->order_by('quote_items.position', 'ASC');
         $items = $this->db->get()->result_array();
+
+        // Pour chaque ligne, définir le nom affiché et l'unité en fonction du type
+        foreach ($items as &$item) {
+            if ($item['item_type'] == 'service') {
+                $item['item_name'] = $item['service_name'];       // Nom du service
+                $item['category_name'] = null;                    // Pas de catégorie pour un service
+                if (empty($item['unit']) && !empty($item['service_duration'])) {
+                    $item['unit'] = $item['service_duration'];    // Utiliser la durée comme unité par défaut
+                }
+            } else {
+                // Produit : le nom est déjà dans item_name
+                $item['service_name'] = null;
+            }
+        }
 
         $quote['items'] = $items;
         return $quote;
     }
 
     /**
-     * Met à jour le statut d'une commande
-     * 
-     * @param int $quote_id ID de le devis
-     * @param int $status Nouveau statut
-     * @return bool
+     * Met à jour le statut d'un devis
      */
     public function updateStatus($quote_id, $status)
     {
@@ -179,17 +185,13 @@ class Quote_model extends CI_Model {
     }
 
     /**
-     * Met à jour le statut d'un devis en annulé avec le motif
-     * 
-     * @param int $quote_id ID du devis
-     * @param string $reason Motif de l'annulation
-     * @return bool
+     * Met à jour le statut d'un devis en annulé avec motif
      */
     public function updateCancelStatus($quote_id, $data)
-    {   
+    {
         $this->db->where('id', $quote_id);
         return $this->db->update($this->table, [
-            'status'     => $data['status'], // 3 = Annulée
+            'status'     => $data['status'],
             'notes'      => $data['reason'],
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -197,9 +199,6 @@ class Quote_model extends CI_Model {
 
     /**
      * Récupère l'état du stock pour un article
-     * 
-     * @param int $item_id ID de l'article
-     * @return object|null
      */
     public function getStockStatus($item_id)
     {
@@ -208,23 +207,42 @@ class Quote_model extends CI_Model {
         return $query->row();
     }
 
-    public function getListData()
+    /**
+     * Liste des devis pour DataTable (admin)
+     */
+    public function getListDataForAdmin()
+    {
+        return $this->_getListData(null);
+    }
+
+    /**
+     * Liste des devis pour un utilisateur normal
+     */
+    public function getListDataForUser($username)
+    {
+        return $this->_getListData($username);
+    }
+
+    /**
+     * Méthode privée pour la liste DataTable
+     */
+    private function _getListData($username = null)
     {
         $draw = intval($this->input->post('draw'));
         $start = intval($this->input->post('start'));
         $length = intval($this->input->post('length'));
         $search = $this->input->post('search')['value'];
-        $status = $this->input->post('status'); // Récupération du statut
+        $status = $this->input->post('status');
 
-        // var_dump($this->input->post());
-        // exit;
-
-        $total_records = $this->db->count_all($this->table);
+        if ($username !== null) {
+            $this->db->where('user_name', $username);
+        }
+        $total_records = $this->db->count_all_results($this->table);
 
         $this->db->start_cache();
-        
+
         $this->db->select('
-            quotes.*,
+            quotes.*, user_name,
             clients.item_supplier as customer_name,
             clients.lastname as customer_last_name,
             clients.email as customer_email,
@@ -233,7 +251,11 @@ class Quote_model extends CI_Model {
         ');
         $this->db->from($this->table);
         $this->db->join('clients', 'clients.id = quotes.customer_id', 'left');
-        
+
+        if ($username !== null) {
+            $this->db->where('quotes.user_name', $username);
+        }
+
         if($search) {
             $this->db->group_start();
             $this->db->like('quotes.designation', $search);
@@ -243,24 +265,22 @@ class Quote_model extends CI_Model {
             $this->db->group_end();
         }
 
-        // Ajout du filtre sur le statut
-        if($status !== '' &&  (int)$status > 0 ) {
+        if($status !== '' && (int)$status > 0) {
             $this->db->where('quotes.status', $status);
         }
-        
+
         $this->db->stop_cache();
 
         $filtered_records = $this->db->get()->num_rows();
-        
+
         $this->db->order_by('quotes.created_at', 'DESC');
         if($length != -1) {
             $this->db->limit($length, $start);
         }
 
         $query = $this->db->get();
-        
         $this->db->flush_cache();
-        
+
         $status_labels = [
             self::STATUS_PENDING => ['label' => 'En attente de validation', 'class' => 'label-warning'],
             self::STATUS_VALIDATED => ['label' => 'Validé', 'class' => 'label-success'],
@@ -273,14 +293,11 @@ class Quote_model extends CI_Model {
         $data = [];
         foreach($query->result() as $row) {
             $status_info = isset($status_labels[$row->status]) ? $status_labels[$row->status] : ['label' => 'Inconnu', 'class' => 'label-default'];
-            
+
             $data[] = [
                 'id' => $row->id,
                 'quote_number' => $row->quote_number,
                 'designation' => $row->designation,
-                'payment_terms' => $row->payment_terms ?? 'Non défini',
-                'delivery_terms' => $row->delivery_terms ?? 'Non défini',
-                'delivery_location' => $row->delivery_location ?? 'Non défini',
                 'customer' => [
                     'name' => $row->customer_name.' '.$row->customer_last_name,
                     'email' => $row->customer_email,
@@ -288,7 +305,6 @@ class Quote_model extends CI_Model {
                     'address' => $row->customer_address
                 ],
                 'dates' => [
-                    'creation'      => date('d/m/Y', strtotime($row->created_at)),
                     'quote_date'    => $row->quote_date ? date('d/m/Y', strtotime($row->quote_date)) : 'Non définie',
                     'valid_until'   => $row->valid_until ? date('d/m/Y', strtotime($row->valid_until)) : 'Non définie',
                     'delivery_date' => $row->delivery_date ? date('d/m/Y', strtotime($row->delivery_date)) : 'Non définie',
@@ -309,6 +325,7 @@ class Quote_model extends CI_Model {
                     'label' => $status_info['label'],
                     'class' => $status_info['class']
                 ],
+                'user_name' => $row->user_name,
                 'validation' => [
                     'status' => $row->validation_status,
                     'notes' => $row->validation_notes,
@@ -317,9 +334,6 @@ class Quote_model extends CI_Model {
                 'notes' => $row->notes
             ];
         }
-
-        // var_dump($data);
-        // exit;
 
         return json_encode([
             'draw' => $draw,
@@ -330,24 +344,20 @@ class Quote_model extends CI_Model {
     }
 
     /**
-     * Met à jour un devis existant et ses articles
-     * 
-     * @param array $data Les données du devis à mettre à jour
-     * @return bool
+     * Met à jour un devis existant et ses articles (utilisé si le contrôleur appelle cette méthode)
      */
     public function update($data) {
         $this->db->trans_start();
 
         try {
-            // Vérification que le devis peut être modifiée
             $quote = $this->getQuoteWithItems($data['id']);
             if (!$quote || $quote['status'] != self::STATUS_PENDING) {
                 throw new Exception('Le devis ne peut pas être modifié dans son état actuel');
             }
 
-            // Mise à jour des informations principales de le devis
             $quote_data = [
                 'customer_id' => $data['customer'],
+                'user_name' => $data['user_name'],
                 'designation' => $data['designation'],
                 'quote_date'  => date('Y-m-d', strtotime($data['quote_date'])),
                 'valid_until' => ((isset($data['valid_until']) && !empty($data['valid_until'])) ? date('Y-m-d', strtotime($data['valid_until'])) : null),
@@ -373,8 +383,10 @@ class Quote_model extends CI_Model {
             foreach ($data['items'] as $position => $item) {
                 $item_data = [
                     'quote_id'      => $data['id'],
-                    'category_id'   => $item['category_id'],
-                    'item_id'       => $item['item_id'],
+                    'category_id'   => isset($item['category_id']) ? $item['category_id'] : null,
+                    'item_id'       => isset($item['item_id']) ? $item['item_id'] : null,
+                    'service_id'    => isset($item['service_id']) ? $item['service_id'] : null,
+                    'item_type'     => isset($item['item_type']) ? $item['item_type'] : 'product',
                     'quantity'      => $item['quantity'],
                     'unit_price'    => $item['price'],
                     'unit'          => $item['unit'],
@@ -395,20 +407,13 @@ class Quote_model extends CI_Model {
     }
 
     /**
-     * Récupère les données du devis formatés pour l'impression
-     * 
-     * @param int $quote_id ID du devis
-     * @return array|null Les données formatées du devis
+     * Récupère les données du devis formatées pour l'impression
      */
     public function getQuoteForPrint($quote_id)
     {
         $quote = $this->getQuoteWithItems($quote_id);
-        
-        if (!$quote) {
-            return null;
-        }
+        if (!$quote) return null;
 
-        // Formatage des données pour l'impression
         $print_data = [
             'quote_number' => $quote['quote_number'],
             'quote_date' => date('d/m/Y', strtotime($quote['quote_date'])),
@@ -437,14 +442,13 @@ class Quote_model extends CI_Model {
             'notes' => $quote['notes']
         ];
 
-        // Formatage des articles
         foreach ($quote['items'] as $item) {
             $print_data['items'][] = [
                 'category' => $item['category_name'],
                 'name' => $item['item_name'],
                 'quantity' => $item['quantity'],
                 'unit' => $item['unit'],
-                'price' => number_format($item['price'], 2, ',', ' '),
+                'price' => number_format($item['unit_price'], 2, ',', ' '),
                 'total' => number_format($item['line_total'], 2, ',', ' ')
             ];
         }
@@ -454,9 +458,6 @@ class Quote_model extends CI_Model {
 
     /**
      * Vérifie si un devis est validé
-     * 
-     * @param int $quote_id ID du devis
-     * @return bool
      */
     public function isQuoteValidated($quote_id)
     {
@@ -467,9 +468,6 @@ class Quote_model extends CI_Model {
 
     /**
      * Vérifie si un devis est rejeté
-     * 
-     * @param int $quote_id ID du devis
-     * @return bool
      */
     public function isQuoteRejected($quote_id)
     {
@@ -480,25 +478,17 @@ class Quote_model extends CI_Model {
 
     /**
      * Valide un devis
-     * 
-     * @param int $quote_id ID du devis
-     * @param array $data Données de validation
-     * @return bool
      */
     public function validateQuote($quote_id, $data)
     {
         $this->db->trans_start();
-
         try {
-            // Mise à jour du statut du devis
             $this->db->where('id', $quote_id);
             if (!$this->db->update($this->table, $data)) {
                 throw new Exception('Erreur lors de la mise à jour du statut');
             }
-
             $this->db->trans_complete();
             return $this->db->trans_status();
-
         } catch (Exception $e) {
             $this->db->trans_rollback();
             log_message('error', 'Quote Model - Validate Error: ' . $e->getMessage());
@@ -506,28 +496,19 @@ class Quote_model extends CI_Model {
         }
     }
 
-
     /**
      * Rejette un devis
-     * 
-     * @param int $quote_id ID du devis
-     * @param array $data Données de rejet
-     * @return bool
      */
     public function rejectQuote($quote_id, $data)
     {
         $this->db->trans_start();
-
         try {
-            // Mise à jour du statut du devis
             $this->db->where('id', $quote_id);
             if (!$this->db->update($this->table, $data)) {
                 throw new Exception('Erreur lors de la mise à jour du statut');
             }
-
             $this->db->trans_complete();
             return $this->db->trans_status();
-
         } catch (Exception $e) {
             $this->db->trans_rollback();
             log_message('error', 'Quote Model - Reject Error: ' . $e->getMessage());
@@ -535,12 +516,8 @@ class Quote_model extends CI_Model {
         }
     }
 
-
     /**
      * Récupère les informations de validation d'un devis
-     * 
-     * @param int $quote_id ID du devis
-     * @return array|null
      */
     public function getQuoteValidationInfo($quote_id)
     {
@@ -548,4 +525,54 @@ class Quote_model extends CI_Model {
         $this->db->where('id', $quote_id);
         return $this->db->get($this->table)->row_array();
     }
-} 
+
+    /**
+     * Récupère tous les devis d'un client avec leurs articles (produits et services)
+     */
+    public function getQuotesByCustomer($customer_id) {
+        $this->db->select('quotes.*, 
+            clients.item_supplier as customer_name,
+            clients.lastname as customer_last_name,
+            clients.email as customer_email,
+            clients.phone as customer_phone,
+            clients.address as customer_address')
+            ->from('quotes')
+            ->join('clients', 'clients.id = quotes.customer_id', 'left')
+            ->where('quotes.customer_id', $customer_id)
+            ->order_by('quotes.quote_date', 'DESC');
+
+        $quotes = $this->db->get()->result_array();
+        if (empty($quotes)) {
+            return [];
+        }
+
+        // Charger les articles pour chaque devis
+        foreach ($quotes as &$quote) {
+            $this->db->select('
+                quote_items.*,
+                item_category.item_category as category_name,
+                item.name as item_name,
+                services.name as service_name,
+                services.duration as service_duration
+            ')
+                ->from('quote_items')
+                ->join('item_category', 'item_category.id = quote_items.category_id', 'left')
+                ->join('item', 'item.id = quote_items.item_id', 'left')
+                ->join('services', 'services.id = quote_items.service_id', 'left')
+                ->where('quote_id', $quote['id'])
+                ->order_by('position', 'ASC');
+            $items = $this->db->get()->result_array();
+
+            // Normalisation des noms pour les services
+            foreach ($items as &$item) {
+                if ($item['item_type'] == 'service') {
+                    $item['item_name'] = $item['service_name'];
+                    $item['category_name'] = null;
+                }
+            }
+            $quote['items'] = $items;
+        }
+
+        return $quotes;
+    }
+}

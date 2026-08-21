@@ -30,6 +30,18 @@ class Clients_model extends MY_Model {
         }
     }
 
+// Dans Clients_model.php
+
+    public function generate_client_code() {
+        // Récupère le dernier ID inséré (ou le dernier code)
+        $this->db->select_max('id');
+        $query = $this->db->get('item_supplier')->row();
+        $next_id = ($query->id ?? 0) + 1;
+
+        // Format : CLI + année-mois-jour + numéro sur 4 chiffres
+        $date_prefix = date('Ymd');
+        return 'CLI-' . $date_prefix . '-' . str_pad($next_id, 4, '0', STR_PAD_LEFT);
+    }
 
     /**
      * This function will take the post data passed from the controller
@@ -37,54 +49,23 @@ class Clients_model extends MY_Model {
      * else an insert. One function doing both add and edit.
      * @param $data
      */
+
+
     public function add($data) {
-        $this->db->trans_start(); # Starting Transaction
-        $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
-        //=======================Code Start===========================
-        if (isset($data['id'])) {
-            $this->db->where('id', $data['id']);
-            $this->db->update('clients', $data);
-            $message = UPDATE_RECORD_CONSTANT . " On  item supplier id " . $data['id'];
-            $action = "Update";
-            $record_id = $data['id'];
-            $this->log($message, $record_id, $action);
-            //======================Code End==============================
+        // 1. Insérer sans le code client (ou avec valeur temporaire)
+        $this->db->insert('clients', $data);
+        $insert_id = $this->db->insert_id();
 
-            $this->db->trans_complete(); # Completing transaction
-            /* Optional */
+        // 2. Générer le code client basé sur l'ID réel
+        $code_client = 'CLI-' . str_pad($insert_id, 6, '0', STR_PAD_LEFT);
+        // Exemple : CLI-000042
 
-            if ($this->db->trans_status() === false) {
-                # Something went wrong.
-                $this->db->trans_rollback();
-                return false;
-            } else {
-                //return $return_value;
-            }
-        } else {
-            $this->db->insert('clients', $data);
-            $insert_id = $this->db->insert_id();
-            $message = INSERT_RECORD_CONSTANT . " On item supplier id " . $insert_id;
-            $action = "Insert";
-            $record_id = $insert_id;
-            $this->log($message, $record_id, $action);
-           
-            //======================Code End==============================
+        // 3. Mettre à jour l'enregistrement avec le code unique
+        $this->db->where('id', $insert_id);
+        $this->db->update('clients', ['code_client' => $code_client]);
 
-            $this->db->trans_complete(); # Completing transaction
-            /* Optional */
-
-            if ($this->db->trans_status() === false) {
-                # Something went wrong.
-                $this->db->trans_rollback();
-                return false;
-            } else {
-                //return $return_value;
-            }
-            return $insert_id;
-        }
+        return $insert_id;
     }
-
-
 
     /**
      * This function will delete the record based on the id
@@ -110,6 +91,12 @@ class Clients_model extends MY_Model {
         } else {
             //return $return_value;
         }
+    }
+
+    public function update($data, $id) {
+        $this->db->where('id', $id);
+        $this->db->update('clients', $data);   // adaptez le nom de la table si différent
+        return $this->db->affected_rows();
     }
 
 

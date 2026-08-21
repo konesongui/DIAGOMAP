@@ -12,10 +12,10 @@ class Comptecomptable extends Admin_Controller {
     }
 
     function index() {
-        if (!$this->rbac->hasPrivilege('clients', 'can_view')) {
+        if (!$this->rbac->hasPrivilege('comptable', 'can_view')) {
             access_denied();
         }
-        $this->session->set_userdata('top_menu', 'income');
+        $this->session->set_userdata('top_menu', 'Caisse');
         $this->session->set_userdata('sub_menu', 'comptecomptable/index');
         $data['title'] = 'Item Supplier List';
         $comptecomtable_result = $this->comptecomptable_model->get();
@@ -26,7 +26,7 @@ class Comptecomptable extends Admin_Controller {
     }
 
     function delete($id) {
-        if (!$this->rbac->hasPrivilege('clients', 'can_delete')) {
+        if (!$this->rbac->hasPrivilege('comptable', 'can_delete')) {
             access_denied();
         }
         $data['title'] = 'Compte comptable';
@@ -35,7 +35,7 @@ class Comptecomptable extends Admin_Controller {
     }
 
     function create() {
-        if (!$this->rbac->hasPrivilege('clients', 'can_add')) {
+        if (!$this->rbac->hasPrivilege('comptable', 'can_add')) {
             access_denied();
         }
         $data['title'] = 'Ajouté un compte comptable';
@@ -67,7 +67,7 @@ class Comptecomptable extends Admin_Controller {
     }
 
     function edit($id) {
-        if (!$this->rbac->hasPrivilege('clients', 'can_edit')) {
+        if (!$this->rbac->hasPrivilege('comptable', 'can_edit')) {
             access_denied();
         }
         $data['title'] = 'Edit journal comptable';

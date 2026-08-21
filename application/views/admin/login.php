@@ -1,253 +1,480 @@
 <!DOCTYPE html>
-<!--
-Author: Keenthemes
-Product Name: MetronicProduct Version: 8.2.5
-Purchase: https://1.envato.market/EA4JP
-Website: http://www.keenthemes.com
-Contact: support@keenthemes.com
-Follow: www.twitter.com/keenthemes
-Dribbble: www.dribbble.com/keenthemes
-Like: www.facebook.com/keenthemes
-License: For each use you must have a valid license purchased only from above link in order to legally use the theme for your project.
--->
-<html lang="en">
-<!--begin::Head-->
+<html lang="fr">
 <head>
-
-    <title>DIAGO GESTION</title>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="The most advanced Bootstrap 5 Admin Theme with 40 unique prebuilt layouts on Themeforest trusted by 100,000 beginners and professionals. Multi-demo, Dark Mode, RTL support and complete React, Angular, Vue, Asp.Net Core, Rails, Spring, Blazor, Django, Express.js, Node.js, Flask, Symfony & Laravel versions. Grab your copy now and get life-time updates for free." />
-    <meta name="keywords" content="metronic, bootstrap, bootstrap 5, angular, VueJs, React, Asp.Net Core, Rails, Spring, Blazor, Django, Express.js, Node.js, Flask, Symfony & Laravel starter kits, admin themes, web design, figma, web development, free templates, free admin themes, bootstrap theme, bootstrap template, bootstrap dashboard, bootstrap dak mode, bootstrap button, bootstrap datepicker, bootstrap timepicker, fullcalendar, datatables, flaticon" />
+    <title>DIAGO - Connexion</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:type" content="article" />
-    <meta property="og:title" content="Metronic - The World's #1 Selling Bootstrap Admin Template by KeenThemes" />
-    <meta property="og:url" content="https://keenthemes.com/metronic" />
-    <meta property="og:site_name" content="Metronic by Keenthemes" />
-    <link rel="canonical" href="http://authentication/layouts/overlay/sign-in.html" />
     <link rel="shortcut icon" href="<?php echo base_url(); ?>backend/usertemplate/assets/images/favicon.png" />
-    <!--begin::Fonts(mandatory for all pages)-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
-    <!--end::Fonts-->
-    <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
-    <link href="<?php echo base_url(); ?>backend/usertemplate/asset/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="<?php echo base_url(); ?>backend/usertemplate/asset/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <!--end::Global Stylesheets Bundle-->
-    <script>// Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }</script>
+    <!-- Liens CSS -->
+    <link href="<?php echo base_url(); ?>backend/usertemplate/asset/plugins/global/plugins.bundle.css" rel="stylesheet" />
+    <link href="<?php echo base_url(); ?>backend/usertemplate/asset/css/style.bundle.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Reset & fond */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+        #bg-canvas {
+            position: fixed;
+            top:0; left:0;
+            width:100%; height:100%;
+            z-index:-2;
+            background: linear-gradient(135deg, white 0%, white 50%, white 100%);
+        }
+        .overlay {
+            position: fixed;
+            top:0; left:0;
+            width:100%; height:100%;
+            background: radial-gradient(circle at 20% 30%, rgba(255,215,0,0.15), rgba(0,0,0,0.2));
+            z-index:-1;
+        }
+        .login-container {
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:1.5rem;
+        }
+        .card-glass {
+            background-color:#273772;
+            backdrop-filter:blur(16px);
+            border-radius:2rem;
+            border:1px solid rgba(255,255,255,0.3);
+            box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
+            width:100%;
+            max-width:434px;
+            padding:2rem 2rem 2.5rem;
+            transition:transform 0.3s ease;
+        }
+        .card-glass:hover { transform:translateY(-5px); }
+        .logo-area { text-align:center; margin-bottom:1.5rem; }
+        .logo-img { max-width:120px; height:auto; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+        .title {
+            font-size:1.8rem;
+            font-weight:700;
+            text-align:center;
+            color:#FFE6A7;
+            letter-spacing:-0.5px;
+            margin-bottom:0.5rem;
+        }
+        .subtitle {
+            text-align:center;
+            color:rgba(255,250,225,0.85);
+            font-size:0.9rem;
+            margin-bottom:2rem;
+            border-bottom:1px dashed rgba(255,215,0,0.4);
+            display:inline-block;
+            width:auto;
+            margin-left:auto;
+            margin-right:auto;
+            padding-bottom:0.5rem;
+        }
+        .input-group { margin-bottom:1.5rem; }
+        .input-icon { position:relative; }
+        .input-icon input {
+            width:147%;
+            padding:1rem 1rem 1rem 3rem;
+            background:rgba(255,255,255,0.9);
+            border:none;
+            border-radius:12px;
+            font-size:1rem;
+            color:#1a2e2a;
+            margin-left:23px;
+            transition:all 0.2s;
+            outline:none;
+            font-weight:500;
+        }
+        .input-icon input:focus {
+            background:white;
+            box-shadow:0 0 0 3px rgba(212,175,55,0.5);
+        }
+        .input-icon i {
+            position:absolute;
+            left:1rem;
+            top:50%;
+            transform:translateY(-50%);
+            font-size:1.2rem;
+            margin-left:24px;
+            color:#D4AF37;
+        }
+        .toggle-pwd {
+            position:absolute;
+            right:-8rem;
+            top:50%;
+            transform:translateY(-50%);
+            cursor:pointer;
+            font-size:1.2rem;
+            user-select:none;
+            opacity:0.7;
+            transition:0.2s;
+        }
+        .toggle-pwd:hover { opacity:1; }
+        .btn-login {
+            background:linear-gradient(95deg, #D4AF37, #F9E79F);
+            border:none;
+            width:92%;
+            padding:1rem;
+            border-radius:12px;
+            font-weight:700;
+            font-size:1.1rem;
+            color:#0B2F26;
+            margin-left: 20px;
+            cursor:pointer;
+            transition:all 0.3s;
+            box-shadow:0 8px 20px rgba(0,0,0,0.2);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:10px;
+        }
+        .btn-login:hover {
+            transform:scale(1.02);
+            background:linear-gradient(95deg, #F9E79F, #D4AF37);
+            box-shadow:0 10px 25px rgba(212,175,55,0.4);
+        }
+        .btn-login:disabled {
+            opacity:0.7;
+            cursor:not-allowed;
+        }
+        .help-text {
+            text-align:center;
+            margin-top:1.8rem;
+            font-size:0.8rem;
+            color:rgba(255,245,200,0.9);
+        }
+        .help-text a {
+            color:#FFD966;
+            text-decoration:none;
+            font-weight:600;
+        }
+        .help-text a:hover { text-decoration:underline; }
+        @keyframes shake {
+            0% { transform:translateX(0); }
+            25% { transform:translateX(-6px); }
+            75% { transform:translateX(6px); }
+            100% { transform:translateX(0); }
+        }
+        .shake { animation:shake 0.35s ease-in-out; }
+
+        /* ----- TOAST NOTIFICATION ----- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            width: 100%;
+            pointer-events: none;
+        }
+        .toast {
+            background: #1e293b;
+            color: #fff;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            pointer-events: auto;
+            border-left: 6px solid #4caf50;
+        }
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast.success { border-left-color: #4caf50; }
+        .toast.error   { border-left-color: #e63946; }
+        .toast .toast-icon {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .toast .toast-message {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .toast .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0 4px;
+        }
+        .toast .toast-close:hover { color: #fff; }
+
+        @media (max-width: 500px) {
+            .card-glass { padding:1.5rem; }
+            .title { font-size:1.5rem; }
+            #toast-container { right:10px; left:10px; max-width:100%; }
+        }
+    </style>
 </head>
-<!--end::Head-->
-<!--begin::Body-->
-<body id="kt_body" class="app-blank bgi-size-cover bgi-attachment-fixed bgi-position-center">
-<!--begin::Theme mode setup on page load-->
-<script>var defaultThemeMode = "light"; var themeMode; if ( document.documentElement ) { if ( document.documentElement.hasAttribute("data-bs-theme-mode")) { themeMode = document.documentElement.getAttribute("data-bs-theme-mode"); } else { if ( localStorage.getItem("data-bs-theme") !== null ) { themeMode = localStorage.getItem("data-bs-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-bs-theme", themeMode); }</script>
-<!--end::Theme mode setup on page load-->
-<!--begin::Root-->
-<div class="d-flex flex-column flex-root" id="kt_app_root">
-    <!--begin::Page bg image-->
-    <style>body { background-image: <?php echo base_url(); ?>('uploads/school_content/admin_logo'); } [data-bs-theme="dark"] body { background-image: <?php echo base_url(); ?>(backend/usertemplate/assets/images/background/diago.png); }</style>
-    <!--end::Page bg image-->
-    <!--begin::Authentication - Sign-in -->
-    <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-        <!--begin::Aside-->
-        <div class="d-flex flex-lg-row-fluid">
-            <!--begin::Content-->
-            <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100" style="background-color: navy">
-                <!--begin::Image-->
-                <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20" src="<?php echo base_url(); ?>uploads/front_office/logo/logos.png" alt="" />
-                <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20" src="<?php echo base_url(); ?>uploads/front_office/logo/logos.png" alt="" />
-                <!--end::Image-->
-                <!--begin::Title-->
-                <!--<h1 style="color: white" class="fs-2qx fw-bold text-center mb-7">Bienvenue sur l'application DIAGO</h1>
-                <span style="color: white">Votre application de gestion d'entreprise</span>-->
-                <!--end::Title-->
-                <!--begin::Text-->
-                <div class="col-lg-8 col-md-8 col-sm-12">
-                    <!--<h3 class="h3" style="color: white"><?php echo $this->lang->line('what_is_new_in'); ?> <?php echo $school['name']; ?></h3>-->
-                    <div class="loginright mCustomScrollbar">
-                        <div class="messages">
-                            <?php
-                            foreach ($notice as $notice_key => $notice_value) {
-                                ?>
-                                <h4 style="color: white"><?php echo $notice_value['title']; ?></h4>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="overlay"></div>
 
-                                <?php
-                                $string = ($notice_value['description']);
-                                $string = strip_tags($string);
+<!-- Conteneur des toasts -->
+<div id="toast-container"></div>
 
-                                echo '<p style="color: white">' . $string . '</p>';
-                                ?>
-
-                                <div class="logdivider"></div>
-                                <?php
-                            }
-                            ?>
-
-
-                        </div>
-                    </div>
-                    <!--<img src="<?php echo base_url(); ?>backend/usertemplate/assets/img/backgrounds/bg3.jpg" class="img-responsive" style="border-radius:4px;" />-->
-                </div>
-                <!--./col-lg-6-->
-            </div>
-            <!--end::Content-->
+<div class="login-container">
+    <div class="card-glass">
+        <div class="logo-area">
+            <img src="<?php echo base_url(); ?>uploads/front_office/logo/logos.png" class="logo-img" alt="Logo Eglise" />
         </div>
-        <!--begin::Aside-->
-        <!--begin::Body-->
-        <div class="d-flex flex-column-fluid flex-lg-row-auto justify-content-center justify-content-lg-end p-12">
-            <!--begin::Wrapper-->
-            <div class="bg-body d-flex flex-column flex-center rounded-4 w-md-600px p-10">
-                <!--begin::Content-->
-                <div class="d-flex flex-center flex-column align-items-stretch h-lg-100 w-md-400px">
-                    <!--begin::Wrapper-->
-                    <div class="d-flex flex-center flex-column flex-column-fluid pb-15 pb-lg-20">
-                        <?php
-                        if (isset($error_message)) {
-                            echo "<div class='alert alert-danger'>" . $error_message . "</div>";
-                        }
-                        ?>
-                        <?php
-                        if ($this->session->flashdata('message')) {
-                            echo "<div class='alert alert-success'>" . $this->session->flashdata('message') . "</div>";
-                        };
-                        ?>
-                        <?php
-                        if ($this->session->flashdata('disable_message')) {
-                            echo "<div class='alert alert-danger'>" . $this->session->flashdata('disable_message') . "</div>";
-                        };
-                        ?>
-
-                        <!--begin::Form-->
-                        <form class="form w-100"  id="kt_sign_in_form" method="post" action="<?php echo site_url('site/login') ?>">
-                            <!--begin::Heading-->
-                            <div class="text-center mb-11">
-                                <!--begin::Title-->
-                                <h1 class="text-gray-900 fw-bolder mb-3">Authentification</h1>
-                                <span>Entrez vos paramètres de connexion</span>
-                                <!--end::Title-->
-                                <!--begin::Subtitle-->
-                                <!--end::Subtitle=-->
-                            </div>
-
-                            <!--end::Separator-->
-                            <!--begin::Input group=-->
-                            <div class="fv-row mb-8">
-                                <!--begin::Email-->
-                                <input type="text" placeholder="<?php echo $this->lang->line('username'); ?>" name="username"  value="<?php echo set_value('username') ?>" class="form-control bg-transparent" />
-                                <span class="text-danger"><?php echo form_error('username'); ?></span>
-                                <!--end::Email-->
-                            </div>
-                            <!--end::Input group=-->
-                            <div class="fv-row mb-3">
-                                <!--begin::Password-->
-                                <input type="password" placeholder="Mot de passe" value="<?php echo set_value('password') ?>" name="password" class="form-control bg-transparent" />
-                                <span class="text-danger"><?php echo form_error('password'); ?></span>
-                                <!--end::Password-->
-                            </div>
-                            <?php if($is_captcha){ ?>
-                                <div class="form-group has-feedback row">
-                                    <div class='col-lg-7 col-md-12 col-sm-6'>
-                                        <span id="captcha_image"><?php echo $captcha_image; ?></span>
-                                        <span title='Refresh Catpcha' class="fa fa-refresh catpcha" onclick="refreshCaptcha()"></span>
-                                    </div>
-                                    <div class='col-lg-5 col-md-12 col-sm-6'>
-                                        <input type="text" name="captcha" placeholder="<?php echo $this->lang->line('captcha'); ?>" class=" form-control" autocomplete="off" id="captcha">
-                                        <span class="text-danger"><?php echo form_error('captcha'); ?></span>
-                                    </div>
-                                </div>
-                            <?php } ?>
-                            <!--end::Input group=-->
-                            <!--begin::Wrapper-->
-
-                            <!--end::Wrapper-->
-                            <!--begin::Submit button-->
-                            <div class="d-grid mb-10">
-                                <button class="btn btn-succes btn-login btn-block text-uppercase waves-effect waves-light" style="background-color: navy;color: white" type="submit">Se connecter</button>
-
-                            </div>
-                            <!--end::Submit button-->
-                            <!--begin::Sign up-->
-                            <!--end::Sign up-->
-                        </form>
-                        <a href="<?php echo site_url('site/forgotpassword') ?>" class="forgot"><i class="fa fa-key"></i> Mot de passe oublié?</a>
-
-                        <!--end::Form-->
-                    </div>
-
-
-                    <?php if(!empty($this->session->flashdata('feedback'))){ ?>
-                        <div class="message" style="color: red">
-                            <strong>Danger! </strong><?php echo $this->session->flashdata('feedback')?>
-                        </div>
-                        <?php
-                    }
-                    ?>
-
-                    <!--end::Wrapper-->
-                    <!--begin::Footer-->
-                    <div class="d-flex flex-stack">
-                        <!--begin::Languages-->
-
-                        <!--end::Menu-->
-                    </div>
-
-                    <!--end::Languages-->
-                    <!--begin::Links-->
-
-
-                </div>
-                <!--end::Links-->
-            </div>
-            <!--end::Footer-->
+        <h1 class="title">Bienvenue</h1>
+        <div style="text-align:center;">
+            <span class="subtitle">Espace de gestion DIAGO</span>
         </div>
-        <!--end::Content-->
+
+        <!-- Formulaire avec méthode POST, intercepté en AJAX -->
+        <form id="loginForm" method="post" action="<?php echo site_url('site/login') ?>">
+            <div class="input-group">
+                <div class="input-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="text" name="username" placeholder="Email d'utilisateur" required autocomplete="username" />
+                </div>
+            </div>
+            <div class="input-group">
+                <div class="input-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" id="password" placeholder="Mot de passe" required autocomplete="current-password" />
+                    <span class="toggle-pwd" onclick="togglePassword()">👁️</span>
+                </div>
+            </div>
+            <button type="submit" class="btn-login" id="btnLogin">
+                <span>Se connecter</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+        <div class="help-text">
+            🔐 Accès sécurisé — <a href="<?php echo site_url('site/forgotpassword') ?>">Mot de passe oublié ?</a>
+        </div>
     </div>
-    <!--end::Wrapper-->
 </div>
-<!--end::Body-->
-</div>
-<!--end::Authentication - Sign-in-->
-</div>
-<!--end::Root-->
-<!--begin::Javascript-->
-<script>var hostUrl = "assets/";</script>
-<!--begin::Global Javascript Bundle(mandatory for all pages)-->
-<script src="<?php echo base_url(); ?>backend/usertemplate/asset/plugins/global/plugins.bundle.js"></script>
-<script src="<?php echo base_url(); ?>backend/usertemplate/asset/js/scripts.bundle.js"></script>
-<!--end::Global Javascript Bundle-->
-<!--begin::Custom Javascript(used for this page only)-->
-<script src="<?php echo base_url(); ?>backend/usertemplate/asset/js/custom/authentication/sign-in/general.js"></script>
-<!--end::Custom Javascript-->
-<!--end::Javascript-->
-</body>
-<!--end::Body-->
-</html>
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('.login-form input[type="text"], .login-form input[type="password"], .login-form textarea').on('focus', function () {
-            $(this).removeClass('input-error');
-        });
-        $('.login-form').on('submit', function (e) {
-            $(this).find('input[type="text"], input[type="password"], textarea').each(function () {
-                if ($(this).val() == "") {
-                    e.preventDefault();
-                    $(this).addClass('input-error');
-                } else {
-                    $(this).removeClass('input-error');
+
+<!-- ==================== SCRIPTS ==================== -->
+
+<!-- Particules -->
+<script>
+    const canvas = document.getElementById("bg-canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let particlesArray = [];
+    class Particle {
+        constructor(){
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 3 + 1;
+            this.speedX = (Math.random() * 0.8) - 0.4;
+            this.speedY = (Math.random() * 0.8) - 0.4;
+        }
+        update(){
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if(this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+            if(this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        }
+        draw() {
+            const gradient = ctx.createLinearGradient(
+                this.x - this.size, this.y,
+                this.x + this.size, this.y
+            );
+            gradient.addColorStop(0, "rgb(39,55,114)");
+            gradient.addColorStop(1, "rgb(255,193,7)");
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    function connectLines(){
+        for(let a=0; a<particlesArray.length; a++){
+            for(let b=a+1; b<particlesArray.length; b++){
+                let dx = particlesArray[a].x - particlesArray[b].x;
+                let dy = particlesArray[a].y - particlesArray[b].y;
+                let dist = dx*dx + dy*dy;
+                let limit = (canvas.width/12) * (canvas.height/12);
+                if(dist < limit){
+                    ctx.strokeStyle = "rgba(212,175,55,0.15)";
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                    ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                    ctx.stroke();
                 }
-            });
+            }
+        }
+    }
+    function initParticles(){
+        particlesArray = [];
+        for(let i=0; i<90; i++){ particlesArray.push(new Particle()); }
+    }
+    function animateParticles(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(let i=0; i<particlesArray.length; i++){
+            particlesArray[i].update();
+            particlesArray[i].draw();
+        }
+        connectLines();
+        requestAnimationFrame(animateParticles);
+    }
+    initParticles();
+    animateParticles();
+    window.addEventListener("resize", ()=>{
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initParticles();
+    });
+</script>
+
+<!-- Toggle mot de passe -->
+<script>
+    function togglePassword() {
+        const pwd = document.getElementById("password");
+        const type = pwd.getAttribute("type") === "password" ? "text" : "password";
+        pwd.setAttribute("type", type);
+    }
+</script>
+
+<!-- TOAST -->
+<script>
+    function showToast(message, type = 'success', duration = 4000) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const iconMap = {
+            success: '✅',
+            error: '❌',
+            info: 'ℹ️'
+        };
+        const icon = iconMap[type] || 'ℹ️';
+
+        toast.innerHTML = `
+            <span class="toast-icon">${icon}</span>
+            <span class="toast-message">${message}</span>
+            <button class="toast-close">&times;</button>
+        `;
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            closeToast(toast);
+        });
+
+        const timer = setTimeout(() => {
+            closeToast(toast);
+        }, duration);
+
+        toast._timer = timer;
+    }
+
+    function closeToast(toast) {
+        if (!toast) return;
+        toast.classList.remove('show');
+        clearTimeout(toast._timer);
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 400);
+    }
+</script>
+
+<!-- Gestion AJAX du formulaire (sans son) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('loginForm');
+        const btn = document.getElementById('btnLogin');
+
+        <?php if (!empty($error_message)): ?>
+        showToast('<?php echo addslashes($error_message); ?>', 'error', 5000);
+        btn.disabled = false;
+        btn.innerHTML = '<span>Se connecter</span> <i class="fas fa-arrow-right"></i>';
+        <?php endif; ?>
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Connexion...</span> <i class="fas fa-spinner fa-pulse"></i>';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    if (response.redirected) {
+                        data = { success: true, redirect: response.url };
+                    } else {
+                        const text = await response.text();
+                        throw new Error('Réponse non JSON. Statut: ' + response.status);
+                    }
+                }
+
+                if (data.success) {
+                    // Succès
+                    btn.innerHTML = '<span>✅ Connecté</span> <i class="fas fa-check-circle"></i>';
+                    btn.style.background = 'linear-gradient(95deg, #2b7a4b, #4caf50)';
+                    btn.style.boxShadow = '0 0 20px #4caf50';
+
+                    showToast('Connexion réussie avec succès !', 'success', 4000);
+
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '<?php echo site_url('dashboard'); ?>';
+                    }, 2000);
+                } else {
+                    // Échec
+                    btn.innerHTML = '<span>❌ Échec</span> <i class="fas fa-times-circle"></i>';
+                    btn.style.background = 'linear-gradient(95deg, #b91c1c, #e63946)';
+                    btn.style.boxShadow = '0 0 20px #e63946';
+                    btn.classList.add('shake');
+                    setTimeout(() => btn.classList.remove('shake'), 400);
+
+                    const msg = data.message || 'Échec de l\'authentification. Vérifiez vos accès.';
+                    showToast(msg, 'error', 5000);
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Se connecter</span> <i class="fas fa-arrow-right"></i>';
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                btn.innerHTML = '<span>❌ Échec</span> <i class="fas fa-times-circle"></i>';
+                btn.style.background = 'linear-gradient(95deg, #b91c1c, #e63946)';
+                btn.style.boxShadow = '0 0 20px #e63946';
+                btn.classList.add('shake');
+                setTimeout(() => btn.classList.remove('shake'), 400);
+
+                showToast('Erreur réseau ou serveur. Veuillez réessayer.', 'error', 5000);
+                btn.disabled = false;
+                btn.innerHTML = '<span>Se connecter</span> <i class="fas fa-arrow-right"></i>';
+            }
         });
     });
 </script>
-<script type="text/javascript">
-    function refreshCaptcha(){
-        $.ajax({
-            type: "POST",
-            url: "<?php echo base_url('site/refreshCaptcha'); ?>",
-            data: {},
-            success: function(captcha){
-                $("#captcha_image").html(captcha);
-            }
-        });
-    }
-</script>
+
+</body>
+</html>

@@ -5,6 +5,10 @@ if (!defined('BASEPATH'))
 
 class Journal_model extends MY_Model {
 
+
+    protected $table = 'journal_comptable';
+    protected $allowedFields = ['date_operation', 'compte_id', 'montant'];
+
     public function __construct() {
         parent::__construct();
     }
@@ -17,6 +21,29 @@ class Journal_model extends MY_Model {
      */
     public function get($id = null) {
         $this->db->select()->from('journal_comptable');
+          if ($id != null) {
+            $this->db->where('id', $id);
+        } else {
+            $this->db->order_by('id');
+        }
+        $query = $this->db->get();
+        if ($id != null) {
+            return $query->row_array();
+        } else {
+            return $query->result_array();
+        }
+    }
+
+
+
+    public function getbilan($id = null)
+    {
+        $this->db->select('YEAR(created_at) as annee, reference_piece, libelle_operation, compte_id, SUM(montant) as total_montant')
+            ->group_By('compte_id')
+            ->group_By('annee')
+
+            ->group_By('libelle_operation')
+            ->from('journal_comptable');
         if ($id != null) {
             $this->db->where('id', $id);
         } else {
@@ -29,6 +56,25 @@ class Journal_model extends MY_Model {
             return $query->result_array();
         }
     }
+
+    public function getjournal_simplifie($id = null)
+    {
+        $this->db->select('created_at as annee, reference_piece, libelle_operation, compte_id_revenu, compte_id_depense, montant_revenu, montant_depense')
+
+            ->from('journal_comptable');
+        if ($id != null) {
+            $this->db->where('id', $id);
+        } else {
+            $this->db->order_by('id');
+        }
+        $query = $this->db->get();
+        if ($id != null) {
+            return $query->row_array();
+        } else {
+            return $query->result_array();
+        }
+    }
+
 
 
     /**

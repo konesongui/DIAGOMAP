@@ -156,7 +156,7 @@ $moisEn = [
                     <div class="">
                         <div class="box-header ptbnull"></div>
                         <div class="box-header ptbnull">
-                            <h3 class="box-title titlefix"><i class="fa fa-money"></i><b style="color: black">CHARGE CNPS & CMU EMPLOYEUR</b></h3>
+                            <h3 class="box-title titlefix"><i class="fa fa-money"></i><b class="text text-left text-primary">CHARGE CNPS & CMU EMPLOYEUR</b></h3>
                         </div>
                         <div class="box-body table-responsive">
                             <div class="download_label">
@@ -177,7 +177,7 @@ $moisEn = [
                             <tr>
 
 
-                                <th class="text-primary">Matricule</th>
+                                <th class="text text-left text-primary">Matricule</th>
                                 <th class="text-primary">Nom</th>
                                 <th class="text-primary">Prénom</th>
                                 <th class="text-primary">Cmu</th>
@@ -288,7 +288,7 @@ $moisEn = [
 
 
 
-                                    <td><?php echo $this->lang->line('grand_total'); ?> </td>
+                                    <td class="text text-left text-primary">TOTAL </td>
 
                                     <td><?php echo (number_format($cmu, 2, '.', '')); ?></td>
 

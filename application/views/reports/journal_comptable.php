@@ -21,54 +21,20 @@ $moisEn = [
 
 ?>
 <?php
+$compte= $value["compte_id"];
 
-
-if($value["compte_debit_id"] = 571)
+if($compte = 571)
 {
     $compte="caisse";
 }
-if($value["compte_debit_id"] = 512)
-{
-    $compte="Banque";
+else{
+    $compte=0;
 }
-if($value["compte_debit_id"] = 411)
-{
-    $compte="Client";
-}
-if($value["compte_debit_id"] = 666)
-{
-    $compte="Achats non stockés de matières et fournitures";
-}
-if($value["compte_debit_id"] = 601)
-{
-    $compte="Achats de marchandises";
-}
-if($value["compte_debit_id"] = 602)
-{
-    $compte="Achats de matières premières";
-}
-if($value["compte_debit_id"] = 613)
-{
-    $compte="Entretien et réparation";
-}
-if($value["compte_debit_id"] = 625)
-{
-    $compte="Déplacements, missions et réceptions";
-}
-if($value["compte_debit_id"] = 641)
-{
-    $compte="Rémunérations du personnel";
-}
-if($value["compte_debit_id"] = 645)
-{
-    $compte="Charges de sécurité sociale";
-}
-if($value["compte_debit_id"] = 681)
-{
-    $compte="Dotations aux amortissements";
+if($compte = 780){
+    $compte = "aca";
 }
 else{
-    $compte =0;
+    $compte=0;
 }
 
 $comptes= $compte;
@@ -166,7 +132,7 @@ $comptes= $compte;
                         <h3 class="box-title"><i class="fa fa-search"></i> <?php echo $this->lang->line('select_criteria'); ?></h3>
                     </div>
 
-                    <form role="form" action="<?php echo site_url('report/charge_cnps_cmu') ?>" method="post" class="">
+                    <form role="form" action="<?php echo site_url('report/journal_comptable') ?>" method="post" class="">
                         <div class="box-body row">
 
                             <?php echo $this->customlib->getCSRF(); ?>
@@ -226,12 +192,11 @@ $comptes= $compte;
                             <tr>
 
 
-                                <th>Date opération</th>
-                                <th>Libelle</th>
-                                <th>Compte debit</th>
-                                <th>Compte credit</th>
-                                <th>Montant</th>
-                                <th>Référence piece</th>
+                                <th class="text text-left text-primary">Date opération</th>
+                                <th class="text text-left text-primary">Libelle</th>
+                                <th class="text text-left text-primary">Compte</th>
+                                <th class="text text-left text-primary">Montant</th>
+                                <th class="text text-left text-primary">Référence piece</th>
 
 
                             </tr>
@@ -244,8 +209,7 @@ $comptes= $compte;
                             $date = 0;
                             $reference = 0;
                             $libelle = 0;
-                            $compte_debit_id = 0;
-                            $compte_credit_id = 0;
+                            $compte = 0;
                             $montant = 0;
 
 
@@ -258,11 +222,10 @@ $comptes= $compte;
 
                                 foreach ($journal as $key => $value) {
 
-                                    $date += $value["date_operation"];
+                                    $date += $value["created_at"];
                                     $reference += $value["reference_piece"];
                                     $libelle += $value["libelle_operation"];
-                                    $compte_debit_id += $value["compte_debit_id"];
-                                    $compte_credit_id += $value["compte_credit_id"];
+                                    $compte += $value["compte_id"];
                                     $montant += $value["montant"];
                                     ?>
                                     <tr>
@@ -270,7 +233,7 @@ $comptes= $compte;
 
                                         <td>
                                             <?php
-                                            echo  $value["date_operation"]
+                                            echo  $value["created_at"]
 
                                             ?>
                                         </td>
@@ -282,18 +245,15 @@ $comptes= $compte;
                                         ?>
                                     </td>
                                     <td>
+
                                         <?php
-                                        echo  $value['compte_debit_id']
+                                        echo  $value["compte_id"]
 
                                         ?>
 
-                                    </td>
-                                    <td>
-                                        <?php
-                                        echo  $value['compte_credit_id']
 
-                                        ?>
                                     </td>
+
                                     <td>
                                         <?php
                                         echo  $value['montant']

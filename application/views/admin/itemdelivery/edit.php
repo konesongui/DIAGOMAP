@@ -107,6 +107,20 @@
                                     <label>Lieu de livraison <small class="req">*</small></label>
                                     <textarea name="delivery_location" class="form-control"><?php echo $delivery['delivery_location']; ?></textarea>
                                 </div>
+                                <div class="form-group col-md-4">
+                                    <label for="payment_method">Méthode de paiement</label>
+                                    <select class="form-control select2" id="payment_method" name="payment_method">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="cash" <?php echo ($delivery['payment_method'] == 'cash') ? 'selected' : ''; ?>>Espèces</option>
+                                        <option value="check" <?php echo ($delivery['payment_method'] == 'check') ? 'selected' : ''; ?>>Chèque</option>
+                                        <option value="bank_transfer" <?php echo ($delivery['payment_method'] == 'bank_transfer') ? 'selected' : ''; ?>>Virement</option>
+                                        <option value="card" <?php echo ($delivery['payment_method'] == 'card') ? 'selected' : ''; ?>>Carte bancaire</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Objet <small class="req">*</small></label>
+                                    <input id="objet" name="objet" type="text" class="form-control date" value="<?php echo $delivery['objet']; ?>" />
+                                </div>
                             </div>
 
                             <div class="clearfix"></div>

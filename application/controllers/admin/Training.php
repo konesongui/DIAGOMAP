@@ -45,6 +45,19 @@ class Training extends Admin_Controller
         $this->load->view('layout/footer');
     }
 
+    public function getallrequest()
+    {
+
+        if (!$this->rbac->hasPrivilege('formations', 'can_view')) {
+            access_denied();
+        }
+        $this->session->set_userdata('top_menu', 'HR');
+        $this->session->set_userdata('sub_menu', 'training_request/getall');
+        $this->load->view('layout/header');
+        $this->load->view('admin/training_request/getall');
+        $this->load->view('layout/footer');
+    }
+
     public function create()
     {
         if (!$this->rbac->hasPrivilege('formations', 'can_add')) {
@@ -60,6 +73,53 @@ class Training extends Admin_Controller
             $data['listbook'] = $listbook;
             $this->load->view('layout/header');
             $this->load->view('admin/training/createtraining', $data);
+            $this->load->view('layout/footer');
+        } else {
+            $data = array(
+                'book_title'  => $this->input->post('book_title'),
+                'book_no'     => $this->input->post('book_no'),
+                'isbn_no'     => $this->input->post('isbn_no'),
+                'subject'     => $this->input->post('subject'),
+                'rack_no'     => $this->input->post('rack_no'),
+                'publish'     => $this->input->post('publish'),
+                'dept'     => $this->input->post('dept'),
+                'quali'     => $this->input->post('quali'),
+                'author'      => $this->input->post('author'),
+                'adresse'      => $this->input->post('adresse'),
+                'contact'      => $this->input->post('contact'),
+                'email'      => $this->input->post('email'),
+                'qty'         => $this->input->post('qty'),
+                'respo'         => $this->input->post('respo'),
+                'perunitcost' => $this->input->post('perunitcost'),
+                'description' => $this->input->post('description'),
+            );
+
+            if (isset($_POST['postdate']) && $_POST['postdate'] != '') {
+                $data['postdate'] = date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('postdate')));
+            } else {
+                $data['postdate'] = null;
+            }
+            $this->book_model->addbooks($data);
+            $this->session->set_flashdata('msg', '<div class="alert alert-success text-left">' . $this->lang->line('success_message') . '</div>');
+            redirect('admin/training/index');
+        }
+    }
+
+    public function request()
+    {
+        if (!$this->rbac->hasPrivilege('formations', 'can_add')) {
+            access_denied();
+        }
+        $data['title']      = 'Add Book';
+        $data['title_list'] = 'Book Details';
+        $department             = $this->staff_model->getDepartment();
+        $data["department"]     = $department;
+        $this->form_validation->set_rules('book_title', $this->lang->line('book_title'), 'trim|required|xss_clean');
+        if ($this->form_validation->run() == false) {
+            $listbook         = $this->book_model->listbook();
+            $data['listbook'] = $listbook;
+            $this->load->view('layout/header');
+            $this->load->view('admin/training_request/createtraining', $data);
             $this->load->view('layout/footer');
         } else {
             $data = array(
@@ -371,6 +431,47 @@ class Training extends Admin_Controller
                 $row[]     = $value->rack_no;
                 $row[]     = $value->respo;
                 $row[]     = $value->contact;
+                $row[]     = $editbtn . ' ' . $deletebtn;
+                $dt_data[] = $row;
+            }
+        }
+
+        $json_data = array(
+            "draw"            => intval($m->draw),
+            "recordsTotal"    => intval($m->recordsTotal),
+            "recordsFiltered" => intval($m->recordsFiltered),
+            "data"            => $dt_data,
+        );
+        echo json_encode($json_data);
+    }
+
+    public function getrequestlist()
+    {
+
+        $list        = $this->trainings_request_model->getTrainingsreq();
+        $m               = json_decode($list);
+        $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
+        $dt_data         = array();
+        if (!empty($m->data)) {
+            foreach ($m->data as $key => $value) {
+                $editbtn   = '';
+                $deletebtn = '';
+
+                if ($this->rbac->hasPrivilege('formations', 'can_edit')) {
+                    $editbtn = "<a href='" . base_url() . "admin/training/edit/" . $value->id . "'   class='btn btn-default btn-xs'  data-toggle='tooltip' data-placement='left' title='" . $this->lang->line('edit') . "'><i class='fa fa-pencil'></i></a>";
+                }
+                if ($this->rbac->hasPrivilege('formations', 'can_delete')) {
+                    $deletebtn = "<a onclick='return confirm(" . '"' . $this->lang->line('delete_confirm') . '"' . "  )' href='" . base_url() . "admin/training/delete/" . $value->id . "' class='btn btn-default btn-xs' data-placement='left' title='" . $this->lang->line('delete') . "' data-toggle='tooltip'><i class='fa fa-trash'></i></a>";
+                }
+
+                $row   = array();
+                $row[] = $value->employee_name ;
+                $row[]     = $value->title ;
+                $row[]     = $value->supervisor_status ;
+                $row[]     = $value->hr_status;
+                $row[]     = $value->status;
+                $row[]     = $value->created_at;
+
                 $row[]     = $editbtn . ' ' . $deletebtn;
                 $dt_data[] = $row;
             }

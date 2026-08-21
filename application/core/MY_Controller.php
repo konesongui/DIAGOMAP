@@ -108,6 +108,152 @@ class Admin_Controller extends MY_Controller
 
 }
 
+class Ohada_Admin_Controller extends Admin_Controller
+{
+    protected $page_title = 'Module OHADA';
+    protected $page_subtitle = '';
+    protected $top_menu = 'finance';
+    protected $sub_menu = 'admin/admin/comptabilite';
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->model('Ohada_model', 'ohada_model');
+        $this->load->helper(array('url', 'form'));
+        $this->load->library('form_validation');
+    }
+
+    protected function setMenuState($sub_menu = null)
+    {
+        $this->session->set_userdata('top_menu', $this->top_menu);
+        $this->session->set_userdata('sub_menu', $sub_menu ? $sub_menu : $this->sub_menu);
+    }
+
+    protected function renderOhadaPage($data = array(), $view = 'admin/frontoffice/ohada_module_page')
+    {
+        $payload = array_merge(array(
+            'title' => $this->page_title,
+            'subtitle' => $this->page_subtitle,
+            'cards' => array(),
+            'actions_html' => '',
+            'filters_html' => '',
+            'table_headers' => array(),
+            'table_rows' => array(),
+            'empty_message' => 'Aucune donnee disponible.',
+            'info_message' => '',
+        ), $data);
+
+        $this->load->view('layout/header', $payload);
+        $this->load->view($view, $payload);
+        $this->load->view('layout/footer', $payload);
+    }
+
+    protected function renderOhadaForm($data = array())
+    {
+        $payload = array_merge(array(
+            'title' => $this->page_title,
+            'subtitle' => $this->page_subtitle,
+            'form_action' => current_url(),
+            'cancel_url' => site_url('admin/admin/comptabilite'),
+            'fields_html' => '',
+            'submit_label' => 'Enregistrer',
+            'info_message' => '',
+        ), $data);
+
+        $this->load->view('layout/header', $payload);
+        $this->load->view('admin/frontoffice/ohada_module_form', $payload);
+        $this->load->view('layout/footer', $payload);
+    }
+
+    protected function streamCsv($filename, array $headers, array $rows)
+    {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+        fputs($output, "\xEF\xBB\xBF");
+        fputcsv($output, $headers);
+
+        foreach ($rows as $row) {
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    protected function streamPdfLike($filename, $title, $html)
+    {
+        if (class_exists('Dompdf\Dompdf')) {
+            $this->load->library('pdf');
+            $this->pdf->loadHtml($html);
+            $this->pdf->setPaper('A4', 'landscape');
+            $this->pdf->render();
+            $this->pdf->stream($filename, array('Attachment' => 1));
+            exit;
+        }
+
+        if (property_exists($this, 'm_pdf') || file_exists(APPPATH . 'libraries/M_pdf.php')) {
+            $this->load->library('m_pdf');
+            $this->m_pdf->pdf->WriteHTML($html);
+            $this->m_pdf->pdf->Output($filename, 'D');
+            exit;
+        }
+
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<html><head><meta charset="utf-8"><title>' . html_escape($title) . '</title></head><body>' . $html . '</body></html>';
+        exit;
+    }
+
+    protected function buildSimplePdfHtml($title, array $headers, array $rows, $subtitle = '')
+    {
+        $html = '<h2 style="font-family:Arial,sans-serif;">' . html_escape($title) . '</h2>';
+        if ($subtitle !== '') {
+            $html .= '<p style="font-family:Arial,sans-serif;color:#666;">' . html_escape($subtitle) . '</p>';
+        }
+
+        $html .= '<table border="1" cellspacing="0" cellpadding="6" width="100%" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;">';
+        $html .= '<thead><tr>';
+        foreach ($headers as $header) {
+            $html .= '<th style="background:#f3f4f6;">' . html_escape($header) . '</th>';
+        }
+        $html .= '</tr></thead><tbody>';
+
+        foreach ($rows as $row) {
+            $html .= '<tr>';
+            foreach ($row as $cell) {
+                $html .= '<td>' . html_escape((string) $cell) . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        if (empty($rows)) {
+            $html .= '<tr><td colspan="' . count($headers) . '" style="text-align:center;">Aucune donnee</td></tr>';
+        }
+
+        $html .= '</tbody></table>';
+
+        return $html;
+    }
+
+    protected function inputDate($key, $default = null)
+    {
+        $value = $this->input->get($key);
+        if (empty($value)) {
+            return $default;
+        }
+
+        return $value;
+    }
+
+    protected function redirectBackToModule($path, $message, $type = 'success')
+    {
+        $class = $type === 'success' ? 'alert-success' : 'alert-danger';
+        $this->session->set_flashdata('msg', '<div class="alert ' . $class . '">' . $message . '</div>');
+        redirect($path);
+    }
+}
+
 class Student_Controller extends MY_Controller
 {
 

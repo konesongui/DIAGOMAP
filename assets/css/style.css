@@ -35,3 +35,55 @@
     background-color: #dc3545;
     color: #fff;
 } 
+
+/* ================= Diagoma global theme overrides ================= */
+:root {
+--diagoma-header: #FFB900; /* yellow for headers */
+--diagoma-btn: #005FAB;    /* blue for buttons */
+--diagoma-btn-hover: #00497f;
+}
+
+/* Header-like areas (page header, box headers) */
+.content-header,
+.box-header.with-border,
+.page-header,
+.main-header,
+.panel-heading {
+background-color: var(--diagoma-header) !important;
+color: #000 !important;
+border-color: rgba(0,0,0,0.08);
+}
+.content-header h1,
+.box-header .box-title,
+.page-header h1,
+.panel-heading h1 {
+color: #000 !important;
+}
+
+/* Primary action buttons styled blue */
+.btn-primary,
+.btn.btn-primary,
+.btn-info,
+.btn.btn-info {
+background-color: var(--diagoma-btn) !important;
+border-color: var(--diagoma-btn) !important;
+color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active {
+background-color: var(--diagoma-btn-hover) !important;
+border-color: var(--diagoma-btn-hover) !important;
+color: #fff !important;
+}
+
+/* Ensure readable text for headers' children */
+.content-header .breadcrumb a, .content-header small, .box-header .box-tools { color: #000 !important; }
+
+/* Don't apply colored background for print */
+@media print {
+.content-header, .box-header.with-border, .page-header { background: none !important; color: #000 !important; }
+}

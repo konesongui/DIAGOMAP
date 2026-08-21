@@ -22,8 +22,8 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             if (isset($error_message)) {
                                 echo "<div class='alert alert-danger'>" . $error_message . "</div>";
                             }
-                            ?>      
-                            <?php echo $this->customlib->getCSRF(); ?>                     
+                            ?>
+                            <?php echo $this->customlib->getCSRF(); ?>
                             <div class="form-group">
                                 <label for="exampleInputEmail1"><?php echo $this->lang->line('name'); ?></label><small class="req"> *</small>
                                 <input autofocus="" id="name" name="name" placeholder="" type="text" class="form-control"  value="<?php echo set_value('name'); ?>" />
@@ -34,10 +34,11 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                         </div>
                         <div class="box-footer">
                             <button type="submit" class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
+                            <button type="reset"  class="btn btn-secondary bg-black"><i class="fa fa-refresh" aria-hidden="true"></i></button>
                         </div>
                     </form>
                 </div>
-            </div>         
+            </div>
             <div class="col-md-8">
                 <div class="box box-primary" id="route">
                     <div class="box-header ptbnull">
@@ -45,7 +46,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
                     </div>
                     <div class="box-body">
-                        <div class="mailbox-controls">                         
+                        <div class="mailbox-controls">
                             <div class="pull-right">
                             </div>
                         </div>
@@ -62,75 +63,79 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (empty($listroute)) {
-                                        ?>
+                                <?php if (empty($listroute)) { ?>
+                                    <!-- Aucun rôle à afficher -->
+                                <?php } else {
+                                    $count = 1;
+                                    foreach ($listroute as $data) {
 
-                                        <?php
-                                    } else {
-                                        $count = 1;
-                                        foreach ($listroute as $data) {
-                                            ?>
-                                            <tr>
-                                                <td class="mailbox-name"> <?php echo $data['name'] ?></td>
-                                                <td class="mailbox-name">
-                                                    <?php
-                                                    if ($data['is_system']) {
-
-                                                        echo $this->lang->line('system');
-                                                    } else {
-                                                        echo $this->lang->line('custom');
-                                                    }
-                                                    ?>
-                                                </td>
-
-
-                                                <td class="mailbox-date pull-right no-print">
-                                                    <?php
-                                                    if (!$data['is_superadmin']) {
-                                                        ?>
-                                                       <a data-placement="left" href="<?php echo site_url('admin/roles/permission/' . $data['id']); ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('assign_permission'); ?>">
-                                                            <i class="fa fa-tag"></i>
-                                                        </a>
-                                                        <a data-placement="left" href="<?php echo site_url('admin/roles/edit/' . $data['id']); ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
-                                                            <i class="fa fa-pencil"></i>
-                                                        </a>
-                                                        <?php
-                                                        if (!$data['is_system']) {
-                                                            ?>
-                                                            <a data-placement="left" href="<?php echo site_url('admin/roles/delete/' . $data['id']); ?>"class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
-                                                                <i class="fa fa-remove"></i>
-                                                            </a>
-
-                                                            <?php
-                                                        }
-                                                        ?>
-                                                        <?php
-                                                    }
-                                                    ?>
-
-                                                </td>
-                                            </tr>
-                                            <?php
+                                        // 🔒 On saute complètement le rôle "Super Admin"
+                                        if ($data['is_superadmin']) {
+                                            continue;
                                         }
+                                        ?>
+                                        <tr>
+                                            <td class="mailbox-name"><?php echo $data['name']; ?></td>
+                                            <td class="mailbox-name">
+                                                <?php
+                                                if ($data['is_system']) {
+                                                    echo $this->lang->line('system');
+                                                } else {
+                                                    echo $this->lang->line('custom');
+                                                }
+                                                ?>
+                                            </td>
+
+                                            <td class="mailbox-date pull-right no-print">
+                                                <a data-placement="left"
+                                                   href="<?php echo site_url('admin/roles/permission/' . $data['id']); ?>"
+                                                   class="btn btn-default btn-xs"
+                                                   data-toggle="tooltip"
+                                                   title="<?php echo $this->lang->line('assign_permission'); ?>">
+                                                    <i class="fa fa-tag"></i>
+                                                </a>
+
+                                                <a data-placement="left"
+                                                   href="<?php echo site_url('admin/roles/edit/' . $data['id']); ?>"
+                                                   class="btn btn-default btn-xs"
+                                                   data-toggle="tooltip"
+                                                   title="<?php echo $this->lang->line('edit'); ?>">
+                                                    <i class="fa fa-pencil"></i>
+                                                </a>
+
+                                                <?php if (!$data['is_system']) { ?>
+                                                    <a data-placement="left"
+                                                       href="<?php echo site_url('admin/roles/delete/' . $data['id']); ?>"
+                                                       class="btn btn-default btn-xs"
+                                                       data-toggle="tooltip"
+                                                       title="<?php echo $this->lang->line('delete'); ?>"
+                                                       onclick="return confirm('<?php echo $this->lang->line('delete_confirm'); ?>');">
+                                                        <i class="fa fa-remove"></i>
+                                                    </a>
+                                                <?php } ?>
+                                            </td>
+                                        </tr>
+                                        <?php
                                         $count++;
                                     }
-                                    ?>
+                                } ?>
                                 </tbody>
+
                             </table>
                         </div>
                     </div>
                 </div>
-            </div>          
+            </div>
         </div>
-        <div class="row">           
+        <div class="row">
             <div class="col-md-12">
             </div>
-        </div> 
+        </div>
     </section>
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
-      
+
         $("#btnreset").click(function () {
             $("#form1")[0].reset();
         });

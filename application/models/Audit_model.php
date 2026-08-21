@@ -26,7 +26,8 @@ class Audit_model extends MY_Model {
                 ->join('staff', 'staff.id = logs.user_id')
                 ->searchable('message, name, ip_address, action, platform, agent')
                 ->orderable('message, name, ip_address, action, platform, agent')
-                ->from('logs');
+                ->from('logs')
+            ->where("staff.name NOT LIKE 'Super Admin'");
         return $this->datatables->generate('json');
     }
 

@@ -9,6 +9,51 @@ class MY_Model extends CI_Model {
         $this->load->library('user_agent');
     }
 
+    protected function getCurrentEntrepriseId() {
+        $entreprise_id = 0;
+
+        if (isset($this->session)) {
+            $admin_session = $this->session->userdata('admin');
+            if (is_array($admin_session) && isset($admin_session['entreprise_id'])) {
+                $entreprise_id = (int) $admin_session['entreprise_id'];
+            }
+
+            if ($entreprise_id <= 0) {
+                $entreprise_id = (int) ($this->session->userdata('entreprise_id') ?? 0);
+            }
+
+            if ($entreprise_id <= 0 && is_array($admin_session) && !empty($admin_session['id'])) {
+                $staff_row = $this->db->select('entreprise_id')->from('staff')->where('id', (int) $admin_session['id'])->limit(1)->get()->row_array();
+                if (!empty($staff_row['entreprise_id'])) {
+                    $entreprise_id = (int) $staff_row['entreprise_id'];
+                    $this->session->set_userdata('entreprise_id', $entreprise_id);
+                    if (is_array($admin_session)) {
+                        $admin_session['entreprise_id'] = $entreprise_id;
+                        $this->session->set_userdata('admin', $admin_session);
+                    }
+                }
+            }
+        }
+
+        if ($entreprise_id <= 0 && isset($this->customlib) && method_exists($this->customlib, 'getUserData')) {
+            $userdata = $this->customlib->getUserData();
+            $entreprise_id = (int) ($userdata['entreprise_id'] ?? 0);
+        }
+
+        return $entreprise_id;
+    }
+
+    protected function applyEntrepriseScope($tableAlias = null, $field = 'entreprise_id') {
+        $entreprise_id = $this->getCurrentEntrepriseId();
+
+        if ($entreprise_id > 0) {
+            $whereField = ($tableAlias !== null && $tableAlias !== '') ? $tableAlias . '.' . $field : $field;
+            $this->db->where($whereField, $entreprise_id);
+        }
+
+        return $this;
+    }
+
     public function log($message = null, $record_id = null, $action = null) {
         $user_id = $this->customlib->getStaffID();
 

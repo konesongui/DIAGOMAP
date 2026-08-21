@@ -1,8 +1,16 @@
 <?php
 
 $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
-?>
-<?php
+
+// Conversion en objet DateTime
+$payment_date = new DateTime($result["payment_date"]);
+
+// Premier jour du mois
+$date_from = $payment_date->format("Y-m-01");
+
+// Dernier jour du mois
+$date_to = $payment_date->format("Y-m-t");
+
 $date = new \DateTime($result['month']);
 $formatter = new \IntlDateFormatter(
     'fr_FR',
@@ -12,1043 +20,873 @@ $formatter = new \IntlDateFormatter(
     \IntlDateFormatter::GREGORIAN,
     'MMMM'
 );
-//echo ucfirst($formatter->format($date)); // ex: Avril
-?>
 
-<?php
+// Date d'embauche
+$date_embauche = new DateTime($result['date_of_joining']);
+$today = new DateTime();
 
-$total_brute = $result["categorie_salaire"] + $result["sursalaire"] + $result["prime_anc"] + $result["prime_trans"] + $result["forfait_hs"] + $result["prime_resp"] + $result["prime_rend"] + $result["prime_risque"] + $result["prime_assi"] + $result["prime_grati"] + $result["conge"];
+// Calcul de l'ancienneté en années
+$anciennete = $date_embauche->diff($today)->y;
+
+// Définition du taux de prime en fonction de l'ancienneté
+$taux_prime = 0;
+
+if ($anciennete >= 3 && $anciennete <= 5) {
+    $taux_prime = 0.05; // 5%
+} elseif ($anciennete >= 6 && $anciennete <= 10) {
+    $taux_prime = 0.10; // 10%
+} elseif ($anciennete >= 11 && $anciennete <= 15) {
+    $taux_prime = 0.15; // 15%
+} elseif ($anciennete > 15) {
+    $taux_prime = 0.20; // 20%
+}
+
+// Calcul de la prime d'ancienneté
+$prime_anciennete = $result['categorie_salaire'] * $taux_prime;
+$total_brute = $result["categorie_salaire"] + $result["sursalaire"] + $prime_anciennete + $result["prime_trans"] + $result["autre_reve"] + $result["forfait_hs"] + $result["prime_resp"] + $result["prime_rend"] + $result["prime_risque"] + $result["prime_assi"] + $result["prime_grati"] + $result["conge"];
 
 $total_pourcentage = $total_brute * 0.1;
-$primet= 30000;
-$primeresp= 0;
-$primerisq= 0;
+$primet = 30000;
+$primeresp = 0;
+$primerisq = 0;
 
 //prime transport
 if ($result["prime_trans"] > $primet) {
     $trans = $result["prime_trans"] - $primet;
 } else {
-    $trans =0;
+    $trans = 0;
 }
-$final_trans=$trans;
-//fin prime transport
+$final_trans = $trans;
+
+$prime_anc = isset($result["prime_anc"]) ? floatval($result["prime_anc"]) : 0;
+
+$total_pourcentage = isset($total_pourcentage) ? floatval($total_pourcentage) : 0;
+
+if ($prime_anciennete > $total_pourcentage) {
+    $ancien = $prime_anciennete - $total_pourcentage;
+} else {
+    $ancien = 0;
+}
+
+$final_anc = $ancien;
 
 //prime rendement
-if ($result["prime_rend"] > $total_pourcentage)
-{
-    $rends= $result["prime_rend"] - $total_pourcentage;
-}
-else{
+if ($result["prime_rend"] > $total_pourcentage) {
+    $rends = $result["prime_rend"] - $total_pourcentage;
+} else {
     $rends = 0;
 }
-$final_rend= $rends;
+$final_rend = $rends;
 
-//fin prime rendement
+//prime responsabilité
+if ($result["prime_resp"] > $total_pourcentage) {
+    $respo = $result["prime_resp"] - $total_pourcentage;
+} else {
+    $respo = 0;
+}
+$final_respo = $respo;
 
 //prime risque
-
-
 if ($result["prime_risque"] > $total_pourcentage) {
     $risq = $result["prime_risque"] - $total_pourcentage;
 } else {
-    $risq= 0;
+    $risq = 0;
 }
+$final_risq = $risq;
 
-$final_risq=$risq;
-
-//fin prime risque
+//autre revenu
+if ($result["autre_reve"] > $total_pourcentage) {
+    $autre = $result["autre_reve"] - $total_pourcentage;
+} else {
+    $autre = 0;
+}
+$final_autres = $autre;
 
 //prime assiduité
-
-
 if ($result["prime_assi"] > $total_pourcentage) {
     $assi = $result["prime_assi"] - $total_pourcentage;
 } else {
     $assi = 0;
 }
-
 $final_assi = $assi;
 
-//fin prime assiduite
+//forfait heures sup
+if ($result["forfait_hs"] > $total_pourcentage) {
+    $forfait = $result["forfait_hs"] - $total_pourcentage;
+} else {
+    $forfait = 0;
+}
+$final_forfait = $forfait;
 
-//debut total fiscal
+//sursalaire
+if ($result["sursalaire"] > $total_pourcentage) {
+    $sura = $result["sursalaire"] - $total_pourcentage;
+} else {
+    $sura = 0;
+}
+$final_sura = $sura;
 
-$total_fiscal = $total_brute - $final_trans - $final_rend - $final_risq - $final_assi;
+//total fiscal
+$total_fiscal = $result["categorie_salaire"] + $final_trans + $final_anc + $final_rend + $final_risq + $final_respo + $final_assi + $result["sursalaire"] + $final_autres;
 
-//fin fiscal
+//total brute social
+$total_social = $total_brute - $result["prime_trans"];
 
-//debut total brute social
-$total_social= $total_brute - $final_trans;
+// Plafond CNPS retraite = 45 * 75000
+$plafond_cnps = 3375000; // 3 375 000
 
-//social
+// Comparer et affecter selon le plafond
+if ($total_social < $plafond_cnps) {
+    $cnps_retraite_base = $total_social;
+} else {
+    $cnps_retraite_base = $plafond_cnps;
+}
+$etraite = $cnps_retraite_base;
 
-//debut ITS
+// Calcul ITS
+$impot = 0;
+$categorie_salaire = $total_fiscal;
 
-
-
-if ($result["categorie_salaire"] > 8000000) {
-    $impot += ($result["categorie_salaire"] - 8000000) * 0.32;
-    $result["categorie_salaire"] = 8000000;
+// Barème progressif
+if ($categorie_salaire > 8000000) {
+    $impot += ($categorie_salaire - 8000000) * 0.32;
+    $categorie_salaire = 8000000;
 }
 
-if ($result["categorie_salaire"] > 2400000) {
-    $impot += ($result["categorie_salaire"] - 2400000) * 0.28;
-    $result["categorie_salaire"] = 2400000;
+if ($categorie_salaire > 2400000) {
+    $impot += ($categorie_salaire - 2400000) * 0.28;
+    $categorie_salaire = 2400000;
 }
 
-if ($result["categorie_salaire"] > 800000) {
-    $impot += ($result["categorie_salaire"] - 800000) * 0.24;
-    $result["categorie_salaire"] = 800000;
+if ($categorie_salaire > 800000) {
+    $impot += ($categorie_salaire - 800000) * 0.24;
+    $categorie_salaire = 800000;
 }
 
-if ($result["categorie_salaire"] > 240000) {
-    $impot += ($result["categorie_salaire"] - 240000) * 0.21;
-    $result["categorie_salaire"] = 240000;
+if ($categorie_salaire > 240000) {
+    $impot += ($categorie_salaire - 240000) * 0.21;
+    $categorie_salaire = 240000;
 }
 
-if ($result["categorie_salaire"] > 75000) {
-    $impot += ($result["categorie_salaire"] - 75000) * 0.16;
-    $result["categorie_salaire"] = 75000;
+if ($categorie_salaire > 75000) {
+    $impot += ($categorie_salaire - 75000) * 0.16;
+    $categorie_salaire = 75000;
 }
 
-else{
-    $impot = 0;
+// Réduction selon nombre de parts
+$coef = $result["part_igr"];
+$reduction = 0;
+
+switch (true) {
+    case ($coef >= 5):
+        $reduction = 44000;
+        break;
+    case ($coef == 4.5):
+        $reduction = 38500;
+        break;
+    case ($coef == 4):
+        $reduction = 33000;
+        break;
+    case ($coef == 3.5):
+        $reduction = 27500;
+        break;
+    case ($coef == 3):
+        $reduction = 22000;
+        break;
+    case ($coef == 2.5):
+        $reduction = 16500;
+        break;
+    case ($coef == 2):
+        $reduction = 11000;
+        break;
+    case ($coef == 1.5):
+        $reduction = 5500;
+        break;
+    case ($coef == 1):
+    default:
+        $reduction = 0;
+        break;
 }
 
-$its = $impot;
+$impot_net = max($impot - $reduction, 0);
+$its = round($impot_net, 2);
 
-//fin ITS
+// Calcul CMU
+$cmu_unit = 500;
+$epf_no = !empty($result["epf_no"]) ? $result["epf_no"] : 1;
+$cmu_total = $epf_no * $cmu_unit;
 
+// Calcul des retenues
+$retrai_regime = $etraite * 0.0630;
+$tota_retenus = $retrai_regime + $impot_net + $cmu_total;
+$salaire_net = $total_brute - $tota_retenus;
 
+// Calcul des charges patronales
+$its_patronal = $total_fiscal * 0.012;
+$retrait = $etraite * 0.077;
+$travail = $result["categorie_salaire"] * 0.04;
+$famille = $result["categorie_salaire"] * 0.0575;
+$taxe = $total_fiscal * 0.004;
+$tax = $total_fiscal * 0.006;
+$tota_retenues = $its_patronal + $retrait + $cmu_total + $travail + $famille + $taxe + $tax;
 
-
+// Fonction pour vérifier si une ligne doit être affichée
+function shouldDisplayLine($value) {
+    return !empty($value) && $value > 0;
+}
 ?>
-
-
-
-
 
 <style type="text/css">
     @media print {
-        .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        body {
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .payslip_address,
+        .header-section,
+        .employee-info,
+        .company-info,
+        .row {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .print-page {
+            page-break-after: avoid;
+            page-break-before: avoid;
+        }
+
+        .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6,
+        .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
             float: left;
         }
-        .col-sm-12 {
-            width: 100%;
-        }
-        .col-sm-11 {
-            width: 91.66666667%;
-        }
-        .col-sm-10 {
-            width: 83.33333333%;
-        }
-        .col-sm-9 {
-            width: 75%;
-        }
-        .col-sm-8 {
-            width: 66.66666667%;
-        }
-        .col-sm-7 {
-            width: 58.33333333%;
-        }
-        .col-sm-6 {
-            width: 50%;
-        }
-        .col-sm-5 {
-            width: 41.66666667%;
-        }
-        .col-sm-4 {
-            width: 33.33333333%;
-        }
-        .col-sm-3 {
-            width: 25%;
-        }
-        .col-sm-2 {
-            width: 16.66666667%;
-        }
-        .col-sm-1 {
-            width: 8.33333333%;
-        }
-        .col-sm-pull-12 {
-            right: 100%;
-        }
-        .col-sm-pull-11 {
-            right: 91.66666667%;
-        }
-        .col-sm-pull-10 {
-            right: 83.33333333%;
-        }
-        .col-sm-pull-9 {
-            right: 75%;
-        }
-        .col-sm-pull-8 {
-            right: 66.66666667%;
-        }
-        .col-sm-pull-7 {
-            right: 58.33333333%;
-        }
-        .col-sm-pull-6 {
-            right: 50%;
-        }
-        .col-sm-pull-5 {
-            right: 41.66666667%;
-        }
-        .col-sm-pull-4 {
-            right: 33.33333333%;
-        }
-        .col-sm-pull-3 {
-            right: 25%;
-        }
-        .col-sm-pull-2 {
-            right: 16.66666667%;
-        }
-        .col-sm-pull-1 {
-            right: 8.33333333%;
-        }
-        .col-sm-pull-0 {
-            right: auto;
-        }
-        .col-sm-push-12 {
-            left: 100%;
-        }
-        .col-sm-push-11 {
-            left: 91.66666667%;
-        }
-        .col-sm-push-10 {
-            left: 83.33333333%;
-        }
-        .col-sm-push-9 {
-            left: 75%;
-        }
-        .col-sm-push-8 {
-            left: 66.66666667%;
-        }
-        .col-sm-push-7 {
-            left: 58.33333333%;
-        }
-        .col-sm-push-6 {
-            left: 50%;
-        }
-        .col-sm-push-5 {
-            left: 41.66666667%;
-        }
-        .col-sm-push-4 {
-            left: 33.33333333%;
-        }
-        .col-sm-push-3 {
-            left: 25%;
-        }
-        .col-sm-push-2 {
-            left: 16.66666667%;
-        }
-        .col-sm-push-1 {
-            left: 8.33333333%;
-        }
-        .col-sm-push-0 {
-            left: auto;
-        }
-        .col-sm-offset-12 {
-            margin-left: 100%;
-        }
-        .col-sm-offset-11 {
-            margin-left: 91.66666667%;
-        }
-        .col-sm-offset-10 {
-            margin-left: 83.33333333%;
-        }
-        .col-sm-offset-9 {
-            margin-left: 75%;
-        }
-        .col-sm-offset-8 {
-            margin-left: 66.66666667%;
-        }
-        .col-sm-offset-7 {
-            margin-left: 58.33333333%;
-        }
-        .col-sm-offset-6 {
-            margin-left: 50%;
-        }
-        .col-sm-offset-5 {
-            margin-left: 41.66666667%;
-        }
-        .col-sm-offset-4 {
-            margin-left: 33.33333333%;
-        }
-        .col-sm-offset-3 {
-            margin-left: 25%;
-        }
-        .col-sm-offset-2 {
-            margin-left: 16.66666667%;
-        }
-        .col-sm-offset-1 {
-            margin-left: 8.33333333%;
-        }
-        .col-sm-offset-0 {
-            margin-left: 0%;
-        }
-        .visible-xs {
-            display: none !important;
-        }
-        .hidden-xs {
-            display: block !important;
-        }
-        table.hidden-xs {
-            display: table;
-        }
-        tr.hidden-xs {
-            display: table-row !important;
-        }
-        th.hidden-xs,
-        td.hidden-xs {
-            display: table-cell !important;
-        }
-        .hidden-xs.hidden-print {
-            display: none !important;
-        }
-        .hidden-sm {
-            display: none !important;
-        }
-        .visible-sm {
-            display: block !important;
-        }
-        table.visible-sm {
-            display: table;
-        }
-        tr.visible-sm {
-            display: table-row !important;
-        }
-        th.visible-sm,
-        td.visible-sm {
-            display: table-cell !important;
-        }
+        .col-sm-12 { width: 100%; }
+        .col-sm-11 { width: 91.66666667%; }
+        .col-sm-10 { width: 83.33333333%; }
+        .col-sm-9 { width: 75%; }
+        .col-sm-8 { width: 66.66666667%; }
+        .col-sm-7 { width: 58.33333333%; }
+        .col-sm-6 { width: 50%; }
+        .col-sm-5 { width: 41.66666667%; }
+        .col-sm-4 { width: 33.33333333%; }
+        .col-sm-3 { width: 25%; }
+        .col-sm-2 { width: 16.66666667%; }
+        .col-sm-1 { width: 8.33333333%; }
 
+        .visible-xs { display: none !important; }
+        .hidden-xs { display: block !important; }
+        table.hidden-xs { display: table; }
+        tr.hidden-xs { display: table-row !important; }
+        th.hidden-xs, td.hidden-xs { display: table-cell !important; }
+        .hidden-xs.hidden-print { display: none !important; }
+        .hidden-sm { display: none !important; }
+        .visible-sm { display: block !important; }
+        table.visible-sm { display: table; }
+        tr.visible-sm { display: table-row !important; }
+        th.visible-sm, td.visible-sm { display: table-cell !important; }
     }
 
-</style>
-<style type="text/css">
-    table.table.table-hover thead{
-        background-color: #e8e8e8;
+    .payslip-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        border: none;
+    }
+
+    .payslip-table th, .payslip-table td {
+        border: none;
+        padding: 4px 6px;
+        text-align: left;
+        font-size: 11px;
+        line-height: 1.2;
+    }
+
+    .payslip-table thead th {
+        background-color: #e9ecef;
+        font-weight: bold;
+        vertical-align: middle;
+        padding: 6px;
+    }
+
+    .payslip-table tbody tr {
+        border-bottom: 2px solid transparent;
+    }
+
+    .payslip-table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .total-row {
+        border-top: 2px solid #ddd;
+        border-bottom: 2px solid #ddd;
+        margin-top: 4px;
+        margin-bottom: 4px;
     }
 </style>
 
-<html lang="en">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title><?php echo $this->lang->line('payslip'); ?></title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 0;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        .payslip-container {
+            border: 2px solid #000;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 0 auto;
+            max-width: 1000px;
+            background-color: #fff;
+        }
+
+        .header-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .company-logo {
+            width: 104px;
+            height: 115px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .company-info {
+            border: 1px solid #000;
+            border-radius: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .main-title {
+            text-align: center;
+            margin: -11px 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: -19px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .section-title {
+            background-color: #e9ecef;
+            padding: 8px;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #ddd;
+            margin: 20px 0 10px;
+            border-radius: 4px;
+        }
+
+        .employee-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .employee-info td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .employee-info td:first-child {
+            font-weight: bold;
+            width: 15%;
+        }
+
+        .payslip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .payslip-table th, .payslip-table td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        .payslip-table thead th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .amount {
+            font-family: 'Courier New', monospace;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .signature-area {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #000;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-style: italic;
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .payslip-container {
+                border: none;
+                padding: 0;
+            }
+        }
+
+        .sub-header {
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+
+        .net-payer {
+            background-color: #d4edda !important;
+            font-weight: bold;
+            font-size: 13px;
+        }
+    </style>
 </head>
-
+<body>
 <div class="container-fluid">
-
 
     <div class="row payslip_print" id="payslip_print">
         <div class="col-md-12">
             <div class="card card-body">
 
+                <div class="row">
+                    <div class="col-md-12" style="border: 1px solid black; padding: 6px; border-radius: 0px;">
 
-                <div class="row" style="margin-bottom: 5px;">
-                    <div class="col-md-12">
+                        <div class="row">
 
-                        <table width="100%">
+                            <!-- Bloc entreprise -->
+                            <div class="col-md-4 col-sm-6 col-xs-12 payslip_address"
+                                 style="border: 0px solid black; padding: 1px; border-radius: 0px; margin-bottom: 10px;">
 
-                            <div class="row">
-                                <div class="col-md-4 col-xs-6 col-sm-6">
-                                    <img style="width: 100%; height: 80px !important;" src="<?= base_url() . "/uploads/school_content/admin_logo/" . $sch_setting->admin_logo ?>" alt="Image banniere" />
+                                <div class="text-center">
+                                    <img src="<?= base_url() . "/uploads/school_content/admin_logo/" . $sch_setting->admin_logo ?>"
+                                         alt="Logo entreprise"
+                                         style="width: 100px; height: 100px; object-fit: contain; margin-bottom: 10px;" />
+                                    <div style="flex: 3;">
+                                        <p><strong>Téléphone :</strong> <?= $sch_setting->phone ?></p>
+                                        <p><strong>Adresse   :</strong> <?= strtoupper($sch_setting->address) ?></p>
+                                        <p><strong>Email     :</strong> <?= $sch_setting->email ?></p>
+                                    </div>
                                 </div>
-                                <div class="col-md-8 col-xs-6 col-sm-6 text-left payslip_address">
-                                    <p>
-                                        Téléphone : <b><?= $sch_setting->phone ?></b>
-                                    </p>
-                                    <p style="font-size: 9px">
-                                        Adresse: <b><?= strtoupper($sch_setting->address) ?></b>
-                                    </p>
-                                    <p>
-                                        E-mail : <b><?= $sch_setting->email ?></b>
-                                    </p>
-                                </div>
+
                             </div>
-                            <tr>
-                                <td align="center"><h3 style="margin: 10px 0 20px;"><?php echo $this->lang->line('payslip_for_the_period_of'); ?> <?php echo ucfirst($formatter->format($date)) ?> <?php echo $result["year"] ?></h3></td>
-                            </tr>
-                        </table>
-                        <table class="table table-condensed borderless payslip_info">
-                            <tr>
-                                <td style="font-size: 10px">Matricule</td>
-                                <td style="font-size: 10px">: <?php echo $result["employee_id"] ?></td>
-                                <td style="font-size: 10px">Nom et prénom</td>
-                                <td style="font-size: 10px">: <?php echo $result["surname"] . " " . $result["name"] ?></td>
-                                <?php  if ($sch_setting->staff_designation) { ?>
 
-                                    <th style="font-size: 10px"><?php echo $this->lang->line('designation'); ?></th>
-                                    <td style="font-size: 10px"><?php echo $result["designation"] ?></td>
-                                <?php } ?>
-                                <?php  if ($sch_setting->staff_department) { ?>
+                            <!-- Bloc employé -->
+                            <div class="col-md-8 col-sm-6 col-xs-12 payslip_address"
+                                 style="border: 1px solid black; padding: -19px; border-radius: 0px; margin-bottom: 10px;margin: -4px">
+                                <div class="section-title"> BULLETIN DE PAIE - <?php echo ucfirst($formatter->format($date)) ?> <?php echo $result["year"] ?></div>
+                                <p>
+                                    <strong>Matricule :</strong> <?= $result["employee_id"] ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <?= $result["surname"] . " " . $result["name"] ?>
+                                </p>
 
-                                    <th style="font-size: 10px"><?php echo $this->lang->line('department'); ?></th>
-                                    <td style="font-size: 10px"><?php echo $result["department"] ?></td>
-                                <?php } ?>
-                            </tr>
-                            <tr>
+                                <p><strong>Statut  :</strong> <?= $result["marital_status"] ?>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Catégorie salariale :</strong>  <?= $result["categorie_lettre"] ?>
+                                    <br><strong>CNPS N° :</strong> <?= $result["cnps_no"] ?>
+                                    <br><strong>Mode de paie :</strong> <?= $result["payment_mode"] ?>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Part IGR :</strong> <?= $result["part_igr"] ?><br>
+                                    <strong>Nombre d'enfant :</strong> <?= $result["epf_no"] ?><br>
+                                    <strong>Date d'embouche :</strong> <?= $result["date_of_joining"] ?><br>
+                                    <strong>Anciennété :</strong> <?= $anciennete ?> ans
+                                </p>
 
+                                <p>
+                                    <?php if ($sch_setting->staff_designation) { ?>
+                                        <strong><?= $this->lang->line('designation'); ?> :</strong> <?= $result["designation"] ?>
+                                    <?php } ?>
+                                    <?php if ($sch_setting->staff_department) { ?>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><?= $this->lang->line('department'); ?> :</strong> <?= $result["department"] ?>
+                                    <?php } ?>
+                                </p>
 
-                            </tr>
-                            <tr>
-                                <td style="font-size: 10px">Date de paie</td>
-                                <td style="font-size: 10px">:  <?php echo $result["payment_date"] ?></td>
-                                <td style="font-size: 10px">CNPS N°</td>
-                                <td style="font-size: 10px">:
-                                    <?php echo $result["cnps_no"] ?>
-                                </td>
-                                <td style="font-size: 10px">Mode de paie</td>
-                                <td style="font-size: 10px">: <?php echo $result["payment_mode"] ?></td>
-                            </tr>
-                            <tr>
+                                <p>
+                                    <strong>Date :</strong> <?= $payment_date->format("d/m/Y") ?>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <strong>Période du :</strong> <?= date("d/m/Y", strtotime($date_from)) ?>
+                                    au <?= date("d/m/Y", strtotime($date_to)) ?>
+                                </p>
 
-                                <td  style="font-size: 10px">Nj de travaille</td>
-                                <td>:
-                                    <?php
-                                    $days = ceil($salary_info->total_days / 8);
-                                    echo $days;
-                                    ?>
-                                </td>
+                            </div>
+                        </div>
 
-                                <td style="font-size: 10px">Categorie salariale</td>
-                                <!--<td>:<?php echo $result["categorie_salaire"] ?></td>-->
-                                <td>:1A</td>
-
-                                <td style="font-size: 10px">Prime d'ancienneté</td>
-                                <td>:<?php echo $result["prime_anc"] ?></td>
-
-                                <td style="font-size: 10px">Nb d'enfant en charge</td>
-                                <td>:<?php echo $result["part_igr"] ?></td><br/>
-
-
-
-                            </tr>
-
-                            <?php if(!empty($bankinfo->bank_name)){ ?>
-                                <tr>
-                                    <!--<td>Nom de la banque</td>
-										<td>: <?php echo $bankinfo->holder_name; ?></td>-->
-                                    <td style="font-size: 10px">Numéro bancaire</td>
-                                    <td style="font-size: 10px">: <?php echo $bankinfo->account_number; ?></td>
-                                </tr>
-
-                            <?php } ?>
-                        </table>
                     </div>
                 </div>
+
                 <style>
                     .table-condensed>thead>tr>th, .table-condensed>tbody>tr>th, .table-condensed>tfoot>tr>th, .table-condensed>thead>tr>td, .table-condensed>tbody>tr>td, .table-condensed>tfoot>tr>td { padding: 2px 5px; }
                 </style>
-                <div class="row">
-                    <div class="col-md-12">
-                        <table class="table table-condensed borderless" style="border-color: #0c0c0c; font-size: 12px">
-                            <thead class="thead-light" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-
-                                <th colspan="1" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></th>
-                                <th style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></th>
-                                <th colspan="3" class="text-center" style="border: 1px solid black; font-size: 9px">PART.SALARIALE </th>
-                                <th class="text-center" style="border: 0px solid black; font-size: 9px">PART.PATRONALE </th>
-
-                            </tr>
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-
-                                <th style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">DESIGNATION</th>
-
-                                <th  rowspan="2" style="border-color: #0c0c0c;border: 1px solid black;">BASE</th>
-                                <th  rowspan="2" style="border-color: #0c0c0c;border: 1px solid black;">Nbre/taux</th>
-                                <th  rowspan="2" style="border-color: #0c0c0c;border: 1px solid black;">GAINS</th>
-                                <th  rowspan="2" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">RETENUES</th>
-
-                                <th  rowspan="2" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">Nbre/taux</th>
-                                <th  rowspan="2" style="border-color: #0c0c0c;border: 0px solid black; font-size: 12px">RETENUES</th>
-                                <!--<th class="text-right">Cot.Patronal</th>
-                                <th class="text-right">Déductions</th>-->
-                            </tr>
-
-
-
-                            </thead>
-                            <tbody  style="border-color: #0c0c0c;border: 1px solid black;">
-                            <tr style="border-color: #0c0c0c;border: 0px solid black;">
-                                <td style="border-color: #0c0c0c;border: 1px solid black;">Salaire de base</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $categorie_salaire	=	$result["categorie_salaire"]; echo  number_format($categorie_salaire, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> 30 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php $categorie_salaire	=	$result["categorie_salaire"]; echo  number_format($categorie_salaire, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
-
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">Sursalaire</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $sursalaire	=	$result["sursalaire"]; echo  number_format($sursalaire, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> 30</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> <?php $sursalaire	=	$result["sursalaire"]; echo  number_format($sursalaire, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime d'anciennete</td>
-                                <td class="text-right"><?php $prime_anc	=	$result["prime_anc"]; echo  number_format($prime_anc, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">2</td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: px solid black;"><?php $prime_anc	=	$result["prime_anc"]; echo  number_format($prime_anc, 0, '', '.'); ?> </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">   </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">les indemmites</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $tax	=	$result["tax"]; echo  number_format($tax, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $tax	=	$result["tax"]; echo  number_format($tax, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-
-
-
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php echo $this->lang->line('earning'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $allocance	=	$result["total_allowance"] ;echo number_format($allocance, 0, '', '.');  ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php echo number_format($result["total_allowance"], 0, '', '.');  ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-
-
-                            <tr>
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de transport</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $prime_trans	=	$result["prime_trans"]; echo  number_format($prime_trans, 0, '', '.'); ?></td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">30 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border:1px solid black;"><?php $prime_trans	=	$result["prime_trans"]; echo  number_format($prime_trans, 0, '', '.'); ?>  </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-
-                                </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
-
-                                </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Forfait heures suppl.</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $forfait_hs	=	$result["forfait_hs"]; echo  number_format($forfait_hs, 0, '', '.'); ?></td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1 </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;"><?php $forfait_hs	=	$result["forfait_hs"]; echo  number_format($forfait_hs, 0, '', '.'); ?>  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de responsabilité</td>
-                                <td class="text-right"><?php $prime_resp	=	$result["prime_resp"]; echo  number_format($prime_resp, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">
-
-                                    <?php
-
-
-                                    ?>
-                                </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <!--<tr>
-                                    <td style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px">Bonus</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"><?php $bonus	=	$result["bonus"]; echo  number_format($bonus); ?>  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">- </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                </tr>-->
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de rendement</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_rend	=	$result["prime_rend"]; echo  number_format($prime_rend, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  <?php $prime_rend	=	$result["prime_rend"]; echo  number_format($prime_rend, 0, '', '.');?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime de risque</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_risque	=	$result["prime_risque"]; echo  number_format($prime_risque, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">1  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_risque	=	$result["prime_risque"]; echo  number_format($prime_risque, 0, '', '.');  ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime d'assiduité</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $prime_assi	=	$result["prime_assi"]; echo  number_format($prime_assi, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1 </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $prime_assi	=	$result["prime_assi"]; echo  number_format($prime_assi, 0, '', '.');  ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Prime Gratification</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $prime_grati	=	$result["prime_grati"]; echo  number_format($prime_grati, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">  1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> <?php $prime_grati	=	$result["prime_grati"]; echo  number_format($prime_grati, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Congé</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $conge	=	$result["conge"]; echo  number_format($conge, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  <?php $conge	=	$result["conge"]; echo  number_format($conge, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;color: black;font-size: 12px;font-family: bold">Total Brute</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">
-
-
-                                </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php  echo $total_brute; ?> </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-
-
-                                </td>
-
-
-                            </tr>
-
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;color: black;font-size: 12px;font-family: bold">Total Brute Fiscal</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php echo $total_fiscal; ?> </td>
-
-
-
-                                <!--<td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php $total_fiscal	=	$categorie_salaire + $sursalaire + $prime_anc + $tax + $allocance + $forfait_hs + ($resp - $total_pourcentage) + ($rend - $total_pourcentage) +  ($tran - $total_pourcentage) + ($risque - $total_pourcentage) + ($assi - $total_pourcentage) ; echo  number_format($total_fiscal, 0, '', '.') ; ?> </td>-->
-
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-
-                                </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black;">
-                                </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-
-                            <tr style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">
-                                <td  style="border-color: #0c0c0c;border: 1px solid black;color: black;font-size: 12px;font-family: bold">Total Brute Social</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" hidden style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px">  </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> <?php  echo  $total_social; ?> </td>
-
-
-
-
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">ITS</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $imp_sal	=	$total_brute; echo  number_format($imp_sal, 0, '', '.'); ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> 1,2</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php echo $its; ?></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-                                <!--<th style="border-color: #0c0c0c;border: 1px solid black;" class="text-right"><?php $retenu	= $imp_sal * 0.012; echo  number_format($retenu, 0, '', '.'); ?></th>-->
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                            </tr>
-
-                            <!-- <tr>
-                                    <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Imp. sur Trait. et Sal. (IS) Employé</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $imp_sal	=	$result["cnps_regim"]; echo  number_format($imp_sal, 0, '', '.'); ?></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"></td>
-
-
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"></td>
-
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-
-                                </tr>-->
-
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Impôt IGR</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $prime_grati	=	$its * $result["part_igr"]; echo  number_format($prime_grati, 0, '', '.'); ?> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right"  style="border-color: #0c0c0c;border: 1px solid black;">-  </td>
-                            </tr>
-                            <!-- <tr>
-                                    <td style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px">Imp. Gén. sur Revenu (IGR)</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"></td>
-                                    <td class="text-right"style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"> <?php $imp_revenu	=	$result["imp_revenu"]; echo  number_format($imp_revenu); ?></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"> - </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                </tr>-->
-                            <!-- <tr>
-                                    <td style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px">Cont. Recons. Nat. (CRNS)</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"></td>
-                                    <td class="text-right"style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"> <?php $cmu	=	$result["contra_nat"]; echo  number_format($prime_anc); ?></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"> -</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                </tr>-->
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">CMU</td>
-
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $cmus	= $result["part_igr"] * "500" ; echo  number_format($cmus, 0, '', '.'); ?></th>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $cmu	= $result["part_igr"] * 500 ; echo  number_format($cmu, 0, '', '.'); ?></th>
-
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">CNPS, Régime de Retraite</td>
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black; font-size: 12px"><?php $retraite	= $total_social ; echo  number_format($retraite, 0, '', '.'); ?></th>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">6,30</td>
-
-                                <!--<td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"><?php $cnps_regim	=	$result["cnps_regim"]; echo  number_format($cnps_regim); ?>  </td>-->
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $retrai_regime	= $retraite * 0.0630 ; echo  number_format($retrai_regime, 0, '', '.'); ?></th>
-
-
-
-
-                                <td  class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">7,70</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $retrait	= $total_social * 0.077; echo  number_format($retrait, 0, '', '.'); ?></th>
-
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">CNPS, Accident Travail
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $cnps_tra	=	$categorie_salaire; echo  number_format($cnps_tra, 0, '', '.'); ?>  </td>
-
-                                <td class="text-right"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">3,00</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> </td>
-
-
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $travail	=  $categorie_salaire * 0.03; echo  number_format($travail, 0, '', '.'); ?></th>
-
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">CNPS, Prest. Famil.</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $cnps_famille	=	$categorie_salaire; echo  number_format($cnps_famille, 0, '', '.'); ?>  </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">5,75</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-
-                                <th style="border-color: #0c0c0c;border: 1px solid black;" class="text-right"><?php $famille	= $categorie_salaire * 0.0575 ; echo  number_format($famille, 0, '', '.'); ?></th>
-
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">FDFP, Taxe Apprentissage</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"><?php $fdfp_tax	=	$total_brute; echo  number_format($fdfp_tax, 0, '', '.'); ?>  </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> -</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">0,75  </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $taxe	= $total_brute * 0.0075 ; echo  number_format($taxe, 0, '', '.'); ?></th>
-
-                            </tr>
-                            <tr>
-                                <td style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">FDFP, Form. Prof. Continue</td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $fdfp_continue	=	$total_brute; echo  number_format($fdfp_continue, 0, '', '.'); ?>  </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"></td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px"> </td>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">-  </td>
-                                <td class="text-right"> 1,20</td>
-                                <td class="text-right" style="border: 1px solid black;">  </td>
-
-
-                                <th class="text-right" style="border: 1px solid black;"><?php $tax	= $total_brute * 0.012 ; echo  number_format($tax, 0, '', '.'); ?></th>
-
-                            </tr>
-                            <!--<tr>
-                                    <td style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px">Avance/Acompte</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"><?php $avan_acom	=	$result["avan_acom"]; echo  number_format($avan_acom); ?></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"> - </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                </tr>-->
-                            <tr>
-                                <th style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">Autres retenues</th>
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $autre_reve	=	$result["autre_reve"]; echo  number_format($autre_reve, 0, '', '.'); ?></th>
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;font-size: 12px">  1</th>
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"> - </th>
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;"><?php $autre_reve	=	$result["autre_reve"]; echo  number_format($autre_reve, 0, '', '.'); ?></td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-
-                                <td class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </td>
-                                <th class="text-right" style="border-color: #0c0c0c;border: 1px solid black;">  </th>
-                            </tr>
-                            <!--   <tr>
-                                    <td style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px">Taxe</td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"></td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;font-size: 12px"><?php echo $result["tax"] ?>  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;"> - </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                    <td class="text-right" style="border-color: #0c0c0c;border: 2px solid black;">  </td>
-                                </tr>-->
-                            <!--<tr>
-									<td>Prêt</td>
-									<td class="text-right"> </td>
-									<td class="text-right"><?php if(!empty($salary_info->loan)) {
-                                echo $salary_info->loan . " FCFA";
-                            } ?> </td>
-									<td class="text-right">  </td>
-									<td class="text-right">  </td>
-									<td class="text-right"> 10 </td>
-									<td class="text-right">  </td>
-								</tr>-->
-                            <!--<tr>
-									<td>Heures de travail (<?php echo $salary_info->total_days; ?> hrs)</td>
-									<td class="text-right">
-										<?php
-                            if($a > 0) { echo round($a).' FCFA'; }
-                            ?>
-									</td>
-									<td class="text-right">
-										<?php
-                            if($d > 0) { echo round($d).' FCFA'; }
-                            ?>
-									</td>
-									<td class="text-right"> </td>
-								</tr>-->
-                            <!--<tr>
-                                                <td>Without Pay( <?php echo $work_h_diff ?> hrs)</td>
-                                                <td class="text-right"> </td>
-                                                <td class="text-right"> <?php
-                            /*if($d > 0) { echo round($d,2).' FCFA'; }*/
-                            echo $salary_info->diduction .'FCFA';
-                            ?> </td>
-
-                                            </tr>-->
-                            <!--<tr>
-                                <td>Tax</td>
-                                <td class="text-right">  </td>
-                                <td class="text-right">  </td>
-                                <td class="text-right">  </td>
-                                <td class="text-right">  </td>
-                                <td class="text-right">  </td>
-                            </tr>-->
-
-                            </tbody>
-                            <tfoot style="border: 1px solid black; font-size: 12px" class="tfoot-light">
-                            <tr >
-                                <th style="border: 1px solid black; font-size: 12px"></th>
-                                <th style="border: 1px solid black; font-size: 12px"></th>
-                                <th style="border: 1px solid black; font-size: 12px"></th>
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $total_gain	= $total_brute; echo  number_format($total_gain, 0, '', '.'); ?></th>
-
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $tota_retenus	= $retrai_regime + $autre_reve + $impot; echo  number_format($tota_retenus, 0, '', '.'); ?></th>
-
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"></th>
-                                <th style="border: 1px solid black; font-size: 12px"></th>
-                                <th style="border: 1px solid black; font-size: 12px" class="text-right"><?php $gross_salary	= $cmu + $retrait + $travail + $famille + $taxe + $tax ; echo  number_format($gross_salary, 0, '', '.'); ?></th>
-
-                            </tr>
-
-                            <tr>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th style="border: 1px solid black; font-size: 12px">NET A PAYER</th>
-                                <th class="text-right"> <?php $salaire_net	= $total_brute - $gross_salary; echo number_format($salaire_net, 0, '', '.');?> <?php echo $currency_symbol; ?></th>
-
-                            </tr>
-                            <tr style="border: 2px solid black; font-size: 12px">
-
-
-                                <td align="center" hidden>
-                                    <div style="position: absolute;left:15px"><?php $this->setting_model->get_payslipfooter(); ?> <p ></p></div>
-
-                                </td>
-                            </tr>
-                            </tfoot>
-                        </table>
+
+                <!-- Détails de rémunération -->
+                <table class="payslip-table">
+                    <thead>
+                    <tr class="sub-header">
+                        <th rowspan="2">DÉSIGNATION</th>
+                        <th rowspan="2">BASE</th>
+                        <th colspan="3">PART.SALARIALE</th>
+                        <th colspan="2">PART.PATRONALE</th>
+                    </tr>
+                    <tr class="sub-header">
+                        <th>Nbre/taux</th>
+                        <th>GAINS</th>
+                        <th>RETENUES</th>
+                        <th>Nbre/taux</th>
+                        <th>RETENUES</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Salaire catégoriel -->
+                    <?php if (shouldDisplayLine($result["categorie_salaire"])): ?>
+                        <tr>
+                            <td>Salaire catégoriel</td>
+                            <td class="amount"><?php echo number_format($result["categorie_salaire"], 0, '', '.'); ?></td>
+                            <td>30</td>
+                            <td class="amount"><?php echo number_format($result["categorie_salaire"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Sursalaire -->
+                    <?php if (shouldDisplayLine($result["sursalaire"])): ?>
+                        <tr>
+                            <td>Sursalaire</td>
+                            <td class="amount"><?php echo number_format($result["sursalaire"], 0, '', '.'); ?></td>
+                            <td>30</td>
+                            <td class="amount"><?php echo number_format($result["sursalaire"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime d'anciennete -->
+                    <?php if (shouldDisplayLine($prime_anciennete)): ?>
+                        <tr>
+                            <td>Prime d'ancienneté</td>
+                            <td class="amount"><?= number_format($prime_anciennete, 0, '', '.') ?></td>
+                            <td>1</td>
+                            <td class="amount"><?= number_format($prime_anciennete, 0, '', '.') ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime de transport -->
+                    <?php if (shouldDisplayLine($result["prime_trans"])): ?>
+                        <tr>
+                            <td>Prime de transport</td>
+                            <td class="amount"><?php echo number_format($result["prime_trans"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["prime_trans"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Forfait heures suppl -->
+                    <?php if (shouldDisplayLine($result["forfait_hs"])): ?>
+                        <tr>
+                            <td>Forfait heures suppl</td>
+                            <td class="amount"><?php echo number_format($result["forfait_hs"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["forfait_hs"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime de responsabilité -->
+                    <?php if (shouldDisplayLine($result["prime_resp"])): ?>
+                        <tr>
+                            <td>Prime de responsabilité</td>
+                            <td class="amount"><?php echo number_format($result["prime_resp"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["prime_resp"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime de rendement -->
+                    <?php if (shouldDisplayLine($result["prime_rend"])): ?>
+                        <tr>
+                            <td>Prime de rendement</td>
+                            <td class="amount"><?php echo number_format($result["prime_rend"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["prime_rend"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime de fonction -->
+                    <?php if (shouldDisplayLine($result["autre_reve"])): ?>
+                        <tr>
+                            <td>Prime de fonction</td>
+                            <td class="amount"><?php echo number_format($result["autre_reve"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["autre_reve"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime de risque -->
+                    <?php if (shouldDisplayLine($final_risq)): ?>
+                        <tr>
+                            <td>Prime de risque</td>
+                            <td class="amount"><?php echo number_format($result["prime_risque"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($final_risq, 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime d'assiduité -->
+                    <?php if (shouldDisplayLine($result["prime_assi"])): ?>
+                        <tr>
+                            <td>Prime d'assiduité</td>
+                            <td class="amount"><?php echo number_format($result["prime_assi"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["prime_assi"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Prime Gratification -->
+                    <?php if (shouldDisplayLine($result["prime_grati"])): ?>
+                        <tr>
+                            <td>Prime Gratification</td>
+                            <td class="amount"><?php echo number_format($result["prime_grati"], 0, '', '.'); ?></td>
+                            <td>1</td>
+                            <td class="amount"><?php echo number_format($result["prime_grati"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Total Brut -->
+                    <?php if (shouldDisplayLine($total_brute)): ?>
+                        <tr class="total-row">
+                            <td><strong>Total Brut</strong></td>
+                            <td></td>
+                            <td></td>
+                            <td class="amount"><strong><?php echo number_format($total_brute, 0, '', '.'); ?></strong></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Total Brut Fiscal -->
+                    <?php if (shouldDisplayLine($total_fiscal)): ?>
+                        <tr class="total-row">
+                            <td><strong>Total Brut Fiscal</strong></td>
+                            <td></td>
+                            <td></td>
+                            <td class="amount"><strong><?php echo number_format($total_fiscal, 0, '', '.'); ?></strong></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Total Brute Social -->
+                    <?php if (shouldDisplayLine($total_social)): ?>
+                        <tr class="total-row">
+                            <td><strong>Total Brute Social</strong></td>
+                            <td></td>
+                            <td></td>
+                            <td class="amount"><strong><?php echo number_format($total_social, 0, '', '.'); ?></strong></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- ITS -->
+                    <?php if (shouldDisplayLine($its) || shouldDisplayLine($its_patronal)): ?>
+                        <tr class="total-row">
+                            <td><strong>ITS</strong></td>
+                            <td class="amount"><?php echo number_format($total_fiscal, 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td class="amount"><strong><?php echo $its; ?></strong></td>
+                            <td>1,2</td>
+                            <td><?php echo number_format($its_patronal, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- CMU -->
+                    <?php if (shouldDisplayLine($cmu_total)): ?>
+                        <tr class="total-row">
+                            <td><strong>CMU</strong></td>
+                            <td class="amount">-</td>
+                            <td></td>
+                            <td></td>
+                            <td class="amount"><?php echo number_format($cmu_total, 0, '', '.'); ?></td>
+                            <td></td>
+                            <td class="amount"><?php echo number_format($cmu_total, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- CNPS, Régime de Retraite -->
+                    <?php if (shouldDisplayLine($etraite) || shouldDisplayLine($retrai_regime) || shouldDisplayLine($retrait)): ?>
+                        <tr class="total-row">
+                            <td><strong>CNPS, Régime de Retraite</strong></td>
+                            <td class="amount"><?php echo number_format($etraite, 0, '', '.'); ?></td>
+                            <td>6,30</td>
+                            <td></td>
+                            <td class="amount"><?php echo number_format($retrai_regime, 0, '', '.'); ?></td>
+                            <td>7,70</td>
+                            <td class="amount"><?php echo number_format($retrait, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- CNPS, Accident Travail -->
+                    <?php if (shouldDisplayLine($result["categorie_salaire"]) || shouldDisplayLine($travail)): ?>
+                        <tr class="total-row">
+                            <td><strong>CNPS, Accident Travail</strong></td>
+                            <td class="amount"><?php echo number_format($result["categorie_salaire"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>3,00</td>
+                            <td class="amount"><?php echo number_format($travail, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- CNPS, Prest. Famil -->
+                    <?php if (shouldDisplayLine($result["categorie_salaire"]) || shouldDisplayLine($famille)): ?>
+                        <tr class="total-row">
+                            <td><strong>CNPS, Prest. Famil</strong></td>
+                            <td class="amount"><?php echo number_format($result["categorie_salaire"], 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>5,75</td>
+                            <td class="amount"><?php echo number_format($famille, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- FDFP, Taxe Apprentissage -->
+                    <?php if (shouldDisplayLine($total_fiscal) || shouldDisplayLine($taxe)): ?>
+                        <tr class="total-row">
+                            <td><strong>FDFP, Taxe Apprentissage</strong></td>
+                            <td class="amount"><?php echo number_format($total_fiscal, 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>0,04</td>
+                            <td class="amount"><?php echo number_format($taxe, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- FDFP, Form. Prof. Continue -->
+                    <?php if (shouldDisplayLine($total_fiscal) || shouldDisplayLine($tax)): ?>
+                        <tr class="total-row">
+                            <td><strong>FDFP, Form. Prof. Continue</strong></td>
+                            <td class="amount"><?php echo number_format($total_fiscal, 0, '', '.'); ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>1,20</td>
+                            <td><?php echo number_format($tax, 0, '', '.'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Total des retenues -->
+                    <?php if (shouldDisplayLine($tota_retenus) || shouldDisplayLine($tota_retenues)): ?>
+                        <tr class="total-row">
+                            <td><strong>Total des retenues</strong></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="amount"><strong><?php echo number_format($tota_retenus, 0, '', '.'); ?></strong></td>
+                            <td></td>
+                            <td class="amount"><strong><?php echo number_format($tota_retenues, 0, '', '.'); ?></strong></td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <!-- Net à payer -->
+                    <?php if (shouldDisplayLine($salaire_net)): ?>
+                        <tr class="net-payer">
+                            <td colspan="3"><strong>NET À PAYER</strong></td>
+                            <td colspan="2" class="amount"><strong><?php echo number_format($salaire_net, 0, '', '.'); ?> <?php echo $currency_symbol; ?></strong></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+
+                <!-- Zone de signature -->
+                <div class="signature-area">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div style="text-align: center; width: 45%;">
+                            <p>_____________________________________</p>
+                            <p>Signature employé</p>
+                        </div>
+                        <div style="text-align: center; width: 45%;">
+                            <p>_____________________________________</p>
+                            <p>Signature employeur</p>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        _____________________________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;      _____________________________________
-                        <br>
-                        Signature employée &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;                            Signature employeur
 
-
-                    </div>
-
-                </div><br/>
-                <td style="font-size: 10px">Période du</td>
-                <td style="font-size: 10px">:  <?php echo $result["date_from"] ?>  au   <?php echo $result["date_to"] ?></td>
-
-                <!--<p style="text-align: center">Pour vous aider à faire valoir vos droits, conservez ce bulletin  de paie sans limitation de durée.</p>-->
             </div>
-            <!-- <div class="card card-body printableArea">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="pull-left " style="height:80px;margin-left:10px;">
-                                        <img src="<?php echo base_url();?>assets/images/dri_Logo.png" style="position:absolute; top:0; left:0;width:250px;margin-left:15px;" />
-                                    </div>
-                                    <div class="pull-right">
-                                        <h4 class="pull-right">Pay Slip for the period of <?php echo $salary_info->month;?> 2018</h4>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="pull-left">
-                                        <address>
-                                            <p class="text-muted m-l-5">Employee PIN: <?php echo $employee_info->em_code;?>
-                                                <br/> Department:  <?php echo $employee_info->dep_name;?>
-                                                <br/> Payment Date: <?php echo $salary_info->paid_date;?></p>
-                                        </address>
-                                    </div>
-                                    <div class="pull-right text-right">
-                                        <address>
-                                            <p class="text-muted m-l-30">Employee Name:  <?php echo $employee_info->first_name .' '. $employee_info->last_name;?>
-                                                <br/> Designation:   <?php echo $employee_info->des_name;?>
-                                                <br/> Month:  <?php echo $salary_info->month;?></p>
-                                        </address>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="table-responsive" style="clear: both;">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Description</th>
-                                                    <th class="text-right">Earning</th>
-                                                    <th class="text-right">Deduction</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Basic Salary</td>
-                                                    <td class="text-right"> <?php echo $salaryvaluebyid->basic;?> USD</td>
-                                                    <td class="text-right">  </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Madical</td>
-                                                    <td class="text-right"> <?php echo $salaryvaluebyid->medical;?> USD </td>
-                                                    <td class="text-right">  </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>House Rent</td>
-                                                    <td class="text-right"> <?php echo $salaryvaluebyid->house_rent;?> USD </td>
-                                                    <td class="text-right">  </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Conveyance</td>
-                                                    <td class="text-right"> <?php echo $salaryvaluebyid->conveyance;?> USD </td>
-                                                    <td class="text-right">  </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Loan</td>
-                                                    <td class="text-right"> </td>
-                                                    <td class="text-right"><?php echo $salary_info->loan;?>  USD</td>
-                                                </tr>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <th>Total</th>
-                                                    <th class="text-right"><?php echo $salaryvaluebyid->total;?> USD</th>
-                                                    <th class="text-right"><?php echo $salary_info->diduction;?>  USD</th>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="pull-right m-t-30 text-right">
-                                        <h3><b>Total :</b>  <?php echo $salary_info->total_pay;?> USD</h3>
-                                    </div>
-                                    <div class="clearfix"></div>
-                                    <hr>
-                                    <div class="text-right">
-                                        <button id="print" class="btn btn-default btn-outline" type="button"> <span><i class="fa fa-print"></i> Print</span> </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
         </div>
     </div>
-
-
-
+</div>
+</body>
 </html>

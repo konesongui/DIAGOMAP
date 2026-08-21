@@ -17,6 +17,10 @@ class Itemsupplier_model extends MY_Model {
      */
     public function get($id = null) {
         $this->db->select()->from('item_supplier');
+        $entreprise_id = (int) $this->getCurrentEntrepriseId();
+        if ($entreprise_id > 0) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         if ($id != null) {
             $this->db->where('id', $id);
         } else {
@@ -32,6 +36,10 @@ class Itemsupplier_model extends MY_Model {
 
     public function gets($id = null) {
         $this->db->select()->from('caisse_supplier');
+        $entreprise_id = (int) $this->getCurrentEntrepriseId();
+        if ($entreprise_id > 0) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         if ($id != null) {
             $this->db->where('id', $id);
         } else {
@@ -52,11 +60,19 @@ class Itemsupplier_model extends MY_Model {
      * @param $data
      */
     public function add($data) {
+        $entreprise_id = (int) $this->getCurrentEntrepriseId();
+        if ($entreprise_id > 0 && !isset($data['entreprise_id'])) {
+            $data['entreprise_id'] = $entreprise_id;
+        }
+
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
         if (isset($data['id'])) {
             $this->db->where('id', $data['id']);
+            if ($entreprise_id > 0) {
+                $this->db->where('entreprise_id', $entreprise_id);
+            }
             $this->db->update('item_supplier', $data);
             $message = UPDATE_RECORD_CONSTANT . " On  item supplier id " . $data['id'];
             $action = "Update";
@@ -150,10 +166,14 @@ class Itemsupplier_model extends MY_Model {
      * @param $id
      */
     public function remove($id) {
+        $entreprise_id = (int) $this->getCurrentEntrepriseId();
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
         $this->db->where('id', $id);
+        if ($entreprise_id > 0) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         $this->db->delete('item_supplier');
         $message = DELETE_RECORD_CONSTANT . " On item supplier id " . $id;
         $action = "Delete";

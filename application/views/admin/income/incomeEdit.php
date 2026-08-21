@@ -15,7 +15,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             <?php
             if ($this->rbac->hasPrivilege('caisse', 'can_add') || $this->rbac->hasPrivilege('caisse', 'can_edit')) {
                 ?>
-                <div class="col-md-4">
+                <div class="col-md-12">
                     <!-- Horizontal Form -->
                     <div class="box box-primary">
                         <div class="box-header with-border">
@@ -35,7 +35,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 }
                                 ?>
                                 <?php echo $this->customlib->getCSRF(); ?>
-                                <div class="form-group">
+                                <div class="form-group" hidden>
                                     <label for="exampleInputEmail1"><?php echo $this->lang->line('income_head'); ?></label>
                                     <select autofocus="" id="inc_head_id" name="inc_head_id" class="form-control" >
                                         <option value=""><?php echo $this->lang->line('select'); ?></option>
@@ -55,6 +55,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <span class="text-danger"><?php echo form_error('inc_head_id'); ?></span>
                                 </div>
                                 <div class="form-group">
+
                                     <label for="exampleInputEmail1"><?php echo $this->lang->line('name'); ?><small class="req"> *</small></label>
                                     <input id="name" name="name" placeholder="" type="text" class="form-control"  value="<?php echo set_value('name', $income['name']); ?>" />
                                     <span class="text-danger"><?php echo form_error('name'); ?></span>
@@ -95,10 +96,10 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                     <input id="status" name="status" placeholder="" type="text" class="form-control"  value="<?php echo set_value('status', $income['status']); ?>" />
                                     <span class="text-danger"><?php echo form_error('status'); ?></span>
                                 </div>-->
-                                <div class="form-group">
-                                    <label for="est_actif">Compte actif ?</label>
+                               <!-- <div class="form-group">
+                                    <label for="est_actif">Caisse actif ?</label>
                                     <input type="checkbox" name="est_actif" class="form-group" id="est_actif" value="1" <?= $income['est_actif'] ? 'checked' : '' ?>>
-                                </div>
+                                </div>-->
 
                                 <!--<div class="form-group">
                                     <label for="exampleInputEmail1">Type du journal</label>
@@ -142,39 +143,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             }
             ?>">
                 <!-- general form elements -->
-                <div class="box box-primary">
-                    <div class="box-header ptbnull">
-                        <h3 class="box-title titlefix"> <?php echo $this->lang->line('income_list'); ?></h3>
-                        <div class="box-tools pull-right">
-                        </div><!-- /.box-tools -->
-                    </div><!-- /.box-header -->
-                    <div class="box-body">
-                        <div class="table-responsive mailbox-messages">
-                            <table class="table table-striped table-bordered table-hover income-list" data-export-title="<?php echo $this->lang->line('income_list'); ?>">
-                                <thead>
-                                <tr>
-                                    <th><?php echo $this->lang->line('name'); ?>
-                                    </th>
-                                    <th><?php echo $this->lang->line('date'); ?>
-                                    </th>
 
-                                    <th><?php echo $this->lang->line('income_head'); ?>
-                                    </th>
-                                    <th><?php echo $this->lang->line('amount'); ?>
-                                    </th>
-                                    <th>Solde restant
-                                    </th>
-
-                                    <th class="text-right noExport"><?php echo $this->lang->line('action'); ?></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table><!-- /.table -->
-
-                        </div><!-- /.mail-box-messages -->
-                    </div><!-- /.box-body -->
-                </div>
             </div><!--/.col (left) -->
             <!-- right column -->
 
@@ -186,9 +155,19 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
     </section><!-- /.content -->
 </div><!-- /.content-wrapper -->
 
-<script type="text/javascript">
+</div><!-- /.content-wrapper -->
 
+<script type="text/javascript">
+    // Quand on modifie "amount", ça met à jour "amount_re"
+    document.getElementById('amount').addEventListener('input', function () {
+        let newAmount   = parseFloat(this.value) || 0;
+        let currentRe   = parseFloat(document.getElementById('amount_re').value) || 0;
+
+        // Ajout automatique du montant
+        document.getElementById('amount_re').value = currentRe + newAmount;
+    });
 </script>
+
 <script>
     ( function ( $ ) {
         'use strict';
@@ -197,3 +176,16 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
         });
     } ( jQuery ) )
 </script>
+<script type="text/javascript">
+    // On garde le solde initial (depuis PHP)
+    let soldeInitial = parseFloat(document.getElementById('amount_re').value) || 0;
+
+    document.getElementById('amount').addEventListener('input', function () {
+        let newAmount = parseFloat(this.value) || 0;
+
+        // Recalcule = solde initial + nouveau montant
+        document.getElementById('amount_re').value = soldeInitial + newAmount;
+    });
+</script>
+
+

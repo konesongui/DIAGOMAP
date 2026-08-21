@@ -1,347 +1,569 @@
 <?php
+$companyName = $company['name'] ?? "N/A";
+$companyComptBank = $company['compt_bank'] ?? "N/A";
+$companyRccm = $company['rccm'] ?? "N/A";
+$companyAddress = $company['address'] ?? "N/A";
+$companyPhone = $company['phone'] ?? "N/A";
+$companyCentreimpot = $company['centre_impot'] ?? "N/A";
+$companyRegime = $company['regime_imposition'] ?? "N/A";
+$companyEmail = $company['email'] ?? "N/A";
+$companyWebsite = $company['site_web'] ?? "N/A";
+$companyLogo = base_url('assets/images/admin_logo.png');
+$companyBank = $company['bank'] ?? "N/A";
 
-    
+$customerFullname = ($quote['customer_name'] ?? "") . ' ' . ($quote['customer_last_name'] ?? "");
+$customerPhone = $quote['customer_phone'] ?? "N/A";
+$customerAddress = $quote['customer_email'] ?? "N/A";
+$customerAddresse = $quote['customer_address'] ?? "N/A";
+$customerComptec = $quote['comptec'] ?? "N/A";
 
-    $companyName = $company['name']??"N/A";
-    $companyComptBank = $company['compt_bank']??"N/A";
-    $companyRccm = $company['rccm']??"N/A";
-    $companyAddress = $company['address']??"N/A";
-    $companyPhone = $company['phone']??"N/A";
-    $companyEmail = $company['email']??"N/A";
-    $companyWebsite = $company['website']??"N/A";
-    $companyLogo = $company['admin_logo']??"N/A";
-    $companyLogo = base_url('assets/images/admin_logo.png');
-    $companyBank = $company['bank']??"N/A";
+$quoteDate = !empty($quote['quote_date']) ? date('d/m/Y', strtotime($quote['quote_date'])) : "N/A";
+$quoteDesignation = $quote['objet'] ?? "N/A";
+$quoteNumber = $quote['quote_number'] ?? "N/A";
+$UsersName = $quote['user_name'] ?? "N/A";
+$items = $quote['items'] ?? [];
 
-    $customerFullname = $quote['customer_name'].' '.$quote['customer_last_name']??"N/A";
-    $customerPhone = $quote['customer_phone']??"N/A";
-    $customerAddress = $quote['customer_address'].' / '.$quote['customer_email']??"N/A";
-    $customerComptec = $quote['comptec']??"N/A";
-    $quoteDate = !empty($quote['quote_date'])? date('d/m/Y', strtotime($quote['quote_date'])) :"N/A";
-    $quoteDesignation = $quote['designation']??"N/A";
-    $quoteNumber = $quote['quote_number']??"N/A";
+// 🔹 Gestion des taxes selon l'option
+$tax_option = $quote['tax_option'] ?? 'none';
+$tva_amount = 0;
+$other_tax_amount = 0;
+$total_tax_amount = 0;
 
-    $items = $quote['items']? $quote['items']:[]; 
+if ($tax_option === 'tva') {
+    $tva_rate = !empty($quote['tva_rate']) ? floatval($quote['tva_rate']) : 18;
+    $tva_amount = !empty($quote['tva_amount']) ? floatval($quote['tva_amount']) : 0;
+    $total_tax_amount = $tva_amount;
+    $tax_label = "TVA ($tva_rate%)";
+    $tax_value = number_format($tva_amount, 2, ',', ' ');
+} elseif ($tax_option === 'other') {
+    $other_tax_rate = !empty($quote['other_tax_rate']) ? floatval($quote['other_tax_rate']) : 0;
+    $other_tax_name = !empty($quote['other_tax_name']) ? $quote['other_tax_name'] : "Autre taxe";
+    $other_tax_amount = !empty($quote['other_tax_amount']) ? floatval($quote['other_tax_amount']) : 0;
+    $total_tax_amount = $other_tax_amount;
+    $tax_label = "$other_tax_name ($other_tax_rate%)";
+    $tax_value = number_format($other_tax_amount, 2, ',', ' ');
+} else {
+    $tax_label = "Taxes";
+    $tax_value = "0,00";
+}
 
-    $tva_amount = (!empty($quote['tva_amount']) && floatval($quote['tva_amount']) > 0)? floatval($quote['tva_amount']) :"Non facturée";
-    $tva_rate = (!empty($quote['tva_rate']) && floatval($quote['tva_rate']) > 0)? floatval($quote['tva_rate']) :0;
-    $total_ht = (!empty($quote['total_ht']) && floatval($quote['total_ht']) > 0)? floatval($quote['total_ht']) :0;
-    $total_ttc = (!empty($quote['total_ttc']) && floatval($quote['total_ttc']) > 0)? floatval($quote['total_ttc']) :0;
-    $payment_method = !empty($quote['payment_method'])? $quote['payment_method'] :"N/A";
-    
-    $userName = !empty($user['name'])? $user['name'] :"N/A";
+$total_ht = (!empty($quote['total_ht']) && floatval($quote['total_ht']) > 0) ? floatval($quote['total_ht']) : 0;
+$total_ttc = (!empty($quote['total_ttc']) && floatval($quote['total_ttc']) > 0) ? floatval($quote['total_ttc']) : 0;
+$discount_amount = (!empty($quote['total_discount']) && floatval($quote['total_discount']) > 0) ? floatval($quote['total_discount']) : 0;
+$total_after_discount = (!empty($quote['total_after_discount']) && floatval($quote['total_after_discount']) > 0) ? floatval($quote['total_after_discount']) : 0;
 
+$payment_method = !empty($quote['payment_method']) ? $quote['payment_method'] : "N/A";
+$payment_terms = !empty($quote['payment_terms']) ? $quote['payment_terms'] : "N/A";
+$valid_until = !empty($quote['valid_until']) ? $quote['valid_until'] : "N/A";
+$delivery_terms = !empty($quote['delivery_terms']) ? $quote['delivery_terms'] : "N/A";
+$delivery_location = !empty($quote['delivery_location']) ? $quote['delivery_location'] : "N/A";
 
+$userName = !empty($user['name']) ? $user['name'] : "N/A";
 
+// --- MODIFICATION POUR GÉRER L'ESPACE SUR LA PREMIÈRE PAGE ---
+$lines_first_page = 40; // Au moins 50 lignes sur la première page
+$lines_other_pages = 40; // Plus de lignes pour les pages suivantes
 
+// Estimation de l'espace pris par les totaux et paiement (environ 10-12 lignes équivalentes)
+$space_for_totals_lines = 12;
 
+// Pagination simple des articles
+$total_items = count($items);
+$items_per_page = [];
+$current_page_items = [];
+$current_lines = 0;
+$is_first_page = true;
 
-    // var_dump($company);
-    // var_dump($user);
-    // var_dump($companyLogo);
-    // var_dump($quote);
-    // var_dump($items);
-    // var_dump($quote);
-    // var_dump($userName);
-    // die();
+foreach ($items as $item) {
+    // 1 ligne par article
+    $item_lines = 1;
+
+    // Déterminer le nombre maximum de lignes pour la page actuelle
+    // Sur la première page, on réserve de l'espace pour les totaux si nécessaire
+    $max_lines_current_page = $is_first_page ? $lines_first_page : $lines_other_pages;
+
+    // Si c'est la première page et qu'on a déjà atteint le nombre minimum de lignes,
+    // on vérifie s'il reste assez d'espace pour les totaux
+    if ($is_first_page && $current_lines >= $lines_first_page - $space_for_totals_lines) {
+        // On continue d'ajouter des articles jusqu'à ce qu'on atteigne vraiment la limite
+        $max_lines_current_page = $lines_first_page;
+    }
+
+    if ($current_lines + $item_lines > $max_lines_current_page && $current_lines > 0) {
+        $items_per_page[] = $current_page_items;
+        $current_page_items = [];
+        $current_lines = 0;
+        $is_first_page = false;
+    }
+
+    $current_page_items[] = $item;
+    $current_lines += $item_lines;
+}
+
+// Ajouter la dernière page
+if (!empty($current_page_items)) {
+    $items_per_page[] = $current_page_items;
+}
+
+$total_pages = count($items_per_page);
+
+// Déterminer si les totaux doivent être sur la première page
+// Si la première page a moins de 55 lignes (50 + marge) ou s'il n'y a qu'une seule page
+$first_page_items_count = isset($items_per_page[0]) ? count($items_per_page[0]) : 0;
+$force_totals_first_page = ($total_pages == 1 || $first_page_items_count < 40);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Facture <?= $quoteNumber ?></title>
+    <title>Devis <?= $quoteNumber ?></title>
     <style>
+        /* --- CONFIGURATION DE LA PAGE --- */
         @page {
+            margin: 0.5cm 0.8cm 0.1cm 0.8cm;
             size: A4;
-            margin: 1.5cm;
         }
-        body { 
-            font-family: Arial, sans-serif; 
-            font-size: 12px;
-            color: rgb(19, 96, 171);
+
+        /* --- RÉINITIALISATION --- */
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            width: 21cm;
+        }
+
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 9px;
+            color: black;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            line-height: 1.2;
+        }
+
+        /* --- STRUCTURE PRINCIPALE --- */
+        .document-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        /* --- EN-TÊTE DU DEVIS --- */
+        .main-header {
+            background-color: white;
+            padding: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        /* --- BLOCS D'INFORMATIONS --- */
+        .info-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .info-box {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            min-height: auto;
             height: auto;
         }
-        .head { 
-            background-color: rgb(250, 183, 22); 
-            padding: 5px; 
-            text-align: center; 
-            font-weight: bold; 
-            font-size: 16px;
-            color: #000;
-            border-radius: 5px;
+
+        .company-logo {
+            width: 80px;
+            height: auto;
             margin-bottom: 3px;
         }
-        .quote-content {
-            margin-top: 0;
-            page-break-before: avoid;
+
+        .qr-code-box {
+            width: 70px;
+            height: auto;
+            margin-bottom: 4px;
         }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 3px;
+
+        /* --- OBJET --- */
+        .object {
+            font-size: 10px;
+            margin: 6px 0;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #eee;
+            font-weight: bold;
         }
-        .info-table {
-            margin-bottom: 3px;
+
+        /* --- TABLEAU DES ARTICLES --- */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0 6px 0;
+            font-size: 9px;
+            page-break-inside: auto;
         }
-        .products-table {
-            margin-top: 3px;
+
+        .items-table th {
+            background-color: white;
+            color: black;
+            padding: 5px 3px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid rgb(23, 12, 12);
+            font-size: 9px;
         }
+
+        .items-table td {
+            padding: 4px 3px;
+            border: 1px solid #ccc;
+            vertical-align: top;
+            font-size: 9px;
+        }
+
+        .items-table tr:nth-child(even) {
+            background-color: rgba(250, 183, 22, 0.05);
+        }
+
+        /* Colonnes optimisées */
+        .items-table th:nth-child(1),
+        .items-table td:nth-child(1) {
+            width: 45%;
+        }
+
+        .items-table th:nth-child(2),
+        .items-table td:nth-child(2),
+        .items-table th:nth-child(3),
+        .items-table td:nth-child(3),
+        .items-table th:nth-child(4),
+        .items-table td:nth-child(4),
+        .items-table th:nth-child(5),
+        .items-table td:nth-child(5),
+        .items-table th:nth-child(6),
+        .items-table td:nth-child(6) {
+            width: 11%;
+            text-align: right;
+        }
+
+        /* --- TABLEAU DES TOTAUX --- */
         .totals-table {
-            margin-top: 10px;
-            margin-bottom: 2cm;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 10px;
         }
+
+        .totals-table th {
+            background-color: #ffffff;
+            color: black;
+            padding: 6px 3px;
+            text-align: center;
+            border: 1px solid rgb(0, 0, 0);
+        }
+
+        .totals-table td {
+            padding: 6px 3px;
+            border: 1px solid #ccc;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* --- DÉTAILS DE PAIEMENT --- */
+        .payment-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(16, 14, 14, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid rgb(16, 15, 15);
+            page-break-inside: avoid;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .payment-grid > div {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .payment-grid > div strong {
+            color: #333;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        /* --- NOUVELLE PAGE --- */
+        .page-break {
+            page-break-before: always;
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .continuation-header {
+            background-color: white;
+            color: black;
+            padding: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 6px;
+            border-radius: 2px;
+        }
+
+        /* --- FOOTER FIXE --- */
         .footer {
             position: fixed;
-            bottom: 0.3cm;
-            left: 0.3cm;
-            right: 0.3cm;
-            background-color: rgb(250, 183, 22);
-            padding: 3px;
-            font-size: 9px;
-            text-align: center;
+            bottom: 0.1cm;
+            left: 0.8cm;
+            right: 0.8cm;
+            height: 1.0cm;
+            background-color: white;
+            padding: 2px 0;
+            font-size: 8px;
             color: #000;
-            border-top: 1px solid rgb(19, 96, 171);
+            border-top: 1px solid rgb(12, 11, 11);
             z-index: 1000;
         }
-        .main-content {
-            padding-bottom: 2cm;
-        }
+
         .footer-content {
             display: flex;
             justify-content: space-between;
-            padding: 0 10px;
+            align-items: flex-start;
+            height: 100%;
         }
-        .footer-left {
-            text-align: left;
+
+        .footer-column {
+            flex: 1;
+            padding: 0 5px;
+            line-height: 1.2;
         }
-        .footer-center {
-            /* text-align: center; */
-            text-align: left;
+
+        /* --- GESTION DE LA PAGINATION --- */
+        .page-content {
+            padding-bottom: 1.1cm;
         }
-        .footer-right {
-            /* text-align: right; */
-            text-align: left;
+
+        /* Règle pour éviter les coupures dans les lignes du tableau */
+        .items-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
-        .info-table td {
-            padding: 2px 5px;
+
+        /* Classe pour forcer les totaux sur la première page */
+        .no-page-break-before {
+            page-break-before: avoid;
         }
-        th { 
-            background-color: rgb(19, 96, 171);
-            color: white;
-            padding: 5px;
-            text-align: left;
-            font-size: 12px;
-        }
-        td { 
-            border: 1px solid #ccc; 
-            padding: 5px;
-            font-size: 12px;
-        }
-        .no-border { 
-            border: none; 
-        }
-        .logo { 
-            text-align: left;
-            padding: 3px;
-        }
-        .logo img {
-            width: 150px;
-            height: auto;
-        }
-        tbody tr:nth-child(even) {
-            background-color: rgba(250, 183, 22, 0.1);
-        }
-        tbody tr:hover {
-            background-color: rgba(19, 96, 171, 0.1);
-        }
-        strong {
-            color: rgb(19, 96, 171);
-        }
-        p {
-            margin: 3px 0;
-            padding: 2px;
-            border-left: 3px solid rgb(250, 183, 22);
-            padding-left: 8px;
-            font-size: 12px;
-        }
-        .page-break {
-            page-break-before: always;
-        }
-        .payment-details {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(19, 96, 171, 0.05);
-            border-radius: 5px;
-            border-left: 4px solid rgb(250, 183, 22);
-        }
-        .payment-section {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        .payment-item {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .payment-label {
-            font-weight: bold;
-            color: rgb(19, 96, 171);
-            font-size: 12px;
-        }
-        .payment-value {
-            color: #333;
-            font-size: 12px;
-        }
+
+        /* --- IMPRESSION --- */
         @media print {
             body {
-                width: 100%;
-                height: auto;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                font-size: 9px !important;
             }
+
             .footer {
-                position: fixed;
-                bottom: 0.5cm;
+                position: fixed !important;
+                bottom: 0.1cm !important;
+                height: 1.0cm !important;
             }
-            .quote-content {
-                page-break-before: avoid;
-                page-break-after: auto;
-            }
-            .head {
-                page-break-after: avoid;
-            }
-            .info-table {
-                page-break-after: avoid;
-            }
-            .products-table {
-                page-break-before: avoid;
-                page-break-after: auto;
-            }
-            .totals-table {
-                page-break-before: auto;
-                page-break-after: avoid;
-                margin-bottom: 3cm;
-            }
-            table {
-                page-break-inside: auto;
-            }
-            tr {
+
+            /* Garder les totaux ensemble */
+            .last-page-section {
                 page-break-inside: avoid;
             }
+
+            @page {
+                margin: 0.4cm 0.6cm 0.1cm 0.6cm !important;
+            }
+
+            .page-break {
+                page-break-before: always;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+            }
+
+            .page-content {
+                padding-bottom: 1.1cm !important;
+            }
+
+            .no-page-break-before {
+                page-break-before: avoid !important;
+            }
+        }
+
+        .tight-spacing {
+            margin: 0;
+            padding: 0;
+        }
+
+        .compact-table tr {
+            line-height: 1.1;
         }
     </style>
 </head>
 <body>
-    <div class="main-content">
-        <div class="head">Devis N° <?= $quoteNumber ?> du <?= $quoteDate ?></div>
-        <div class="quote-content">
-            <br>
-            <table class="info-table">
-                <tr>
-                    <td colspan="2" class="logo">
-                        <img src="<?= base_url() . "/uploads/school_content/admin_logo/" . $company['admin_logo'] ?>" alt="Logo" width="180" height="70" />
-                    </td>
-                    <td colspan="4" class="no-border"></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <strong><?= $companyName ?></strong><br>
-                        RCCM : <?= $companyRccm ?><br>
-                        Téléphone : <?= $companyPhone ?><br>
-                        Email : <?= $companyEmail ?><br>
-                        Adresse : <?= $companyAddress ?>
-                    </td>
-                    <td colspan="2"></td>
-                    <td colspan="2">
-                        <strong>Client :</strong> <?= $customerFullname ?><br>
-                        <strong>Compte contribuable :</strong> <?= $customerComptec ?><br>
-                        <strong>Téléphone :</strong> <?= $customerPhone ?><br>
-                        <strong>Adresse du Client :</strong> <?= $customerAddress ?><br>
-                        <strong>Affaire suivi par:</strong> </strong><?= $userName ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="6" style="padding: 10px;">
-                        <strong>Objet :</strong> <?= $quoteDesignation ;?>
-                    </td>
-                </tr>
-            </table><br>
+<!-- Pied de page fixe -->
+<div class="footer">
+    <div class="footer-content">
+        <div class="footer-column">
+            <strong><?= $companyName ?></strong><br>
+            RCCM: <?= $companyRccm ?><br>
+            Banque: <?= $companyBank ?><br>
+        </div>
+        <div class="footer-column">
+            <strong>Contact:<?= $companyPhone ?></strong><br>
+            Email: <?= $companyEmail ?><br>
+            Compte: <?= $companyComptBank ?>
+        </div>
+        <div class="footer-column">
+            <strong>Adresse:  <?= $companyAddress ?></strong><br>
+            Site: <?= $companyWebsite ?>
+        </div>
+    </div>
+</div>
 
-            <table class="products-table">
-                <thead style="background-color:#ccd1cc;">
-                    <tr>
-                        <th>Qté</th>
-                        <th>Description</th>
-                        <th>PU (CFA)</th>
-                        <th>Total (CFA)</th>
-                    </tr>
+<div class="document-wrapper">
+    <!-- Espace principal avec marge pour le footer -->
+    <div class="page-content">
+        <!-- En-tête du devis -->
+        <div class="main-header">Devis N° <?= $quoteNumber ?> du <?= $quoteDate ?></div>
+
+        <!-- Informations entreprise et client -->
+        <div class="info-container">
+            <!-- Entreprise -->
+            <div class="info-box">
+                <img src="<?= base_url() . "/uploads/school_content/admin_logo/" . $company['admin_logo'] ?>"
+                     alt="Logo" class="company-logo" />
+                <div><strong><?= $companyName ?></strong></div>
+                <div><strong><?= $company['company_fullname'] ?></strong></div>
+                <div>RCCM : <?= $companyRccm ?></div>
+                <div>Centre d'impôt : <?= $companyCentreimpot ?></div>
+                <div>Régime d'Imposition : <?= $companyRegime ?></div>
+                <div>Téléphone : <?= $companyPhone ?></div>
+                <div>Email : <?= $companyEmail ?></div>
+                <div>Adresse : <?= $companyAddress ?></div>
+                <div><strong>Affaire suivie par :</strong> <?= $UsersName ?></div>
+            </div>
+
+            <!-- Client -->
+            <div class="info-box">
+                <img src="<?= $qrCodePath ?>" alt="QR Code" class="qr-code-box" />
+                <div><strong>Client :</strong> <?= $customerFullname ?></div>
+                <div>Compte contribuable : <?= $customerComptec ?></div>
+                <div>Téléphone : <?= $customerPhone ?></div>
+                <div>Adresse email : <?= $customerAddress ?></div>
+                <div>Adresse : <?= $customerAddresse ?></div>
+            </div>
+        </div>
+
+        <!-- Objet -->
+        <div class="object">
+            <strong>Objet :</strong> <?= $quoteDesignation ?>
+        </div>
+
+        <?php
+        // Afficher les pages
+        foreach ($items_per_page as $page_index => $page_items):
+        $is_last_page = ($page_index == $total_pages - 1);
+        $is_first_page = ($page_index == 0);
+
+        // Si c'est la première page et qu'elle a de l'espace, on affiche les totaux ici
+        $show_totals_on_first_page = ($is_first_page && $force_totals_first_page);
+        // Si c'est la dernière page, on affiche toujours les totaux
+        $show_totals_on_this_page = ($is_last_page || $show_totals_on_first_page);
+        ?>
+
+        <?php if ($page_index > 0 && !$show_totals_on_first_page): ?>
+        <div class="page-break tight-spacing">
+            <div class="continuation-header">
+                Suite du Devis N° <?= $quoteNumber ?> - Page <?= $page_index + 1 ?>
+            </div>
+            <?php endif; ?>
+
+            <!-- Tableau des articles -->
+            <table class="items-table compact-table">
+                <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qté</th>
+                    <th>P.U</th>
+                    <th>Remise</th>
+                    <th>P.U NET</th>
+                    <th>Montant Net</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($items as $item): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($item['quantity']) ?></td>
-                            <td><?= htmlspecialchars($item['item_name']) ?> - <?= htmlspecialchars($item['category_name']) ?></td>
-                            <td><?= htmlspecialchars($item['unit_price']) ?></td>
-                            <td><?= htmlspecialchars($item['line_total']) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
+                <?php foreach ($page_items as $item): ?>
+                    <tr class="keep-together">
+                        <td><?= htmlspecialchars($item['item_name'] ?? '') ?><?= htmlspecialchars($item['user_name'] ?? '') ?></td>
+                        <td><?= number_format(floatval($item['quantity'] ?? 0), 2, ',', ' ') ?></td>
+                        <td><?= number_format(floatval($item['unit_price'] ?? 0), 2, ',', ' ') ?></td>
+                        <td><?= number_format(floatval($item['discount'] ?? 0), 2, ',', ' ') ?></td>
+                        <td><?= number_format(floatval($item['line_total'] ?? 0), 2, ',', ' ') ?></td>
+                        <td><?= number_format(floatval($item['line_total_after_discount'] ?? 0), 2, ',', ' ') ?></td>
+                    </tr>
+                <?php endforeach; ?>
                 </tbody>
-            </table><br>
-
-            <table>
-                <tr>
-                    <td colspan="3" class="no-border" align="right"><strong>Total HT :</strong></td>
-                    <td><?= number_format($total_ht, 2, ',', ' ') ;?></td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="no-border" align="right"><strong>TVA (<?= $tva_rate ;?>%) :</strong></td>
-                    <td><?= $tva_amount ;?></td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="no-border" align="right"><strong>Total TTC :</strong></td>
-                    <td><?= number_format($total_ttc, 2, ',', ' ') ;?></td>
-                </tr>
             </table>
 
-            <div class="payment-details">
-                <div class="payment-section">
-                    <div class="payment-item">
-                        <div class="payment-label">Montant en lettres :</div>
-                        <div class="payment-value"><?= $totalAsletter ;?></div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-label">Mode de paiement :</div>
-                        <div class="payment-value"><?= $payment_method;?></div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-label">Garantie :</div>
-                        <div class="payment-value">[à spécifier]</div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-label">Règlement :</div>
-                        <div class="payment-value">Payable 30 jours dépôt de facture</div>
+            <?php if ($show_totals_on_this_page): ?>
+            <!-- Totaux (sur la première page s'il y a de l'espace, sinon sur la dernière) -->
+            <div class="last-page-section">
+                <table class="totals-table">
+                    <thead>
+                    <tr>
+                        <th>Total HT</th>
+                        <th>Remises Total</th>
+                        <th>Net Hors-Taxe</th>
+                        <th><?= $tax_label ?></th>
+                        <th>Total <?= $tax_option === 'tva' ? 'TTC' : ($tax_option === 'other' ? 'Taxe incluse' : 'HT') ?></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><?= number_format($total_ht, 2, ',', ' ') ?></td>
+                        <td><?= number_format($discount_amount, 2, ',', ' ') ?></td>
+                        <td><?= number_format($total_after_discount, 2, ',', ' ') ?></td>
+                        <td><?= $tax_value ?></td>
+                        <td><?= number_format($total_ttc, 2, ',', ' ') ?></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <!-- Informations de paiement -->
+                <div class="payment-info">
+                    <div class="payment-grid">
+                        <div><strong>Montant en lettres :</strong> <?= isset($totalAsletter) ? $totalAsletter : number_format($total_ttc, 2, ',', ' ') . ' FCFA' ?></div>
+                        <div><strong>Mode de paiement :</strong> <?= $payment_method ?></div>
+                        <div><strong>Terme de livraison :</strong> <?= $delivery_terms ?></div>
+                        <div><strong>Lieu de livraison :</strong> <?= $delivery_location ?></div>
+                        <div><strong>Règlement :</strong> <?= $payment_terms ?></div>
+                        <?php if ($tax_option === 'other' && !empty($quote['other_tax_name'])): ?>
+                            <div><strong>Taxe appliquée :</strong> <?= $quote['other_tax_name'] ?> (<?= number_format($quote['other_tax_rate'], 2, ',', ' ') ?>%)</div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    <?php endif; ?>
 
-    <div class="footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <?= $companyName ?> | RCCM: <?= $companyRccm ?>
-            </div>
-            <div class="footer-center">
-                Téléphone: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
-                Banque: <?= $companyBank ?> | Numéro de compte bancaire: <?= $companyComptBank ?>
-            </div>
-            <div class="footer-right">
-                Adresse: <?= $companyAddress ?><br>
-                Site : <?= $companyWebsite; ?>
-            </div>
-        </div>
+        <?php if ($page_index > 0 && !$show_totals_on_first_page): ?>
     </div>
+    <?php endif; ?>
+
+    <?php endforeach; ?>
+</div>
+</div>
 </body>
 </html>

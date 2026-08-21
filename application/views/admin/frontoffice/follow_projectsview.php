@@ -13,76 +13,11 @@
                         <?php echo $this->session->flashdata('msg') ?>
                     </div>
 
-                   <!-- <form role="form" action="<?php echo site_url('admin/projects') ?>" method="post" class="">
-                        <div class="box-body row">
-                            <?php echo $this->customlib->getCSRF(); ?>
 
-                            <div class="col-sm-3 col-md-3" hidden>
-                                <div class="form-group">
-                                    <label><?php echo $this->lang->line('source'); ?></label>
-
-                                    <input type="text" autocomplete="off" name="source" class="form-control"  value="<?php  echo set_value('source') ?>">
-                    <select  id="source" name="source" class="form-control" >
-                        <option value=""><?php echo $this->lang->line('select') ?></option>
-                        <?php foreach ($sourcelist as $key => $value) { ?>
-                            <option <?php
-                            if ($value["source"] == $source_select) {
-                                echo "selected";
-                            }
-                            ?> value="<?php echo $value["source"] ?>"><?php echo $value["source"] ?></option>
-                        <?php } ?>
-                    </select>
-                    <span class="text-danger"><?php echo form_error('source'); ?></span>
-                </div>
-            </div>
-            <div class="col-sm-3 col-md-3">
-                <div class="form-group">
-                    <label><?php echo $this->lang->line('enquiry')." ".$this->lang->line('from'); ?> <?php echo $this->lang->line('date'); ?></label>
-
-                    <input type="text" autocomplete="off" name="from_date" class="form-control  date"  value="<?php  echo set_value('from_date') ?>">
-                </div><span class="text-danger"><?php echo form_error('from_date'); ?></span>
-            </div>
-            <div class="col-sm-3 col-md-3">
-                <div class="form-group">
-                    <label><?php echo $this->lang->line('enquiry')." ".$this->lang->line('to'); ?> <?php echo $this->lang->line('date'); ?></label>
-                    <input type="text" autocomplete="off" name="to_date" class="form-control  date"  value="<?php  echo set_value('to_date') ?>">
-                </div><span class="text-danger"><?php echo form_error('to_date'); ?></span>
-            </div>
-            <div class="col-sm-3 col-md-3">
-                <div class="form-group">
-                    <label><?php echo $this->lang->line('status'); ?></label>
-                    <select  id="status" name="status" class="form-control" >
-                        <option value=""><?php echo $this->lang->line('select') ?></option>
-                        <option value="all" <?php
-                        if ($status == "all") {
-                            echo "selected";
-                        }
-                        ?>><?php echo $this->lang->line('all') ?></option>
-                        <?php foreach ($projects_status as $enkey => $envalue) {
-                            ?>
-                            <option <?php
-                            if ($enkey == $status) {
-                                echo "selected";
-                            }
-                            ?> value="<?php echo $enkey ?>"><?php echo $envalue ?></option>
-                        <?php } ?>
-                    </select>
-                    <span class="text-danger"><?php echo form_error('status'); ?></span>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="col-sm-12">
-                    <button type="submit" name="search" value="search_filter" class="btn btn-primary btn-sm checkbox-toggle pull-right"><i class="fa fa-search"></i> <?php echo $this->lang->line('search'); ?></button>
-
-                </div>
-            </div>
-        </div>
-        </form>
-        -->
                     <div class="ptt10">
                         <div class="bordertop">
                             <div class="box-header with-border">
-                                <h3 class="box-title titlefix">Suivi de projet</h3>
+                                <h3 class="box-title titlefix"></h3>
                                 <!--<div class="box-tools pull-right">
                                     <?php if ($this->rbac->hasPrivilege('projet', 'can_add')) { ?>
                                         <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> <?php echo $this->lang->line('add'); ?> à nouveau projet</button>
@@ -93,74 +28,99 @@
                                 <div class="download_label"> Fiche de suivi de projet</div>
                                 <div class="mailbox-messages">
                                     <div class="table-responsive">
-                                        <table class="table table-hover table-striped table-bordered" id="enquirytable">
+                                        <table class="table table-hover table-striped example table-bordered"  id="followprojectstable">
                                             <thead>
                                             <tr>
-                                                <th>Nom du projet</th>
-                                                <th>Date d'enregistrement</th>
-                                                <th>Date de la prochaine étape</th>
-                                                <!--<th>Date de création</th>-->
-                                                <th>Objectif</th>
-                                                <th>Description</th>
-                                                <!--<th>Dernière mise à jour</th>-->
-
-                                               <!-- <th><?php echo $this->lang->line('status'); ?></th>-->
-                                                <!--<th class="text-right"><?php echo $this->lang->line('action'); ?></th>-->
+                                                <th>Titre</th>
+                                                <th>Projet</th>
+                                                <th>Client</th>
+                                                 <th>Leader</th>
+                                                <th>Employés assignés</th>
+                                                <th>Date début</th>
+                                                <th>Date fin</th>
+                                                <th>Budget prévu</th>
+                                                <th>Priorité</th>
+                                                <th>Statut</th>
+                                                <th class="text-right">Actions</th>
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            <?php
+                                            <?php if (!empty($follow_list)) : ?>
+                                                <?php foreach ($follow_list as $value) : ?>
+                                                    <tr>
+                                                        <td><?= $value['titre']; ?></td>
+                                                        <td><?=$value['enquiry_id'];?></td>
+                                                        <td><?=$value['client'];?></td>
+                                                        <td>
+                                                            <div style="background:#ffc107; color:#000; padding:6px 10px; border-radius:8px; display:inline-block;">
+                                                                <?= $value['chef_projet']; ?>
+                                                            </div>
+                                                        </td>
 
-                                            if (empty($follow_list)) {
-                                                ?>
-                                                <?php
-                                            } else {
-                                                foreach ($follow_list as $key => $value) {
-                                                    $current_date = date("Y-m-d");
-                                                    $next_date = $value["next_date"];
-                                                    if (empty($next_date)) {
+                                                        <td>
+                                                            <?php
+                                                            $employees = explode(',', $value['assigned_employees']);
+                                                            foreach ($employees as $emp):
+                                                                ?>
+                                                                <span class="badge bg-primary"><?= trim($emp) ?></span>
+                                                            <?php endforeach; ?>
+                                                        </td>
 
-                                                        $next_date = $value["follow_up_date"];
-                                                    }
-
-                                                    if ($next_date < $current_date) {
-                                                        $class = "class='danger'";
-                                                    } else {
-                                                        $class = "";
-                                                    }
-                                                    ?>
-                                                    <tr <?php echo $class ?>>
-
-                                                        <!--<td class="mailbox-name"><?php echo $value['name']; ?></td>-->
-                                                        <td class="mailbox-name"><?php echo $value['enquiry_id']; ?></td>
-                                                        <td class="mailbox-name"><?php echo $value['date']; ?></td>
-                                                        <td class="mailbox-name"><?php echo $value['next_date']; ?> </td>
-                                                        <!--<td class="mailbox-name"><?php echo $value['date']; ?></td>-->
-                                                        <td class="mailbox-name"><?php echo $value['response']; ?></td>
-                                                        <td class="mailbox-name"><?php echo $value['note']; ?></td>
-
-                                                        <!--<td> <?php echo $projects_status[$value["status"]] ?></td>-->
-                                                        <!--<td class="mailbox-date text-right white-space-nowrap">
-
-                                                            <?php if ($this->rbac->hasPrivilege('projet', 'can_edit')) { ?>
-                                                                <a  onclick="getRecord('<?php echo $value['id']; ?>', '<?php echo $value['status']; ?>')" class="btn btn-default btn-xs" data-target="#myModaledit" data-toggle="modal"   title="<?php echo $this->lang->line('edit'); ?>"><i class="fa fa-pencil"></i>
-                                                                </a>
-                                                            <?php }
+                                                        <td><?= $value['start_date']; ?></td>
+                                                        <td><?= $value['due_date']; ?></td>
+                                                        <td><?= $value['montant']; ?></td>
+                                                        <td><?= $value['priority']; ?></td>
+                                                        <td><?= $value['statut']; ?></td>
+                                                      <!--  <td>
+                                                            <?php
+                                                            $statut = $value['statut'];
+                                                            $color = 'secondary';
+                                                            if ($statut == 'approve') $color = 'success';
+                                                            elseif ($statut == 'disapprove') $color = 'danger';
+                                                            elseif ($statut == 'pending') $color = 'warning';
+                                                            elseif ($statut == 'in_progress') $color = 'info';
+                                                            elseif ($statut == 'completed') $color = 'primary';
                                                             ?>
-                                                            <?php if ($this->rbac->hasPrivilege('projet', 'can_delete')) { ?>
-                                                                <a data-placement="left" href="#" class="btn btn-default btn-xs" data-toggle="tooltip" title="" onclick="delete_enquiry('<?php echo $value["id"] ?>')" data-original-title="<?php echo $this->lang->line('delete'); ?>">
-                                                                    <i class="fa fa-remove"></i>
-                                                                </a>
-                                                            <?php }
-                                                            ?>
+                                                            <span class="badge bg-<?= $color; ?>">
+                                                        <?= $enquiry_status[$statut]; ?>
+                                                    </span>
                                                         </td>-->
+                                                        <td class="text-right">
+                                                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#depenseModal<?= $value['id'] ?>">
+                                                                💰 Dépenses
+                                                            </button>
+
+                                                            <!-- Bouton rapport -->
+                                                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#rapportModal<?= $value['id'] ?>">
+                                                                📊 Rapport
+                                                            </button>
+                                                            <?php if ($this->rbac->hasPrivilege('projet', 'can_edit')) : ?>
+                                                                <!--<a onclick="getRecord('<?= $value['id']; ?>', '<?= $value['status']; ?>')"
+                                                                   class="btn btn-default btn-xs"
+                                                                   data-target="#myModaledit"
+                                                                   data-toggle="modal"
+                                                                   title="Modifier">
+                                                                    <i class="fa fa-pencil"></i>
+                                                                </a>-->
+                                                            <?php endif; ?>
+
+                                                            <?php if ($this->rbac->hasPrivilege('projet', 'can_delete')) : ?>
+                                                                <a href="#"
+                                                                   class="btn btn-danger btn-xs"
+                                                                   title="Supprimer"
+                                                                   onclick="if(confirm('Voulez-vous vraiment supprimer ce projet ?')) { delete_enquiry('<?= $value['id'] ?>'); }">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </a>
+                                                            <?php endif; ?>
+
+                                                        </td>
                                                     </tr>
-                                                    <?php
-                                                }
-                                            }
-                                            ?>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
                                             </tbody>
-                                        </table><!-- /.table -->
+
+                                        </table>
+
                                     </div>
                                 </div><!-- /.mail-box-messages -->
                             </div><!-- /.box-body -->
@@ -169,12 +129,32 @@
                 </div>
             </div>
     </section>
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+
+    <div class="modal fade" id="rapportModal<?= $value['id'] ?>" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rapport du projet: <?= $value['titre'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Chef de projet :</strong> <?= $value['chef_projet'] ?></p>
+                    <p><strong>Date début :</strong> <?= $value['date_debut'] ?> </p>
+                    <p><strong>Date fin :</strong> <?= $value['date_fin'] ?> </p>
+                    <p><strong>Budget :</strong> <?= $value['budget'] ?? 'N/A' ?> </p>
+                    <p><strong>Total dépenses :</strong> <?= $value['total_depenses'] ?? '0' ?> </p>
+                    <p><strong>Avancement :</strong> <?= $value['progress'] ?? '0%' ?> </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="depenseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content modal-media-content">
                 <div class="modal-header modal-media-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="box-title"> ouveau projet</h4>
+                    <h4 class="box-title"> Nouveau projet</h4>
                 </div>
 
                 <div class="modal-body pt0 pb0">
@@ -437,7 +417,7 @@
     function delete_enquiry(id) {
         if (confirm('<?php echo $this->lang->line('delete_confirm') ?>')) {
             $.ajax({
-                url: '<?php echo base_url(); ?>admin/projects/delete/' + id,
+                url: '<?php echo base_url(); ?>admin/projects/deleted/' + id,
                 type: 'POST',
                 dataType: 'json',
                 success: function (data) {
@@ -561,3 +541,5 @@
         });
     });
 </script>
+
+

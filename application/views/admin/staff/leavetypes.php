@@ -20,7 +20,7 @@
                 <div class="col-md-4">    
                     <div class="box box-primary">
                         <div class="box-header with-border">
-                            <h3 class="box-title"><?php echo $title; ?></h3>
+                            <h3 class="box-title">Ajouté un congé</h3>
                         </div> 
                         <form id="form1" action="<?php echo site_url('admin/leavetypes/createLeaveType') ?>"  id="employeeform" name="employeeform" method="post" accept-charset="utf-8"  enctype="multipart/form-data">
                             <div class="box-body">
@@ -29,7 +29,7 @@
                                 <?php } ?>        
                                 <?php echo $this->customlib->getCSRF(); ?>
                                 <div class="form-group">
-                                    <label for="exampleInputEmail1"><?php echo $this->lang->line('name'); ?></label><small class="req"> *</small>
+                                    <label for="exampleInputEmail1">Nom</label><small class="req"> *</small>
                                     <input autofocus="" id="type"  name="type" placeholder="" type="text" class="form-control"  value="<?php
                                     if (isset($result)) {
                                         echo $result["type"];
@@ -42,6 +42,16 @@
                                         echo $result["id"];
                                     }
                                     ?>" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1">Durée</label><small class="req"> *</small>
+                                    <input autofocus="" id="ndays"  name="ndays" placeholder="" type="number" class="form-control"  value="<?php
+                                    if (isset($result)) {
+                                        echo $result["ndays"];
+                                    }
+                                    ?>" />
+                                    <span class="text-danger"><?php echo form_error('ndays'); ?></span>
+
                                 </div>
                                 <!--div class="form-group">
                                 <label for="exampleInputEmail1"><?php echo $this->lang->line('active'); ?> <?php echo $this->lang->line('status'); ?></label>
@@ -79,7 +89,7 @@
             ?>">              
                 <div class="box box-primary" id="tachelist">
                     <div class="box-header ptbnull">
-                        <h3 class="box-title titlefix"><?php echo $this->lang->line('leave_type'); ?> <?php echo $this->lang->line('list'); ?></h3>
+                        <h3 class="box-title titlefix">Liste des congés</h3>
                     </div>
                     <div class="box-body">
                         <div class="mailbox-controls">
@@ -90,7 +100,8 @@
                                 <thead>
                                     <tr>
 
-                                        <th><?php echo $this->lang->line('name'); ?></th>
+                                        <th>Nom</th>
+                                        <th>Durée</th>
                                      <!--    <th><?php echo $this->lang->line('active'); ?> <?php echo $this->lang->line('status'); ?></th>
                                         -->   <th class="text-right no-print"><?php echo $this->lang->line('action'); ?>
                                         </th>
@@ -112,8 +123,37 @@
                                         <tr>
 
                                             <td class="mailbox-name"> <?php echo $value['type'] ?></td>
-                                     <!--        <td><?php echo $this->lang->line($value['is_active']) ?></td>
-                                            -->       <td class="mailbox-date pull-right no-print">
+                                            <td class="mailbox-name"> <?php echo $value['ndays'] ?></td>
+                                            <td class="mailbox-date pull-right no-print">
+
+                                                <?php if ($this->rbac->hasPrivilege('leave_types', 'can_edit')) { ?>
+                                                    <a href="<?php echo base_url(); ?>admin/leavetypes/leaveedit/<?php echo $value['id'] ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="Modifier">
+                                                        <i class="fa fa-pencil"></i>
+                                                    </a>
+                                                <?php } ?>
+
+                                                <?php if ($this->rbac->hasPrivilege('leave_types', 'can_delete')) { ?>
+                                                    <a href="<?php echo base_url(); ?>admin/leavetypes/leavedelete/<?php echo $value['id'] ?>" class="btn btn-default btn-xs" data-toggle="tooltip" title="Supprimer" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
+                                                        <i class="fa fa-remove"></i>
+                                                    </a>
+                                                <?php } ?>
+
+                                                <?php if ($this->rbac->hasPrivilege('leave_types', 'can_edit')) { ?>
+                                                    <?php if ($value["is_active"] == "yes") { ?>
+                                                        <a href="<?php echo base_url(); ?>admin/leavetypes/deactivate/<?php echo $value['id'] ?>" class="btn btn-warning btn-xs" data-toggle="tooltip" title="Désactiver">
+                                                            <i class="fa fa-check"></i>
+                                                        </a>
+                                                    <?php } else { ?>
+                                                        <a href="<?php echo base_url(); ?>admin/leavetypes/activate/<?php echo $value['id'] ?>" class="btn btn-success btn-xs" data-toggle="tooltip" title="Activer">
+                                                            <i class="fa fa-ban"></i>
+                                                        </a>
+                                                    <?php } ?>
+                                                <?php } ?>
+
+
+                                            </td>
+
+                                       <!--<td class="mailbox-date pull-right no-print">
                                                 <?php if ($this->rbac->hasPrivilege('leave_types', 'can_edit')) { ?>
                                                     <a data-placement="left" href="<?php echo base_url(); ?>admin/leavetypes/leaveedit/<?php echo $value['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
                                                         <i class="fa fa-pencil"></i>
@@ -123,7 +163,7 @@
                                                         <i class="fa fa-remove"></i>
                                                     </a>
                                                 <?php } ?>
-                                            </td>
+                                            </td>-->
                                         </tr>
                                         <?php
                                     }

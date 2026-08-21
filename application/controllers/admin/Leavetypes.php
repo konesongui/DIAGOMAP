@@ -14,6 +14,22 @@ class LeaveTypes extends Admin_Controller {
         $this->load->model('staff_model');
     }
 
+    public function activate($id)
+    {
+        $data = array('is_active' => 'yes');
+        $this->leavetypes_model->update($id, $data);
+        $this->session->set_flashdata('msg', 'Le congé a été activé avec succès.');
+        redirect('admin/leavetypes');
+    }
+
+    public function deactivate($id)
+    {
+        $data = array('is_active' => 'no');
+        $this->leavetypes_model->update($id, $data);
+        $this->session->set_flashdata('msg', 'Le congé a été désactivé avec succès.');
+        redirect('admin/leavetypes');
+    }
+
     function index() {
 
         $this->session->set_userdata('top_menu', 'HR');
@@ -40,25 +56,22 @@ class LeaveTypes extends Admin_Controller {
         if ($this->form_validation->run()) {
 
             $type = $this->input->post("type");
+            $ndays = $this->input->post("ndays");
             $leavetypeid = $this->input->post("leavetypeid");
             $status = $this->input->post("status");
-            if (empty($leavetypeid)) {
-
-                if (!$this->rbac->hasPrivilege('leave_types', 'can_add')) {
-                    access_denied();
-                }
-            } else {
-
-                if (!$this->rbac->hasPrivilege('leave_types', 'can_edit')) {
-                    access_denied();
-                }
-            }
-
             if (!empty($leavetypeid)) {
-                $data = array('type' => $type, 'is_active' => 'yes', 'id' => $leavetypeid);
+                $data = array(
+                    'type' => $type,
+                    'ndays' => $ndays, // <-- nouveau champ
+                    'is_active' => 'yes',
+                    'id' => $leavetypeid
+                );
             } else {
-
-                $data = array('type' => $type, 'is_active' => 'yes');
+                $data = array(
+                    'type' => $type,
+                    'ndays' => $ndays, // <-- nouveau champ
+                    'is_active' => 'yes'
+                );
             }
 
             $insert_id = $this->leavetypes_model->addLeaveType($data);

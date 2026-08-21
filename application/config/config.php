@@ -78,6 +78,15 @@ $config['url_suffix'] = '';
   | than english.
   |
  */
+$route['admin/leaverequest/calendar'] = 'Leaverequest/calendar';
+$config['anciennete_supplement'] = [
+    5  => 1,   // 5 ans d'ancienneté -> +1 jour
+    10 => 2,   // 10 ans -> +2 jours
+    15 => 3,
+    20 => 5,
+    25 => 7,
+    30 => 8
+];
 $config['language'] = 'french';
 
 /*
@@ -93,6 +102,10 @@ $config['language'] = 'french';
  */
 $config['charset'] = 'UTF-8';
 
+// OpenAI API key removed to enforce local-only assistant. Set this to your key only if you intend to use external OpenAI services.
+// $config['openai_api_key'] = '' ;
+$config['openai_model'] = 'gpt-4'; // ou gpt-3.5-turbo
+$config['openai_api_url'] = 'https://api.openai.com/v1/chat/completions';
 /*
   |--------------------------------------------------------------------------
   | Enable/Disable System Hooks
@@ -138,7 +151,8 @@ $config['subclass_prefix'] = 'MY_';
   | Note: This will NOT disable or override the CodeIgniter-specific
   |	autoloading (application/config/autoload.php)
  */
-$config['composer_autoload'] = TRUE;
+ // Point composer_autoload to project's vendor/autoload.php so Composer packages are loaded correctly
+ $config['composer_autoload'] = defined('FCPATH') ? FCPATH . 'vendor/autoload.php' : FALSE;
 
 /*
   |--------------------------------------------------------------------------

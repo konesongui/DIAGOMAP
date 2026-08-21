@@ -65,6 +65,10 @@
                                         <td><?php echo date('d/m/Y', strtotime($invoice['due_date'])); ?></td>
                                     </tr>
                                     <tr>
+                                        <th>Notes</th>
+                                        <td><?php echo $invoice['notes']; ?></td>
+                                    </tr>
+                                    <tr>
                                         <th>Statut</th>
                                         <td>
                                             <?php
@@ -135,16 +139,16 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($invoice['items'] as $item) { ?>
-                                                <tr>
-                                                    <td><?php echo $item['category_name']; ?></td>
-                                                    <td><?php echo $item['item_name']; ?></td>
-                                                    <td><?php echo number_format($item['quantity'], 2, ',', ' '); ?></td>
-                                                    <td><?php echo $item['unit']; ?></td>
-                                                    <td><?php echo number_format($item['unit_price'], 2, ',', ' '); ?> </td>
-                                                    <td><?php echo number_format($item['line_total'], 2, ',', ' '); ?> </td>
-                                                </tr>
-                                            <?php } ?>
+                                        <?php foreach ($invoice['items'] as $item): ?>
+                                            <tr>
+                                                <td><?= $item['category_name'] ?></td>
+                                                <td><?= $item['item_name'] ?></td>          <!-- ← ici le nom -->
+                                                <td><?= $item['quantity'] ?></td>
+                                                <td><?= $item['unit'] ?></td>
+                                                <td><?= number_format($item['unit_price'], 2, ',', ' ') ?></td>
+                                                <td><?= number_format($item['line_total'], 2, ',', ' ') ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
                                         </tbody>
                                     </table>
                                 </div>

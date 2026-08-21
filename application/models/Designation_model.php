@@ -17,6 +17,17 @@ class Designation_model extends MY_model {
         }
     }
 
+    /**
+     * Récupère toutes les sanctions pour un employé donné
+     * @param string $empname
+     * @return array
+     */
+    public function getSanctionsByEmploye($empname) {
+        $this->db->where('empname', $empname);
+        $this->db->order_by('date', 'DESC');
+        $query = $this->db->get('staff_sanction');
+        return $query->result_array();
+    }
 
     public function gets($id = null) {
 

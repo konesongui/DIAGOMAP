@@ -15,7 +15,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             <?php
             if ($this->rbac->hasPrivilege('depense', 'can_add') || $this->rbac->hasPrivilege('depense', 'can_edit')) {
                 ?>
-                <div class="col-md-4">
+                <div class="col-md-12">
                     <!-- Horizontal Form -->
                     <div class="box box-primary">
                         <div class="box-header with-border">
@@ -35,29 +35,28 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                                 }
                                 ?>
                                 <?php echo $this->customlib->getCSRF(); ?>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1"><?php echo $this->lang->line('expense_head'); ?></label><small class="req"> *</small>
-                                    <select autofocus="" id="exp_head_id" name="exp_head_id" class="form-control" >
-                                        <option value=""><?php echo $this->lang->line('select'); ?></option>
-                                        <?php
-                                        foreach ($expheadlist as $exphead) {
-                                            ?>
-                                            <option value="<?php echo $exphead['id'] ?>"<?php
-                                            if ($expense['exp_head_id'] == $exphead['id']) {
-                                                echo "selected =selected";
-                                            }
-                                            ?>><?php echo $exphead['exp_category'] ?></option>
-                                            <?php
-                                            $count++;
-                                        }
-                                        ?>
-                                    </select>
-                                    <span class="text-danger"><?php echo form_error('exp_head_id'); ?></span>
-                                </div>
+
                                 <div class="form-group">
                                     <label for="exampleInputEmail1"><?php echo $this->lang->line('name'); ?></label><small class="req"> *</small>
                                     <input id="name" name="name" placeholder="" type="text" class="form-control"  value="<?php echo set_value('name', $expense['name']); ?>" />
                                     <span class="text-danger"><?php echo form_error('name'); ?></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="exampleInputEmail1"><?php echo $this->lang->line('expense_head'); ?></label> <small class="req">*</small>
+
+                                    <select id="exp_head_id" name="exp_head_id" class="form-control" required>
+                                        <option value=""><?php echo $this->lang->line('select'); ?></option>
+                                        <?php foreach ($expheadlist as $exphead): ?>
+                                            <option
+                                                    value="<?php echo $exphead['id']; ?>"
+                                                    data-name="<?php echo htmlspecialchars($exphead['exp_category'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                <?php echo (isset($edit_data['exp_head_id']) && $edit_data['exp_head_id'] == $exphead['id']) ? 'selected="selected"' : ''; ?>>
+                                                <?php echo htmlspecialchars($exphead['exp_category'], ENT_QUOTES, 'UTF-8'); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <input type="hidden" name="exp_category_name" id="exp_category_name" value="<?php echo isset($edit_data['exp_category']) ? htmlspecialchars($edit_data['exp_category'], ENT_QUOTES, 'UTF-8') : ''; ?>">
+                                    <span class="text-danger"><?php echo form_error('exp_head_id'); ?></span>
                                 </div>
                                 <div class="form-group" hidden>
                                     <label for="exampleInputEmail1"><?php echo $this->lang->line('invoice_no'); ?></label>
@@ -105,44 +104,7 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             }
             ?>">
                 <!-- general form elements -->
-                <div class="box box-primary">
-                    <div class="box-header ptbnull">
-                        <h3 class="box-title titlefix"><?php echo $this->lang->line('expense_list'); ?></h3>
-                        <div class="box-tools pull-right">
-                        </div><!-- /.box-tools -->
-                    </div><!-- /.box-header -->
-                    <div class="box-body">
-                        <div class="mailbox-messages table-responsive">
-                            <div class="download_label"><?php echo $this->lang->line('expense_list'); ?></div>
-                            <table class="table table-striped table-bordered table-hover expense-list" data-export-title="<?php echo $this->lang->line('expense_list'); ?>">
-                                <thead>
-                                <tr>
-                                    <th><?php echo $this->lang->line('name'); ?>
-                                    </th>
-                                    <th><?php echo $this->lang->line('date'); ?>
-                                    </th>
-                                    <th><?php echo $this->lang->line('expense_head'); ?>
-                                    </th>
-                                    <th>Caisse impactée
-                                    </th>
-                                    <!--<th><?php echo $this->lang->line('invoice_no'); ?>
-                                        </th>-->
 
-
-                                    <th><?php echo $this->lang->line('amount'); ?>
-                                    </th>
-                                    <th class="text-right"><?php echo $this->lang->line('action'); ?></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table><!-- /.table -->
-
-
-
-                        </div><!-- /.mail-box-messages -->
-                    </div><!-- /.box-body -->
-                </div>
             </div><!--/.col (left) -->
             <!-- right column -->
 
@@ -164,4 +126,24 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
             initDatatable('expense-list','admin/expense/getexpenselist',[],[],100);
         });
     } ( jQuery ) )
-</script>n
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var expHeadSelect = document.getElementById('exp_head_id');
+        var expCategoryName = document.getElementById('exp_category_name');
+
+        // Si on est en mode édition et qu'une valeur est déjà sélectionnée
+        if (expHeadSelect.value) {
+            var selectedOption = expHeadSelect.options[expHeadSelect.selectedIndex];
+            var categoryName = selectedOption.getAttribute('data-name');
+            expCategoryName.value = categoryName;
+        }
+
+        // Écouter les changements pour mettre à jour le champ caché
+        expHeadSelect.addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var categoryName = selectedOption.getAttribute('data-name');
+            expCategoryName.value = categoryName;
+        });
+    });
+</script>

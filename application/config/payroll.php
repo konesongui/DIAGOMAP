@@ -9,14 +9,37 @@ $config['staffattendance'] = array(
 );
 
 $config['contracttype'] = array(
-    'permanent' => lang('permanent'),
-    'probation' => lang('probation'),
+    'cdi'        => lang('permanent'),
+    'cdd'        => lang('probation'),
+    'stage'      => lang('stage'),
+   // 'free-lance' => lang('free_lance'),
 );
 
+
 $config['status'] = array(
-    'approve' => lang('approve'),
-    'disapprove' => lang('disapprove'),
-    'pending' => lang('pending'),
+    'approve'       => lang('approve'),        // Approuvé
+    'disapprove'    => lang('disapprove'),     // Refusé
+    'pending'       => lang('pending'),        // En attente
+    'in_progress'   => lang('in_progress'),    // En cours
+    'on_hold'       => lang('on_hold'),        // En pause
+    'completed'     => lang('completed'),      // Terminé
+    'cancelled'     => lang('cancelled'),      // Annulé
+    'review'        => lang('review'),         // En révision
+    'draft'         => lang('draft'),          // Brouillon
+    'archived'      => lang('archived'),       // Archivé
+);
+
+$status_colors = array(
+    'approve'       => 'success',   // vert
+    'disapprove'    => 'danger',    // rouge
+    'pending'       => 'warning',   // jaune
+    'in_progress'   => 'primary',   // bleu
+    'on_hold'       => 'secondary', // gris
+    'completed'     => 'success',   // vert
+    'cancelled'     => 'danger',    // rouge
+    'review'        => 'info',      // bleu clair
+    'draft'         => 'dark',      // noir/gris foncé
+    'archived'      => 'secondary', // gris
 );
 
 $config['marital_status'] = array(
@@ -36,25 +59,25 @@ $config['payroll_status'] = array(
 $config['payment_mode'] = array(
     'Espèce' => lang('cash'),
     'Cheque' => lang('cheque'),
+    'mobile_money' => lang('mobile_money'),
     'Virement' => lang('transfer_to_bank_account'),
 );
 $config['enquiry_status'] = array(
-    'pending' => lang('pending'),
-    'active' => lang('active'),
-    'passive' => lang('passive'),
-    /*'dead' => lang('dead'),
-    'won' => lang('won'),
-    'lost' => lang('lost'),*/
+    'approve'       => lang('approve'),        // Approuvé
+    'disapprove'    => lang('disapprove'),     // Refusé
+    'pending'       => lang('pending'),        // En attente
+    'in_progress'   => lang('in_progress'),    // En cours
+    'on_hold'       => lang('on_hold'),        // En pause
+    'completed'     => lang('completed'),      // Terminé
+    'cancelled'     => lang('cancelled'),      // Annulé
+    'review'        => lang('review'),         // En révision
+    'draft'         => lang('draft'),          // Brouillon
+    'archived'      => lang('archived'),
 );
 
-$config['projects_status'] = array(
-    'pending' => lang('pendin'),
-    'active' => lang('activ'),
-    /*'passive' => lang('passive'),
-    'dead' => lang('dead'),
-    'won' => lang('won'),
-    'lost' => lang('lost'),*/
-);
+
+
+
 
 $config['search_type'] = array(
     'today' => lang('today'),

@@ -1,338 +1,522 @@
 <?php
+// =============================
+// INFOS ENTREPRISE
+// =============================
+$companyName = $company['name'] ?? "N/A";
+$companyComptBank = $company['compt_bank'] ?? "N/A";
+$companyRccm = $company['rccm'] ?? "N/A";
+$companyAddress = $company['address'] ?? "N/A";
+$companyPhone = $company['phone'] ?? "N/A";
+$companyEmail = $company['email'] ?? "N/A";
+$companyCentreimpot = $company['centre_impot'] ?? "N/A";
+$companyRegime = $company['regime_imposition'] ?? "N/A";
+$companyWebsite = $company['site_web'] ?? "N/A";
+$companyLogo = base_url('assets/images/admin_logo.png');
+$companyBank = $company['bank'] ?? "N/A";
 
-    
+// =============================
+// INFOS CLIENT & LIVRAISON
+// =============================
+$customerFullname = ($delivery['customer_name'] ?? "") . " " . ($delivery['customer_last_name'] ?? "");
+$customerAddress = $delivery['customer_address'] ?? "N/A";
+$customerPhone = $delivery['customer_phone'] ?? "N/A";
+$customerEmail = ($delivery['email'] ?? "N/A") . " / " . ($delivery['customer_phone'] ?? "N/A");
+$customerComptec = $delivery['comptec'] ?? "N/A";
+$deliveryDate = !empty($delivery['delivery_date']) ? date('d/m/Y', strtotime($delivery['delivery_date'])) : "N/A";
+$deliveryDesignation = $delivery['objet'] ?? "N/A";
+$deliveryNumber = $delivery['delivery_number'] ?? "N/A";
+$UsersName = $delivery['user_name'] ?? "N/A";
+$customerAddresse = $delivery['customer_address'] ?? "N/A";
+$quoteDesignation = $delivery['objet'] ?? "N/A";
 
-    $companyName = $company['name']??"N/A";
-    $companyComptBank = $company['compt_bank']??"N/A";
-    $companyRccm = $company['rccm']??"N/A";
-    $companyAddress = $company['address']??"N/A";
-    $companyPhone = $company['phone']??"N/A";
-    $companyEmail = $company['email']??"N/A";
-    $companyWebsite = $company['website']??"N/A";
-    $companyLogo = $company['admin_logo']??"N/A";
-    $companyLogo = base_url('assets/images/admin_logo.png');
-    $companyBank = $company['bank']??"N/A";
+$items = $delivery['items'] ?? [];
 
-    $customerFullname = $delivery['customer_name'].' '.$delivery['customer_last_name']??"N/A";
-    $customerAddress = $delivery['customer_address'].' / '.$delivery['customer_phone']??"N/A";
-    $customerComptec = $delivery['comptec']??"N/A";
-    $deliveryDate = !empty($delivery['delivery_date'])? date('d/m/Y', strtotime($delivery['delivery_date'])) :"N/A";
-    $deliveryDesignation = $delivery['designation']??"N/A";
-    $deliveryNumber = $delivery['delivery_number']??"N/A";
+// =============================
+// INFOS MONTANTS
+// =============================
+$tva_amount = (!empty($delivery['tva_amount']) && floatval($delivery['tva_amount']) > 0) ? floatval($delivery['tva_amount']) : "Non facturée";
+$tva_rate = (!empty($delivery['tva_rate']) && floatval($delivery['tva_rate']) > 0) ? floatval($delivery['tva_rate']) : 0;
+$total_ht = (!empty($delivery['total_ht']) && floatval($delivery['total_ht']) > 0) ? floatval($delivery['total_ht']) : 0;
+$total_ttc = (!empty($delivery['total_ttc']) && floatval($delivery['total_ttc']) > 0) ? floatval($delivery['total_ttc']) : 0;
 
-    $items = $delivery['items']? $delivery['items']:[]; 
+// =============================
+// PAIEMENT & AUTRES
+// =============================
+$payment_method = $delivery['payment_method'] ?? "N/A";
+$payment_terms = $delivery['payment_terms'] ?? "N/A";
+$valid_until = $delivery['valid_until'] ?? "N/A";
+$delivery_terms = $delivery['delivery_terms'] ?? "N/A";
+$delivery_location = $delivery['delivery_location'] ?? "N/A";
+$userName = $delivery['user_name'] ?? "N/A";
 
-    $tva_amount = (!empty($delivery['tva_amount']) && floatval($delivery['tva_amount']) > 0)? floatval($delivery['tva_amount']) :"Non facturée";
-    $tva_rate = (!empty($delivery['tva_rate']) && floatval($delivery['tva_rate']) > 0)? floatval($delivery['tva_rate']) :0;
-    $total_ht = (!empty($delivery['total_ht']) && floatval($delivery['total_ht']) > 0)? floatval($delivery['total_ht']) :0;
-    $total_ttc = (!empty($delivery['total_ttc']) && floatval($delivery['total_ttc']) > 0)? floatval($delivery['total_ttc']) :0;
-    $payment_method = !empty($delivery['payment_method'])? $delivery['payment_method'] :"N/A";
+// =============================
+// LOGIQUE DE PAGINATION (comme le devis)
+// =============================
+$lines_first_page = 20;      // Nombre max de lignes sur la première page
+$lines_other_pages = 20;     // Nombre max de lignes sur les pages suivantes
+$space_for_totals_lines = 12; // Espace réservé pour les totaux sur la première page
 
+// Pagination simple des articles
+$total_items = count($items);
+$items_per_page = [];
+$current_page_items = [];
+$current_lines = 0;
+$is_first_page = true;
 
+foreach ($items as $item) {
+    // 1 ligne par article
+    $item_lines = 1;
 
+    // Déterminer le nombre maximum de lignes pour la page actuelle
+    $max_lines_current_page = $is_first_page ? $lines_first_page : $lines_other_pages;
 
+    // Si c'est la première page et qu'on a déjà atteint le nombre minimum de lignes,
+    // on vérifie s'il reste assez d'espace pour les totaux
+    if ($is_first_page && $current_lines >= $lines_first_page - $space_for_totals_lines) {
+        $max_lines_current_page = $lines_first_page;
+    }
 
-    // var_dump($company);
-    // var_dump($companyLogo);
-    // var_dump($delivery);
-    // var_dump($items);
-    // var_dump($delivery);
-    // die();
+    if ($current_lines + $item_lines > $max_lines_current_page && $current_lines > 0) {
+        $items_per_page[] = $current_page_items;
+        $current_page_items = [];
+        $current_lines = 0;
+        $is_first_page = false;
+    }
+
+    $current_page_items[] = $item;
+    $current_lines += $item_lines;
+}
+
+// Ajouter la dernière page
+if (!empty($current_page_items)) {
+    $items_per_page[] = $current_page_items;
+}
+
+$total_pages = count($items_per_page);
+
+// Déterminer si les totaux doivent être sur la première page
+$first_page_items_count = isset($items_per_page[0]) ? count($items_per_page[0]) : 0;
+$force_totals_first_page = ($total_pages == 1 || $first_page_items_count < 20);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Facture <?= $deliveryNumber ?></title>
+    <title>Bon de Livraison <?= $deliveryNumber ?></title>
     <style>
-        @page {
-            size: A4;
-            margin: 1.5cm;
-        }
-        body { 
-            font-family: Arial, sans-serif; 
-            font-size: 12px;
-            color: rgb(19, 96, 171);
+        * {
             margin: 0;
             padding: 0;
-            width: 21cm;
-            height: auto;
+            box-sizing: border-box;
         }
-        .head { 
-            background-color: rgb(250, 183, 22); 
-            padding: 5px; 
-            text-align: center; 
-            font-weight: bold; 
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+
+        /* Container principal */
+        .print-container {
+            width: 21cm;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Entête avec BORDURE NOIRE */
+        .head {
+            background-color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
             font-size: 16px;
             color: #000;
             border-radius: 5px;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
+            border: 2px solid black;
         }
-        .delivery-content {
-            margin-top: 0;
-            page-break-before: avoid;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 3px;
+
+        th {
+            background-color: #e9ecef;
+            color: #333;
+            padding: 5px;
+            text-align: left;
+            font-size: 11px;
+            border: 1px solid #ddd;
         }
-        .info-table {
-            margin-bottom: 3px;
+
+        td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            font-size: 10px;
+            vertical-align: top;
         }
-        .products-table {
-            margin-top: 3px;
+
+        .no-border {
+            border: none;
         }
-        .totals-table {
-            margin-top: 10px;
-            margin-bottom: 2cm;
-        }
-        .footer {
-            position: fixed;
-            bottom: 0.3cm;
-            left: 0.3cm;
-            right: 0.3cm;
-            background-color: rgb(250, 183, 22);
-            padding: 3px;
-            font-size: 9px;
-            text-align: center;
-            color: #000;
-            border-top: 1px solid rgb(19, 96, 171);
-            z-index: 1000;
-        }
-        .main-content {
-            padding-bottom: 2cm;
-        }
-        .footer-content {
+
+        /* Section infos compacte */
+        .info-section {
             display: flex;
             justify-content: space-between;
-            padding: 0 10px;
+            gap: 12px;
+            margin-bottom: 8px;
         }
-        .footer-left {
-            text-align: left;
+
+        .info-box {
+            width: 48%;
+            border: 1px solid #ddd;
+            padding: 6px;
+            border-radius: 4px;
+            background-color: #fafafa;
+            font-size: 9px;
+            line-height: 1.3;
         }
-        .footer-center {
-            text-align: left;
-        }
-        .footer-right {
-            text-align: left;
-        }
-        .info-table td {
-            padding: 2px 5px;
-        }
-        th { 
-            background-color: rgb(19, 96, 171);
-            color: white;
-            padding: 5px;
-            text-align: left;
-            font-size: 12px;
-        }
-        td { 
-            border: 1px solid #ccc; 
-            padding: 5px;
-            font-size: 12px;
-        }
-        .no-border { 
-            border: none; 
-        }
-        .logo { 
-            text-align: left;
-            padding: 3px;
-        }
+
         .logo img {
-            width: 150px;
+            width: 60px;
             height: auto;
+            margin-bottom: 4px;
         }
+
+        .info-box strong {
+            font-size: 10px;
+        }
+
+        /* Objet compact */
+        .objet {
+            margin: 6px 0;
+            font-size: 10px;
+            padding: 4px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #aaa;
+        }
+
+        /* Tableau produits */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0;
+            page-break-inside: auto;
+        }
+
+        .products-table th,
+        .products-table td {
+            padding: 4px;
+            font-size: 10px;
+        }
+
+        .products-table th {
+            background-color: #e9ecef;
+            position: sticky;
+            top: 0;
+        }
+
+        /* Éviter les coupures dans les lignes du tableau */
+        .products-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Lignes paires */
         tbody tr:nth-child(even) {
-            background-color: rgba(250, 183, 22, 0.1);
+            background-color: #f9f9f9;
         }
-        tbody tr:hover {
-            background-color: rgba(19, 96, 171, 0.1);
+
+        /* Section totaux */
+        .totals-section {
+            margin-top: 8px;
+            page-break-inside: avoid;
         }
-        strong {
-            color: rgb(19, 96, 171);
+
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        p {
-            margin: 3px 0;
-            padding: 2px;
-            border-left: 3px solid rgb(250, 183, 22);
-            padding-left: 8px;
-            font-size: 12px;
+
+        .totals-table td {
+            border: none;
+            padding: 3px;
+            font-size: 10px;
         }
-        .page-break {
-            page-break-before: always;
-        }
+
+        /* Détails paiement */
         .payment-details {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(19, 96, 171, 0.05);
-            border-radius: 5px;
-            border-left: 4px solid rgb(250, 183, 22);
+            margin-top: 8px;
+            padding: 6px;
+            background-color: #fafafa;
+            border-radius: 4px;
+            border-left: 3px solid #aaa;
+            font-size: 9px;
+            page-break-inside: avoid;
         }
-        .payment-section {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
+
         .payment-item {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            margin: 2px 0;
         }
+
         .payment-label {
             font-weight: bold;
-            color: rgb(19, 96, 171);
-            font-size: 12px;
+            color: #555;
         }
-        .payment-value {
+
+        /* Pied de page fixe */
+        .footer {
+            position: fixed;
+            bottom: 0.1cm;
+            left: 0.8cm;
+            right: 0.8cm;
+            background-color: #f5f5f5;
+            padding: 4px;
+            font-size: 7px;
             color: #333;
-            font-size: 12px;
+            border-top: 1px solid #ddd;
+            z-index: 1000;
         }
+
+        .footer table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer td {
+            border: none;
+            padding: 1px 3px;
+            vertical-align: top;
+            font-size: 7px;
+        }
+
+        /* Nouvelle page */
+        .page-break {
+            page-break-before: always;
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .continuation-header {
+            background-color: white;
+            color: black;
+            padding: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 6px;
+            border-radius: 2px;
+        }
+
+        /* Espace pour le footer */
+        .page-content {
+            padding-bottom: 1.1cm;
+        }
+
+        /* ========== STYLES POUR L'IMPRESSION ========== */
         @media print {
             body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .print-container {
                 width: 100%;
-                height: auto;
+                margin: 0;
             }
+
             .footer {
-                position: fixed;
-                bottom: 0.5cm;
+                position: fixed !important;
+                bottom: 0.1cm !important;
+                left: 0.8cm !important;
+                right: 0.8cm !important;
             }
-            .delivery-content {
-                page-break-before: avoid;
-                page-break-after: auto;
+
+            .page-content {
+                padding-bottom: 1.1cm !important;
             }
-            .head {
-                page-break-after: avoid;
+
+            .info-section, .objet, .totals-section, .payment-details {
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
-            .info-table {
-                page-break-after: avoid;
-            }
+
             .products-table {
-                page-break-before: avoid;
-                page-break-after: auto;
-            }
-            .totals-table {
-                page-break-before: auto;
-                page-break-after: avoid;
-                margin-bottom: 3cm;
-            }
-            table {
                 page-break-inside: auto;
             }
-            tr {
-                page-break-inside: avoid;
+
+            .products-table thead {
+                display: table-header-group;
             }
+
+            @page {
+                margin: 0.4cm 0.6cm 0.1cm 0.6cm !important;
+            }
+        }
+
+        .print-info {
+            font-size: 8px;
+            color: #999;
+            text-align: right;
+            margin-bottom: 5px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 3px;
         }
     </style>
 </head>
 <body>
-    <div class="main-content">
-        <div class="head">Bon de livraison N° <?= $deliveryNumber ?> </div>
-        <div class="delivery-content">
-            <br>
-            <table class="info-table">
-                <tr>
-                    <td colspan="2" class="logo">
-                        <img src="<?= base_url() . "/uploads/school_content/admin_logo/" . $company['admin_logo'] ?>" alt="Logo" width="180" height="70" />
-                    </td>
-                    <td colspan="4" class="no-border"></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <strong><?= $companyName ?></strong><br>
-                        RCCM : <?= $companyRccm ?><br>
-                        Téléphone : <?= $companyPhone ?><br>
-                        Email : <?= $companyEmail ?><br>
-                        Adresse : <?= $companyAddress ?>
-                    </td>
-                    <td colspan="2"></td>
-                    <td colspan="2">
-                        <strong>Client :</strong> <?= $customerFullname ?><br>
-                        <strong>Compte contribuable :</strong> <?= $customerComptec ?><br>
-                        <strong>Téléphone :</strong> <?= $customerPhone ?><br>
-                        <strong>Adresse du Client :</strong> <?= $customerAddress ?><br>
-                        <strong>Affaire suivi par:</strong> </strong><?= $userName ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="6" style="padding: 10px;">
-                        <strong>Objet :</strong> <?= $deliveryDesignation ;?>
-                    </td>
-                </tr>
-            </table><br>
-
-            <table class="products-table">
-                <thead style="background-color:#ccd1cc;">
-                    <tr>
-                        <th>Qté</th>
-                        <th>Description</th>
-                        <th>PU (CFA)</th>
-                        <th>Total (CFA)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($items as $item): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($item['quantity']) ?></td>
-                            <td><?= htmlspecialchars($item['item_name']) ?> - <?= htmlspecialchars($item['category_name']) ?></td>
-                            <td><?= htmlspecialchars($item['unit_price']) ?></td>
-                            <td><?= htmlspecialchars($item['line_total']) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table><br>
-
-            <table>
-                <tr>
-                    <td colspan="3" class="no-border" align="right"><strong>Total HT :</strong></td>
-                    <td><?= number_format($total_ht, 2, ',', ' ') ;?></td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="no-border" align="right"><strong>TVA (<?= $tva_rate ;?>%) :</strong></td>
-                    <td><?= $tva_amount ;?></td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="no-border" align="right"><strong>Total TTC :</strong></td>
-                    <td><?= number_format($total_ttc, 2, ',', ' ') ;?></td>
-                </tr>
-            </table>
-
-            <div class="payment-details">
-                <div class="payment-section">
-                    <div class="payment-item">
-                        <div class="payment-label">Montant en lettres :</div>
-                        <div class="payment-value"><?= $totalAsletter ;?></div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-label">Mode de paiement :</div>
-                        <div class="payment-value"><?= $payment_method;?></div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-label">Garantie :</div>
-                        <div class="payment-value">[à spécifier]</div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-label">Règlement :</div>
-                        <div class="payment-value">Payable 30 jours dépôt de facture</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="print-container">
+    <!-- Pied de page fixe -->
+    <div class="footer">
+        <table>
+            <tr>
+                <td style="width: 33%; text-align: left;">
+                    <?= $companyName ?> | RCCM: <?= $companyRccm ?>
+                </td>
+                <td style="width: 34%; text-align: left;">
+                    Tél: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
+                    Banque: <?= $companyBank ?> | N° Cpt: <?= $companyComptBank ?>
+                </td>
+                <td style="width: 33%; text-align: left;">
+                    Adresse: <?= $companyAddress ?><br>
+                    Site: <?= $companyWebsite ?>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <div class="footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <?= $companyName ?> | Registre de Commerce: <?= $companyRccm ?>
+    <div class="page-content">
+        <?php foreach ($items_per_page as $page_index => $page_items):
+        $is_last_page = ($page_index == $total_pages - 1);
+        $is_first_page = ($page_index == 0);
+
+        // Déterminer si on affiche les totaux sur cette page
+        $show_totals_on_first_page = ($is_first_page && $force_totals_first_page);
+        $show_totals_on_this_page = ($is_last_page || $show_totals_on_first_page);
+        ?>
+
+        <?php if ($page_index > 0 && !$show_totals_on_first_page): ?>
+        <div class="page-break">
+            <div class="continuation-header">
+                Suite du Bon de Livraison N° <?= $deliveryNumber ?> - Page <?= $page_index + 1 ?>
             </div>
-            <div class="footer-center">
-                Téléphone: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
-                Banque: <?= $companyBank ?> | Numéro de compte bancaire: <?= $companyComptBank ?>
-            </div>
-            <div class="footer-right">
-                Adresse: <?= $companyAddress ?><br>
-                Site : <?= $companyWebsite; ?>
-            </div>
+            <?php endif; ?>
+
+            <!-- En-tête seulement sur la première page -->
+            <?php if ($is_first_page): ?>
+                <div class="head">BON DE LIVRAISON N° <?= $deliveryNumber ?></div>
+
+                <div class="print-info">
+                    Impression: <?= date('d/m/Y H:i') ?>
+                </div>
+
+                <div class="info-section">
+                    <!-- Entreprise -->
+                    <div class="info-box">
+                        <div class="logo">
+                            <img src="<?= base_url() . "/uploads/school_content/admin_logo/" . $company['admin_logo'] ?>" alt="Logo" />
+                        </div>
+                        <strong><?= $companyName ?></strong><br>
+                        RCCM: <?= $companyRccm ?> | Centre: <?= $companyCentreimpot ?><br>
+                        Tél: <?= $companyPhone ?> | Email: <?= $companyEmail ?><br>
+                        Adresse: <?= $companyAddress ?><br>
+                        <strong>Suivi par:</strong> <?= $UsersName ?>
+                    </div>
+
+                    <!-- Client -->
+                    <div class="info-box">
+                        <?php if(!empty($qrCodePath)): ?>
+                            <div style="margin-bottom: 3px;">
+                                <img src="<?= $qrCodePath ?>" alt="QR Code" style="width: 50px;">
+                            </div>
+                        <?php endif; ?>
+                        <strong>Client:</strong> <?= $customerFullname ?><br>
+                        Compte: <?= $customerComptec ?><br>
+                        Tél: <?= $customerPhone ?><br>
+                        Adresse: <?= $customerAddresse ?>
+                    </div>
+                </div>
+
+                <div class="objet">
+                    <strong>Objet:</strong> <?= $quoteDesignation ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Tableau des produits -->
+            <table class="products-table">
+                <thead>
+                <tr>
+                    <th style="width: 8%">Qté</th>
+                    <th style="width: 62%">Description</th>
+                    <!--<th style="width: 15%">PU (CFA)</th>
+                    <th style="width: 15%">Total (CFA)</th>-->
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($page_items as $item): ?>
+                    <tr>
+                        <td style="text-align: right;"><?= number_format($item['quantity'], 0, ',', ' ') ?></td>
+                        <td><?= htmlspecialchars($item['item_name']) ?> <?= !empty($item['category_name']) ? '- ' . htmlspecialchars($item['category_name']) : '' ?></td>
+                       <!-- <td style="text-align: right;"><?= number_format($item['unit_price'], 0, ',', ' ') ?></td>
+                        <td style="text-align: right;"><?= number_format($item['line_total'], 0, ',', ' ') ?></td>-->
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <!-- Totaux (sur la première page si possible, sinon sur la dernière) -->
+            <?php if ($show_totals_on_this_page): ?>
+               <!-- <div class="totals-section">
+                    <table class="totals-table">
+                        <tr>
+                            <td align="right" style="width: 85%"><strong>Total HT :</strong></td>
+                            <td style="width: 15%; text-align: right;"><strong><?= number_format($total_ht, 0, ',', ' ') ?> FCFA</strong></td>
+                        </tr>
+                        <?php if(is_numeric($tva_amount)): ?>
+                            <tr>
+                                <td align="right"><strong>TVA (<?= $tva_rate ?>%) :</strong></td>
+                                <td style="text-align: right;"><strong><?= number_format($tva_amount, 0, ',', ' ') ?> FCFA</strong></td>
+                            </tr>
+                        <?php endif; ?>
+                        <tr style="border-top: 2px solid #ddd;">
+                            <td align="right"><strong>Total TTC :</strong></td>
+                            <td style="text-align: right;"><strong><?= number_format($total_ttc, 0, ',', ' ') ?> FCFA</strong></td>
+                        </tr>
+                    </table>
+                </div>-->
+
+                <!-- Détails de paiement -->
+                <div class="payment-details">
+                    <!--<div class="payment-item">
+                        <span class="payment-label">Montant en lettres :</span>
+                        <span><?= $totalAsletter ?? "" ?></span>
+                    </div>
+                    <div class="payment-item">
+                        <span class="payment-label">Mode de paiement :</span>
+                        <span><?= $payment_method ?></span>
+                    </div>
+                    <div class="payment-item">
+                        <span class="payment-label">Terme de livraison :</span>
+                        <span><?= $delivery_terms ?></span>
+                    </div>
+                      <div class="payment-item">
+                        <span class="payment-label">Règlement :</span>
+                        <span><?= $payment_terms ?></span>
+                    </div>-->
+                    <div class="payment-item">
+                        <span class="payment-label">Lieu de livraison :</span>
+                        <span><?= $delivery_location ?></span>
+                    </div>
+
+                </div>
+            <?php endif; ?>
+
+            <?php endforeach; ?>
         </div>
     </div>
 </body>

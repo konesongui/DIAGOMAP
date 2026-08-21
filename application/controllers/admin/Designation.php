@@ -18,7 +18,7 @@ class Designation extends Admin_Controller {
 
     function designation() {
 
-        $this->session->set_userdata('top_menu', 'HR');
+        $this->session->set_userdata('top_menu', 'System Settings');
         $this->session->set_userdata('sub_menu', 'admin/designation/designation');
         $designation = $this->designation_model->get();
         $data["title"] = $this->lang->line('add') . " " . $this->lang->line('designation');

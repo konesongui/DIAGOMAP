@@ -14,6 +14,36 @@ $language_name = $language["short_code"];
 <link href="<?php echo base_url(); ?>backend/toast-alert/toastr.css" rel="stylesheet"/>
 <script src="<?php echo base_url(); ?>backend/toast-alert/toastr.js"></script>
 <script src="<?php echo base_url(); ?>backend/bootstrap/js/bootstrap.min.js"></script>
+<?php
+$CI = get_instance();
+$support_message = null;
+$admin_session = $CI->session->userdata('admin');
+if (!empty($admin_session) && $CI->db->table_exists('support_messages')) {
+    $entreprise_id = (int) ($admin_session['entreprise_id'] ?? $CI->session->userdata('entreprise_id') ?? 0);
+    $now = date('Y-m-d H:i:s');
+    $CI->db->where('active', 1);
+    $CI->db->where_in('entreprise_id', array(0, $entreprise_id));
+    $CI->db->where('(start_at IS NULL OR start_at <= ' . $CI->db->escape($now) . ')', null, false);
+    $CI->db->where('(end_at IS NULL OR end_at >= ' . $CI->db->escape($now) . ')', null, false);
+    $CI->db->order_by('entreprise_id', 'DESC')->order_by('id', 'DESC');
+    $support_message = $CI->db->get('support_messages')->row_array();
+}
+$support_message_seen = $support_message && $CI->session->userdata('support_message_seen_' . (int) $support_message['id']);
+if ($support_message && !$support_message_seen) {
+    $CI->session->set_userdata('support_message_seen_' . (int) $support_message['id'], 1);
+    ?>
+    <div class="modal fade" id="diagomaSupportMessage" tabindex="-1" role="dialog" aria-labelledby="diagomaSupportMessageTitle">
+        <div class="modal-dialog" role="document"><div class="modal-content">
+            <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Fermer"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="diagomaSupportMessageTitle"><i class="fa fa-info-circle"></i> <?php echo html_escape($support_message['title']); ?></h4></div>
+            <div class="modal-body support-message-body"><?php echo nl2br(html_escape($support_message['message'])); ?></div>
+            <div class="modal-footer"><button type="button" class="btn btn-primary" data-dismiss="modal">OK</button></div>
+        </div></div>
+    </div>
+    <style>.support-message-body{white-space:normal;line-height:1.7;font-size:15px;word-break:break-word}</style>
+    <script>$(function () { $('#diagomaSupportMessage').modal('show'); });</script>
+    <?php
+}
+?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>backend/plugins/select2/select2.min.css">
 <script src="<?php echo base_url(); ?>backend/plugins/select2/select2.full.min.js"></script>
 <script src="<?php echo base_url(); ?>backend/plugins/input-mask/jquery.inputmask.js"></script>
@@ -78,6 +108,7 @@ if ($language_name != 'en') {
 <script src="<?php echo base_url(); ?>backend/plugins/chartjs/Chart.min.js"></script>
 <script src="<?php echo base_url(); ?>backend/plugins/fastclick/fastclick.min.js"></script>
 <script src="<?php echo base_url(); ?>backend/dist/js/app.min.js"></script>
+<script src="<?php echo base_url(); ?>backend/dist/js/diagoma-offline.js"></script>
 <!--nprogress-->
 <script src="<?php echo base_url(); ?>backend/dist/js/nprogress.js"></script>
 <!--file dropify-->

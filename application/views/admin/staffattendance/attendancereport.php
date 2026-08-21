@@ -191,7 +191,7 @@
                                                 ?>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody hidden>
                                             <?php if (empty($student_array)) {
                                                 ?>
                                                 <tr>

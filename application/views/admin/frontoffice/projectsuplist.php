@@ -1,16 +1,16 @@
 <ul class="timeline timeline-inverse">
 
     <?php
-    if (empty($projects_up_list)) {
+    if (empty($projects_list)) {
         ?>
         <?php
     } else {
-        foreach ($projects_up_list as $key => $value) {
+        foreach ($projects_list as $key => $value) {
             ?>
             <li class="time-label">
                 <span class="bg-blue">
                     <?php
-                    echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value['date']));
+                    echo date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($value['projet']));
                     ?>
                 </span>
             </li>
@@ -23,9 +23,9 @@
                             ?>
                             <a class="defaults-c text-right" data-toggle="tooltip" title="" onclick="delete_next_call(<?php echo $value['id']; ?>,<?php echo $id; ?>)" data-original-title="Delete"><i class="fa fa-trash"></i></a>
                             <div class="timeline-body">
-                        <?php echo $value['response']; ?>
+                        <?php echo $value['projet']; ?>
                         <div class="divider"></div>
-                        <?php echo $value['note']; ?>
+                        <?php echo $value['montant']; ?>
                     </div>
                         <?php } ?></span>
                     <h3 class="timeline-header"><a href="#"> <?php echo $value['followup_by']; ?></a> </h3>

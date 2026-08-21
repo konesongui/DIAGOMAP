@@ -27,21 +27,25 @@ class Delivery_model extends CI_Model {
 
     /**
      * Ajoute une nouvelle livraison avec ses articles
-     * 
+     *
      * @param array $data Les données de la livraison
      * @return int|bool L'ID de la livraison créée ou false en cas d'erreur
      */
     public function add($data)
-    {   
+    {
         // var_dump($data);
         // die();
         $this->db->trans_start();
 
         try {
             // Préparation des données de la livraison
+            $entreprise_id = isset($data['entreprise_id']) ? (int)$data['entreprise_id'] : (int)$this->session->userdata('entreprise_id');
+
             $delivery_data = [
-                'delivery_number' => $this->generateDeliveryNumber(),
+                'entreprise_id'   => $entreprise_id,
+                'delivery_number' => $this->generateDeliveryNumber($entreprise_id),
                 'customer_id' => $data['customer_id'],
+                'user_name' => $data['user_name'],
                 'designation' => $data['designation'],
                 'delivery_date' => date('Y-m-d', strtotime($data['delivery_date'])),
                 'deadline' => date('Y-m-d', strtotime($data['deadline'])),
@@ -97,42 +101,111 @@ class Delivery_model extends CI_Model {
     /**
      * Génère un numéro unique pour une livraison
      * Format: LIV-YYYYMM-XXXX où XXXX est un numéro séquentiel
-     * 
+     *
      * @return string
      */
-    private function generateDeliveryNumber()
+    private function generateDeliveryNumber($entreprise_id = 0)
     {
         $prefix = 'LIV';  // LIV pour Livraison
         $date = date('Ym');  // Format YYYYMM
-        
-        // Recherche le dernier numéro pour ce mois
+
+        // Recherche le dernier numéro pour ce mois et cette entreprise
         $this->db->like('delivery_number', $prefix . '-' . $date, 'after');
+        if ($entreprise_id > 0 && in_array('entreprise_id', $this->db->list_fields($this->table))) {
+            $this->db->where('entreprise_id', $entreprise_id);
+        }
         $this->db->order_by('id', 'DESC');
         $this->db->limit(1);
         $query = $this->db->get($this->table);
-        
+
         if ($query->num_rows() > 0) {
             $last_ref = $query->row()->delivery_number;
             $sequence = intval(substr($last_ref, -4)) + 1;
         } else {
             $sequence = 1;
         }
-        
+
         $sequence_padded = str_pad($sequence, 4, '0', STR_PAD_LEFT);
-        
+
         return $prefix . '-' . $date . '-' . $sequence_padded;
     }
 
     /**
      * Récupère une livraison avec ses articles
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @return array|null Les données de la livraison et ses articles
      */
-    public function getDeliveryWithItems($delivery_id)
+
+    public function getDeliveryWithItems_250526($delivery_id)
     {
         // Récupération de la livraison avec les totaux de la commande
-        $this->db->select('deliveries.*, clients.item_supplier as customer_name,
+        $this->db->select('deliveries.*,user_name, clients.item_supplier as customer_name,
+        clients.lastname as customer_last_name, clients.email as customer_email, clients.phone as customer_phone, clients.address as customer_address, clients.comptec');
+        $this->db->from($this->table);
+        $this->db->join('clients', 'clients.id = deliveries.customer_id');
+        $this->db->where('deliveries.id', $delivery_id);
+        $delivery = $this->db->get()->row_array();
+
+        if (!$delivery) {
+            return null;
+        }
+
+        // Récupération des articles
+        $this->db->select('
+            delivery_items.*,
+            item_category.item_category as category_name,
+            item.name as item_name
+        ');
+        $this->db->from($this->items_table);
+        $this->db->join('item_category', 'item_category.id = delivery_items.category_id');
+        $this->db->join('item', 'item.id = delivery_items.item_id');
+        $this->db->where('delivery_id', $delivery_id);
+        $this->db->order_by('position', 'ASC');
+        $items = $this->db->get()->result_array();
+
+        $delivery['items'] = $items;
+        return $delivery;
+    }
+    public function getDeliveryWithItems($delivery_id) {
+        $this->db->select('deliveries.*, clients.item_supplier as customer_name, clients.lastname as customer_last_name, clients.email as customer_email');
+        $this->db->from('deliveries');
+        $this->db->join('clients', 'clients.id = deliveries.customer_id');
+        $this->db->where('deliveries.id', $delivery_id);
+        $delivery = $this->db->get()->row_array();
+
+        if ($delivery) {
+            $this->db->select('
+            delivery_items.*,
+            item_category.item_category as category_name,
+            item.name as item_name,
+            services.name as service_name,
+            services.duration as service_duration
+        ');
+            $this->db->from('delivery_items');
+            $this->db->join('item_category', 'item_category.id = delivery_items.category_id', 'left');
+            $this->db->join('item', 'item.id = delivery_items.item_id', 'left');
+            $this->db->join('services', 'services.id = delivery_items.service_id', 'left');
+            $this->db->where('delivery_items.delivery_id', $delivery_id);
+            $this->db->order_by('delivery_items.position', 'ASC');
+            $items = $this->db->get()->result_array();
+
+            // Normalisation : pour les services, on prend service_name
+            foreach ($items as &$item) {
+                if ($item['item_type'] == 'service') {
+                    $item['item_name'] = $item['service_name'];
+                    $item['category_name'] = null;
+                }
+            }
+            $delivery['items'] = $items;
+        }
+        return $delivery;
+    }
+
+    public function getDeliveryWithItems_($delivery_id)
+    {
+        // Récupération de la livraison avec les totaux de la commande
+        $this->db->select('deliveries.*,user_name, clients.item_supplier as customer_name,
             clients.lastname as customer_last_name, clients.email as customer_email, clients.phone as customer_phone, clients.address as customer_address, clients.comptec');
         $this->db->from($this->table);
         $this->db->join('clients', 'clients.id = deliveries.customer_id');
@@ -162,7 +235,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Met à jour le statut d'une livraison
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @param int $status Nouveau statut
      * @return bool
@@ -178,13 +251,13 @@ class Delivery_model extends CI_Model {
 
     /**
      * Met à jour le statut d'une livraison en annulé avec le motif
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @param string $reason Motif de l'annulation
      * @return bool
      */
     public function updateCancelStatus($delivery_id, $data)
-    {   
+    {
         $this->db->where('id', $delivery_id);
         return $this->db->update($this->table, [
             'status'     => $data['status'], // 3 = Annulée
@@ -195,7 +268,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Récupère l'état du stock pour un article
-     * 
+     *
      * @param int $item_id ID de l'article
      * @return object|null
      */
@@ -206,7 +279,34 @@ class Delivery_model extends CI_Model {
         return $query->row();
     }
 
-    public function getListData()
+    /**
+     * Méthode pour les admins (voient tout)
+     */
+    public function getListDataForAdmin()
+    {
+        return $this->_getListData(null);
+    }
+
+    /**
+     * Méthode pour les utilisateurs normaux (filtré)
+     */
+    public function getListDataForUser($username)
+    {
+        return $this->_getListData($username);
+    }
+
+    /**
+     * Méthode pour compatibilité (ancien code)
+     */
+    public function getListData($username = null)
+    {
+        return $this->_getListData($username);
+    }
+
+    /**
+     * Méthode privée commune
+     */
+    private function _getListData($username = null)
     {
         $draw = intval($this->input->post('draw'));
         $start = intval($this->input->post('start'));
@@ -214,10 +314,14 @@ class Delivery_model extends CI_Model {
         $search = $this->input->post('search')['value'];
         $status = $this->input->post('status'); // Récupération du statut
 
-        $total_records = $this->db->count_all($this->table);
+        // Compter le total selon le filtre utilisateur
+        if ($username !== null) {
+            $this->db->where('user_name', $username);
+        }
+        $total_records = $this->db->count_all_results($this->table);
 
         $this->db->start_cache();
-        
+
         $this->db->select('
             deliveries.*,
             clients.item_supplier as customer_name,
@@ -239,7 +343,12 @@ class Delivery_model extends CI_Model {
         $this->db->from($this->table);
         $this->db->join('clients', 'clients.id = deliveries.customer_id', 'left');
         $this->db->join('orders', 'orders.id = deliveries.order_id', 'left');
-        
+
+        // 🔹 FILTRAGE PAR UTILISATEUR SI SPÉCIFIÉ
+        if ($username !== null) {
+            $this->db->where('deliveries.user_name', $username);
+        }
+
         if($search) {
             $this->db->group_start();
             $this->db->like('deliveries.designation', $search);
@@ -253,20 +362,20 @@ class Delivery_model extends CI_Model {
         if($status !== '' &&  (int)$status > 0 ) {
             $this->db->where('deliveries.status', $status);
         }
-        
+
         $this->db->stop_cache();
 
         $filtered_records = $this->db->get()->num_rows();
-        
+
         $this->db->order_by('deliveries.created_at', 'DESC');
         if($length != -1) {
             $this->db->limit($length, $start);
         }
 
         $query = $this->db->get();
-        
+
         $this->db->flush_cache();
-        
+
         $status_labels = [
             self::STATUS_PENDING => ['label' => 'En préparation', 'class' => 'label-warning'],
             self::STATUS_IN_PROGRESS => ['label' => 'En cours de livraison', 'class' => 'label-info'],
@@ -279,7 +388,7 @@ class Delivery_model extends CI_Model {
         $data = [];
         foreach($query->result() as $row) {
             $status_info = isset($status_labels[$row->status]) ? $status_labels[$row->status] : ['label' => 'Inconnu', 'class' => 'label-default'];
-            
+
             $data[] = [
                 'id' => $row->id,
                 'delivery_number' => $row->delivery_number,
@@ -315,6 +424,7 @@ class Delivery_model extends CI_Model {
                     'label' => $status_info['label'],
                     'class' => $status_info['class']
                 ],
+                'user_name' => $row->user_name, // 🔹 Ajouter le nom d'utilisateur
                 'validation' => [
                     'status' => $row->validation_status,
                     'notes' => $row->validation_notes,
@@ -332,8 +442,16 @@ class Delivery_model extends CI_Model {
     }
 
     /**
+     * Ancienne méthode pour compatibilité
+     */
+    public function getListData_()
+    {
+        return $this->_getListData();
+    }
+
+    /**
      * Met à jour une livraison existante et ses articles
-     * 
+     *
      * @param array $data Les données de la livraison à mettre à jour
      * @return bool
      */
@@ -395,18 +513,18 @@ class Delivery_model extends CI_Model {
         }
     }
 
-    
+
 
     /**
      * Récupère les données de la livraison formatés pour l'impression
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @return array|null Les données formatées de la livraison
      */
     public function getDeliveryForPrint($delivery_id)
     {
         $delivery = $this->getDeliveryWithItems($delivery_id);
-        
+
         if (!$delivery) {
             return null;
         }
@@ -458,7 +576,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Valide une livraison
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @param array $data Données de validation
      * @return bool
@@ -486,7 +604,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Rejette une livraison
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @param array $data Données de rejet
      * @return bool
@@ -515,7 +633,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Rejette une livraison
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @param array $data Données de rejet
      * @return bool
@@ -545,7 +663,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Récupère les informations de validation d'une livraison
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @return array|null
      */
@@ -556,11 +674,11 @@ class Delivery_model extends CI_Model {
         return $this->db->get($this->table)->row_array();
     }
 
-    
+
 
     /**
      * Vérifie si une livraison est complétée
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @return bool
      */
@@ -573,7 +691,7 @@ class Delivery_model extends CI_Model {
 
     /**
      * Vérifie si une livraison est annulée
-     * 
+     *
      * @param int $delivery_id ID de la livraison
      * @return bool
      */
@@ -599,46 +717,46 @@ class Delivery_model extends CI_Model {
         // var_dump($items);
         // die();
         $this->db->trans_start();
-        
+
         try {
             // 1. Mise à jour des quantités livrées
             $all_delivered = true;
-            
+
             foreach ($items as $item) {
                 // Vérification quantité valide
                 if ($item['delivered_quantity'] < 0 || $item['delivered_quantity'] > $item['quantity']) {
                     throw new Exception("Quantité invalide pour l'article ".$item['item_id']);
                 }
-                
+
                 // Mise à jour
                 $this->db->where('delivery_id', $delivery_id)
                     ->where('item_id', $item['item_id'])
                     ->update($this->items_table, [
                         'delivered_quantity' => $item['delivered_quantity']
                     ]);
-                
+
                 // Vérifie si article complètement livré
                 if ($item['delivered_quantity'] < $item['quantity']) {
                     $all_delivered = false;
                 }
             }
-            
+
             // 2. Détermination du statut
             $status = $all_delivered ? self::STATUS_DELIVERED : self::STATUS_PARTIALLY_DELIVERED;
-            
+
             // 3. Mise à jour statut livraison
             $this->db->where('id', $delivery_id)
                 ->update($this->table, [
                     'status' => $status,
                 ]);
-            
+
             $this->db->trans_complete();
             return $this->db->trans_status();
-            
+
         } catch (Exception $e) {
             $this->db->trans_rollback();
             log_message('error', 'Erreur mise à jour livraison: '.$e->getMessage());
             return false;
         }
     }
-} 
+}

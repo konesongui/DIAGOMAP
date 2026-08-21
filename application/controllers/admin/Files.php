@@ -16,7 +16,7 @@ class Files extends Admin_Controller {
         if (!$this->rbac->hasPrivilege('file', 'can_view')) {
             access_denied();
         }
-        $this->session->set_userdata('top_menu', 'Service');
+        $this->session->set_userdata('top_menu', 'receptioniste');
         $this->session->set_userdata('sub_menu', 'admin/files');
         $this->form_validation->set_rules('purpose', $this->lang->line('purpose'), 'required');
         $this->form_validation->set_rules('name', $this->lang->line('name'), 'required');
@@ -38,6 +38,7 @@ class Files extends Admin_Controller {
                 'no_of_pepple' => $this->input->post('pepples'),
                 'date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
                 'in_time' => $this->input->post('time'),
+
                 'out_time' => $this->input->post('out_time'),
                 'note' => $this->input->post('note')
             );
@@ -53,6 +54,43 @@ class Files extends Admin_Controller {
 
             $this->session->set_flashdata('msg', '<div class="alert alert-success">' . $this->lang->line('success_message') . '</div>');
             redirect('admin/files');
+        }
+    }
+
+    public function add() {
+        if (!$this->rbac->hasPrivilege('courriers', 'can_add')) {
+            access_denied();
+        }
+
+        $this->form_validation->set_rules('purpose', $this->lang->line('purpose'), 'required');
+        $this->form_validation->set_rules('name', $this->lang->line('name'), 'required');
+        $this->form_validation->set_rules('date', $this->lang->line('date'), 'required');
+        $this->form_validation->set_rules('file', $this->lang->line('file'), 'callback_handle_upload[file]');
+
+        if ($this->form_validation->run() == FALSE) {
+            $data['courier_list'] = $this->files_model->get_couriers();
+            $data['stats'] = $this->files_model->get_stats();
+            $this->load->view('layout/header');
+            $this->load->view('admin/frontoffice/filesview', $data);
+            $this->load->view('layout/footer');
+        } else {
+            $courier_data = array(
+                'purpose' => $this->input->post('purpose'),
+                'name' => $this->input->post('name'),
+                'contact' => $this->input->post('contact'),
+                'id_proof' => $this->input->post('id_proof'),
+                'date' => date('Y-m-d', $this->customlib->datetostrtotime($this->input->post('date'))),
+                'note' => $this->input->post('note'),
+                'deleted' => 0
+            );
+
+            $courier_id = $this->files_model->add_courier($courier_data);
+
+            if ($courier_id && isset($_FILES["file"]) && !empty($_FILES['file']['name'])) {
+                $this->upload_file($courier_id);
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Courrier ajouté avec succès']);
         }
     }
 
@@ -156,7 +194,7 @@ class Files extends Admin_Controller {
             $allowed_extension = array_map('trim', array_map('strtolower', explode(',', $result->file_extension)));
             $allowed_mime_type = array_map('trim', array_map('strtolower', explode(',', $result->file_mime)));
             $ext               = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-            
+
             if ($files = filesize($_FILES[$var]['tmp_name'])) {
 
                 if (!in_array($file_type, $allowed_mime_type)) {

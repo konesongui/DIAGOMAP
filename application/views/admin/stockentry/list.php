@@ -24,13 +24,25 @@ $dtStockEntryID = 'stockEntryDatatable';
                 <div class="box box-primary">
                     <div class="box-header with-border">
                         <h3 class="box-title">Liste des entrées de stock</h3>
-                        <div class="box-tools pull-right">
+                       <!-- <div class="box-tools pull-right">
                             <?php if ($this->rbac->hasPrivilege('issue_item', 'can_add')) {
                                 ?>
                                 <a href="<?php echo site_url('admin/stockentry/form') ?>" class="btn btn-primary btn-sm">
                                     <i class="fa fa-plus"></i> Ajouter une entrée de stock
                                 </a>
                             <?php } ?>
+                        </div>-->
+                        <!-- Dans admin/stockentry/list.php -->
+                        <div class="box-header with-border">
+                            <!--<h3 class="box-title"><?php echo $title_list; ?></h3>-->
+                            <div class="box-tools pull-right">
+                                <a href="<?php echo site_url('admin/stockentry/form'); ?>" class="btn btn-primary btn-sm">
+                                    <i class="fa fa-plus"></i> Ajouter manuellement
+                                </a>
+                                <a href="<?php echo site_url('admin/stockentry/import'); ?>" class="btn btn-success btn-sm">
+                                    <i class="fa fa-upload"></i> Importer
+                                </a>
+                            </div>
                         </div>
                     </div>
                     

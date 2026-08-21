@@ -2,6 +2,28 @@
 $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
 ?>
+
+<?php
+$conn = new mysqli("localhost","root","","diago");
+
+
+$sql = "
+    SELECT
+        DATE_FORMAT(ae.date, '%d/%m/%Y') AS date_operation,
+        i.invoice_number,
+        ae.account,
+        SUM(ae.debit) AS total_debit,
+        SUM(ae.credit) AS total_credit,
+        ae.description
+    FROM accounting_entries ae
+    LEFT JOIN invoices i ON i.id = ae.invoice_id
+    GROUP BY i.invoice_number, ae.account, ae.description
+    ORDER BY i.invoice_number, ae.account
+";
+
+$result = $conn->query($sql);
+
+?>
 <?php
 $moisEn = [
     'January' => 'Janvier',
@@ -156,7 +178,7 @@ $moisEn = [
                     <div class="">
                         <div class="box-header ptbnull"></div>
                         <div class="box-header ptbnull">
-                            <h3 class="box-title titlefix"><i class="fa fa-money"></i><b style="color: black">BILAN COMPTABLE</b></h3>
+                            <h3 class="box-title titlefix"><i class="fa fa-money"></i><b style="color: black">Bilan comptable par facture</b></h3>
                         </div>
                         <div class="box-body table-responsive">
                             <div class="download_label">
@@ -165,7 +187,7 @@ $moisEn = [
                                 </div>
                                 <br/><br/><br/><br/>
                                 <?php
-                                echo "BILAN COMPTABLE <br/><br/>";
+                                echo "Bilan comptable par facture <br/><br/>";
                                 echo "period:"; $this->customlib->get_postmessage();
                                 ;
                                 ?></div>
@@ -175,102 +197,31 @@ $moisEn = [
 
                             <thead>
                             <tr>
-
-
-                                <th class="text text-left text-primary">Matricule</th>
-                                <th class="text text-left text-primary">Nom</th>
-                                <th class="text text-left text-primary">Prénom</th>
-                                <th class="text text-right text-primary">TA</th>
-                                <th class="text text-left">TFC</th>
-
+                                <th>Date</th>
+                                <th>Référence</th>
+                                <th>Compte</th>
+                                <th>Total Débit</th>
+                                <th>Total Crédit</th>
+                                <th>Description</th>
                             </tr>
                             </thead>
                             <tbody>
-
-
-                            <?php
-
-                            $fdpf_taxe = 0;
-                            $fdpf_form = 0;
-
-
-                            if (empty($payrollList)) {
-                                ?>
-
-                                <?php
-                            } else {
-                                $count = 1;
-
-                                foreach ($payrollList as $key => $value) {
-
-
-                                    $fdpf_form += $value["fdfp_form"];
-                                    $fdpf_taxe += $value["fdfp_taxe"];
-                                    ?>
+                            <?php if($result && $result->num_rows > 0): ?>
+                                <?php while($row = $result->fetch_assoc()): ?>
                                     <tr>
-
-                                        <td>
-                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="<?php echo base_url() ?>admin/staff/profile/<?php echo $value['staff_id']; ?>"><?php echo $value['employee_id']; ?></a></span>
-
-                                        </td>
-                                        <td>
-                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="<?php echo base_url() ?>admin/staff/profile/<?php echo $value['staff_id']; ?>"><?php echo $value['surname']; ?></a></span>
-
-                                        </td>
-                                    <td>
-                                        <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="<?php echo base_url() ?>admin/staff/profile/<?php echo $value['staff_id']; ?>"><?php echo $value['name']; ?></a></span>
-
-                                    </td>
-                                        <td class="text text-right">
-                                            <?php
-                                            echo  $value['fdfp_form']
-
-                                            ?>
-                                        </td>
-
-                                    <td class="text text-right">
-                                        <?php
-                                        echo  $value['fdfp_taxe']
-
-                                        ?>
-                                    </td>
-
-                                    <?php
-                                    $count++;
-                                }
-                                ?>
-                                <tr class="box box-solid total-bg">
-                                    <td class="text text-right"></td>
-                                    <td class="text text-right"></td>
-
-
-
-                                    <td class="text-primary"><?php echo $this->lang->line('grand_total'); ?> </td>
-
-                                    <td class="text text-right"><?php echo (number_format($fdpf_form, 2, '.', '')); ?> </td>
-
-                                    <td class="text text-right"><?php echo (number_format($fdpf_taxe, 2, '.', '')); ?> </td>
-
+                                        <td><?= $row['date_operation'] ?></td>
+                                        <td><?= $row['invoice_number'] ?></td>
+                                        <td><?= $row['account'] ?></td>
+                                        <td><?= number_format($row['total_debit'], 2, ',', ' ') ?></td>
+                                        <td><?= number_format($row['total_credit'], 2, ',', ' ') ?></td>
+                                        <td><?= $row['description'] ?></td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6">Aucune écriture comptable disponible</td>
                                 </tr>
-
-
-                            <?php } ?>
-
-                            <tr class="box box-solid total-bg">
-                                <td class="text text-right"></td>
-                                <td class="text text-right"></td>
-
-
-
-                                <td class="text-primary">TOTAL A PAYÉ</td>
-
-                                <td class="text text-right"></td>
-
-                                <td class="text text-right"><?php echo (number_format($fdpf_taxe + $fdpf_form, 2, '.', '')); ?> FCFA</td>
-
-                            </tr>
-
-
+                            <?php endif; ?>
                             </tbody>
 
 
@@ -300,3 +251,4 @@ $moisEn = [
     ?>
 
 </script>
+

@@ -1,222 +1,204 @@
-
 <div class="content-wrapper" style="min-height: 946px;">
     <!-- Content Header (Page header) -->
+
     <section class="content-header">
         <h1>
-            <i class="fa fa-object-group"></i> Liste des clients</h1>
+            <i class="fa fa-object-group"></i> Liste des clients
+        </h1>
     </section>
+
+
     <!-- Main content -->
     <section class="content">
         <div class="row">
-            <?php if ($this->rbac->hasPrivilege('clients', 'can_add')) { ?>
-                <div class="col-md-4">
-                    <!-- Horizontal Form -->
-                    <div class="box box-primary">
-                        <div class="box-header with-border">
-                            <h3 class="box-title">Liste des clients</h3>
-                        </div><!-- /.box-header -->
-                        <!-- form start -->
-                        <form  action="<?php echo site_url('admin/clients/create') ?>"  id="employeeform" name="employeeform" method="post" accept-charset="utf-8">
-                            <div class="box-body">
-                                <?php if ($this->session->flashdata('msg')) { ?>
-                                    <?php echo $this->session->flashdata('msg') ?>
-                                <?php } ?>
-                                <?php echo $this->customlib->getCSRF(); ?>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1">Client</label><small class="req"> *</small>
-                                    <input autofocus="" id="name" name="name" placeholder="" type="text" class="form-control"  value="<?php echo set_value('name'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('name'); ?></span>
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="exampleInputEmail1">Prénom</label><small class="req"> *</small>
-                                    <input autofocus="" id="lastname" name="lastname" placeholder="" type="text" class="form-control"  value="<?php echo set_value('lastname'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('lastname'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1"> <?php echo $this->lang->line('phone'); ?></label><small class="req"> *</small>
-                                    <input id="phone" name="phone" placeholder="" type="text" class="form-control" required  value="<?php echo set_value('phone'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('phone'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1"> <?php echo $this->lang->line('email'); ?></label>
-                                    <input id="text" name="email" placeholder="" type="text" class="form-control"  value="<?php echo set_value('email'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('email'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1"><?php echo $this->lang->line('address'); ?></label>
-                                    <textarea class="form-control" id="address" name="address" placeholder="" rows="3" placeholder="Enter ..."><?php echo set_value('address'); ?></textarea>
-                                    <span class="text-danger"><?php echo form_error('address'); ?></span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputEmail1"> Compte Contribuable</label>
-                                    <input id="comptec" name="comptec" placeholder="" type="text" class="form-control"  value="<?php echo set_value('comptec'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('comptec'); ?></span>
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="exampleInputEmail1"><?php echo $this->lang->line('contact_person_phone'); ?></label>
-                                    <input id="contact_person_phone" name="contact_person_phone" placeholder="" type="text" class="form-control"  value="<?php echo set_value('contact_person_phone'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('contact_person_phone'); ?></span>
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="exampleInputEmail1"> <?php echo $this->lang->line('contact_person_email'); ?></label>
-                                    <input id="contact_person_email" name="contact_person_email" placeholder="" type="email" class="form-control"  value="<?php echo set_value('contact_person_email'); ?>" />
-                                    <span class="text-danger"><?php echo form_error('contact_person_email'); ?></span>
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="exampleInputEmail1">Détails</label>
-                                    <textarea class="form-control" id="description" name="description" placeholder="" rows="3" placeholder="Enter ..."><?php echo set_value('description'); ?></textarea>
-                                    <span class="text-danger"><?php echo form_error('description'); ?></span>
-                                </div>
-                            </div><!-- /.box-body -->
-                            <div class="box-footer">
-                                <button type="submit" class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
-                            </div>
-                        </form>
-                    </div>
-                </div><!--/.col (right) -->
-                <!-- left column -->
-            <?php } ?>
-            <div class="col-md-<?php
-            if ($this->rbac->hasPrivilege('clients', 'can_add')) {
-                echo "8";
-            } else {
-                echo "12";
-            }
-            ?>">
+            <div class="col-md-12">
                 <!-- general form elements -->
                 <div class="box box-primary" id="exphead">
+
                     <div class="box-header ptbnull">
                         <h3 class="box-title titlefix">Liste des clients</h3>
+                        <div class="box-tools pull-right pt3">
+                            <?php if ($this->rbac->hasPrivilege('clients', 'can_add')) { ?>
+                                <button type="button" class="btn btn-sm"
+                                        style="background: linear-gradient(135deg, #4a4a4a, #2e2e2e);
+                                        color: #fff;
+                                       border: none;
+                                       border-radius: 8px;
+                                       padding: 6px 14px;
+                                       font-weight: 500;
+                                       transition: 0.3s;"
+                                        onmouseover="this.style.background='#1a1a1a'"
+                                        onmouseout="this.style.background='linear-gradient(135deg, #4a4a4a, #2e2e2e)'"
+                                        data-toggle="modal"
+                                        data-target="#addClientModal">
+                                    <i class="fa fa-plus"></i> Ajouter un client
+                                </button>
+
+                            <?php } ?>
+                           <!-- <a class="btn btn-sm btn-primary" href="<?php echo base_url(); ?>admin/clients/import" autocomplete="off">
+                                <i class="fa fa-upload"></i> Importer des clients
+                            </a>-->
+                        </div>
                     </div><!-- /.box-header -->
-                    <div class="box-body  ">
+
+                    <div class="box-body">
+                        <?php if ($this->session->flashdata('msg')) { ?>
+                            <?php echo $this->session->flashdata('msg') ?>
+                        <?php } ?>
+                        <?php if (isset($error_message)) { echo "<div class='alert alert-danger'>" . $error_message . "</div>"; } ?>
+
                         <div class="mailbox-messages table-responsive">
-                            <div class="download_label">Liste des clients</div>
-                            <table class="table table-striped table-bordered table-hover example">
+                            <table class="table table-striped table-bordered table-hover example" style="width:100%">
                                 <thead>
                                 <tr>
-                                    <th>Nom</th>
-
-                                    <th>Téléphone</th>
+                                    <th>Code client</th>
+                                    <th>Client</th>
+                                    <th>Responsable</th>
+                                    <th>Contact</th>
                                     <th>Email</th>
+                                    <!--<th>NCC</th>-->
+                                    <th>Regime d'Imposition</th>
+                                    <th>Ville</th>
                                     <th><?php echo $this->lang->line('address'); ?></th>
                                     <th>Compte contribuable</th>
-
-
+                                    <th>Date</th>
                                     <th class="text-right no-print"><?php echo $this->lang->line('action'); ?></th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <?php if (empty($itemsupplierlist)) {
-                                    ?>
-
-                                    <?php
-                                } else {
-                                    $count = 1;
-                                    foreach ($itemsupplierlist as $supplier) {
-                                        ?>
+                                <?php if (!empty($itemsupplierlist)) {
+                                    foreach ($itemsupplierlist as $supplier) { ?>
                                         <tr>
+                                            <td><?php echo $supplier['code_client']; ?></td>
+                                            <td><?php echo $supplier['item_supplier'] ?></td>
+                                            <td><?php echo $supplier['contact_person_name'] ?></td>
+                                            <td><?php echo $supplier['phone'] ?></td>
+                                            <td><?php echo $supplier['email'] ?></td>
+                                           <!-- <td><?php echo $supplier['ncc'] ?></td>-->
+                                            <td><?php echo $supplier['regime_imposition'] ?></td>
+                                            <td><?php echo $supplier['ville'] ?></td>
+                                            <td><?php echo $supplier['address'] ?></td>
+                                            <td><?php echo $supplier['comptec'] ?></td>
+                                            <td>
+                                                <?php echo date("d/m/Y", strtotime($supplier['created_at'])); ?>
+                                            </td>
 
-
-                                            <!-- <td class="mailbox-name">
-
-                                                    <a href="#" data-toggle="popover" class="detail_popover" >
-                                                        <?php echo $supplier['item_supplier'] ?>
-                                                        <br>
-                                                    </a>
-                                                    <?php
-                                            if ($supplier['phone'] != "") {
-                                                ?>
-                                                        <i class="fa fa-phone-square"></i> <?php echo $supplier['phone'] ?>
-                                                        <br>
-                                                        <?php
-                                            }
-                                            ?>
-                                                    <?php
-                                            if ($supplier['email'] != "") {
-                                                ?>
-                                                        <i class="fa fa-envelope"></i> <?php echo $supplier['email'] ?>
-
-                                                        <?php
-                                            }
-                                            ?>
-
-                                                    <div class="fee_detail_popover" style="display: none">
-                                                        <?php
-                                            if ($supplier['description'] == "") {
-                                                ?>
-                                                            <p class="text text-danger"><?php echo $this->lang->line('no_description'); ?></p>
-                                                            <?php
-                                            } else {
-                                                ?>
-                                                            <p class="text text-info"><?php echo $supplier['description']; ?></p>
-                                                            <?php
-                                            }
-                                            ?>
-                                                    </div>
-                                                </td>-->
-                                            <td class="mailbox-name"><?php echo $supplier['item_supplier'] ?></td>
-
-                                            <td class="mailbox-name"><?php echo $supplier['phone'] ?></td>
-                                            <td class="mailbox-name"><?php echo $supplier['email'] ?></td>
-                                            <td class="mailbox-name"><?php echo $supplier['address'] ?></td>
-                                            <td class="mailbox-name"><?php echo $supplier['comptec'] ?></td>
-
-
-                                            <td class="mailbox-date pull-right no-print">
+                                            <td class="text-right no-print">
                                                 <?php if ($this->rbac->hasPrivilege('clients', 'can_edit')) { ?>
-                                                    <a data-placement="left" href="<?php echo base_url(); ?>admin/clients/edit/<?php echo $supplier['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
+                                                    <a href="<?php echo base_url(); ?>admin/clients/edit/<?php echo $supplier['id'] ?>" class="btn btn-default btn-xs" title="Modifier">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
                                                 <?php } if ($this->rbac->hasPrivilege('clients', 'can_delete')) { ?>
-                                                    <a data-placement="left" href="<?php echo base_url(); ?>admin/clients/delete/<?php echo $supplier['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
+                                                    <a href="<?php echo base_url(); ?>admin/clients/delete/<?php echo $supplier['id'] ?>" class="btn btn-default btn-xs" title="Supprimer" onclick="return confirm('Confirmer la suppression ?');">
                                                         <i class="fa fa-remove"></i>
                                                     </a>
                                                 <?php } ?>
                                             </td>
                                         </tr>
-                                        <?php
-                                    }
-                                    $count++;
-                                }
-                                ?>
-
+                                    <?php }
+                                } ?>
                                 </tbody>
-                            </table><!-- /.table -->
+                            </table>
                         </div><!-- /.mail-box-messages -->
                     </div><!-- /.box-body -->
                 </div>
             </div>
-
-            <!-- right column -->
-
-        </div>   <!-- /.row -->
+        </div>
     </section><!-- /.content -->
 </div>
-<script type="text/javascript">
-    $(document).ready(function () {
-        $("#btnreset").click(function () {
-            $("#form1")[0].reset();
-        });
-    });
 
-</script>
+<!-- MODAL AJOUT CLIENT -->
+<div class="modal fade" id="addClientModal" tabindex="-1" role="dialog" aria-labelledby="addClientModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form action="<?php echo site_url('admin/clients/create') ?>" id="clientForm" method="post">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="addClientModalLabel">Ajouter un nouveau client</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <?php echo $this->customlib->getCSRF(); ?>
+                    <?php if ($this->session->flashdata('msg')) { ?>
+                        <?php echo $this->session->flashdata('msg') ?>
+                    <?php } ?>
+                    <?php if (isset($error_message)) { echo "<div class='alert alert-danger'>" . $error_message . "</div>"; } ?>
+
+
+
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            <label>Client <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Nom du responsable</label>
+                            <input type="text" name="contact_person_name" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Téléphone <span class="text-danger">*</span></label>
+                            <input type="text" name="phone" class="form-control" required>
+                        </div>
+
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            <label>Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" required class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Ville</label>
+                            <input type="text" name="ville" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Compte contribuable</label>
+                            <input type="text" name="comptec" class="form-control">
+                        </div>
+                       <!-- <div class="col-md-4">
+                            <label>NCC</label>
+                            <input type="text" name="ncc" class="form-control">
+                        </div>-->
+                        <div class="col-md-4">
+                            <label>Regime d'Imposition</label>
+                            <input type="text" name="regime_imposition" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label>Adresse</label>
+                            <textarea name="address" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 
 <script>
-    $(document).ready(function () {
-        $('.detail_popover').popover({
-            placement: 'right',
-            trigger: 'hover',
-            container: 'body',
-            html: true,
-            content: function () {
-                return $(this).closest('td').find('.fee_detail_popover').html();
-            }
-        });
+    $(document).ready(function() {
+        emptyDatatable('book-list','data');
     });
+
+    ( function ( $ ) {
+        'use strict';
+        $(document).ready(function () {
+            initDatatable('book-list','admin/clients/index',[],[],100);
+        });
+    } ( jQuery ) )
 </script>
 
-<script type="text/javascript">
-    var base_url = '<?php echo base_url() ?>';
-
-
-</script>

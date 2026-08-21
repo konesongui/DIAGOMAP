@@ -1,7 +1,7 @@
 <table class="table table-striped">    
     <tr>
         <th class="border0"><?php echo $this->lang->line('purpose'); ?></th>
-        <td class="border0"><?php print_r($data['purpose']); ?></td>
+        <td class="border0"><?php print_r($data['projet']); ?></td>
         <th class="border0"><?php echo $this->lang->line('name'); ?></th>
         <td class="border0"><?php print_r($data['name']); ?></td>
     </tr>

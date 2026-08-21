@@ -8,20 +8,16 @@ var dtID = 'quoteDatatable',
         reject: 'admin/quoteitem/reject',
         validate: 'admin/quoteitem/validate',
         view: 'admin/quoteitem/view',
+        delete: 'admin/quoteitem/delete',
         edit: 'admin/quoteitem/edit',
         print: 'admin/quoteitem/print',
         sendEmail: 'admin/quoteitem/sendEmail',
+        duplicate: 'admin/quoteitem/duplicate',
+        setFilterMode: 'admin/quoteitem/setFilterMode', // NOUVEAU
+        getFilterMode: 'admin/quoteitem/getFilterMode'  // NOUVEAU
     };
 
 $(document).ready(function() {
-
-    // Filter the row by status ('active' field)
-    $(document).on('change', `#statusFilter`, function(e) {
-        // Desable default event
-        e.preventDefault();
-        quoteTable.ajax.reload(null, false); // Reload data
-    });
-
     // Configuration de base pour SweetAlert2
     const Toast = Swal.mixin({
         toast: true,
@@ -30,20 +26,97 @@ $(document).ready(function() {
         timer: 3000
     });
 
+    // Récupérer la préférence de filtre au chargement
+    let currentFilterMode = 'all';
+
+    // Fonction pour charger la préférence de filtre
+    function loadFilterPreference() {
+        $.ajax({
+            url: baseurl + remoteAJAXFunctions.getFilterMode,
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                if (response.filter_mode) {
+                    currentFilterMode = response.filter_mode;
+                    // Mettre à jour l'interface
+                    updateFilterUI(currentFilterMode);
+                    // Recharger le tableau avec le filtre
+                    if (quoteTable) {
+                        quoteTable.ajax.reload(null, false);
+                    }
+                }
+            }
+        });
+    }
+
+    // Fonction pour mettre à jour l'interface du filtre
+    function updateFilterUI(filterMode) {
+        $('.filter-toggle').removeClass('btn-primary').addClass('btn-default');
+        $(`.filter-toggle[data-filter="${filterMode}"]`).removeClass('btn-default').addClass('btn-primary');
+
+        // Mettre à jour le badge
+        var badgeHtml = filterMode == 'all'
+            ? '<i class="fa fa-eye"></i> Vue administrateur (tous les devis)'
+            : '<i class="fa fa-user"></i> Mes devis uniquement';
+
+        // Ajouter les badges de rôle si présents
+        if ($('.badge small').length > 0) {
+            var roleText = $('.badge small').first().text();
+            badgeHtml += ' <small>' + roleText + '</small>';
+        }
+
+        $('.badge').html(badgeHtml);
+        $('.badge').removeClass('bg-success bg-info')
+            .addClass(filterMode == 'all' ? 'bg-success' : 'bg-info');
+    }
+
+    // Gestionnaire pour le filtre toggle
+    $(document).on('click', '.filter-toggle', function(e) {
+        e.preventDefault();
+        var filterMode = $(this).data('filter');
+
+        // Sauvegarder la préférence
+        $.ajax({
+            url: baseurl + remoteAJAXFunctions.setFilterMode,
+            type: 'POST',
+            data: { filter_mode: filterMode },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    currentFilterMode = response.filter_mode;
+                    updateFilterUI(currentFilterMode);
+                    // Recharger le tableau
+                    if (quoteTable) {
+                        quoteTable.ajax.reload(null, false);
+                    }
+                }
+            }
+        });
+    });
+
+    // Filter the row by status
+    $(document).on('change', '#statusFilter', function(e) {
+        e.preventDefault();
+        if (quoteTable) {
+            quoteTable.ajax.reload(null, false);
+        }
+    });
+
     // Initialisation de DataTables
-    var quoteTable = $('.'+ dtID).DataTable({
+    var quoteTable = $('.' + dtID).DataTable({
         "processing": true,
         "serverSide": true,
         "ajax": {
             "url": baseurl + remoteAJAXFunctions.loadData,
             "type": "POST",
-            data: function(d) {
+            "data": function(d) {
                 d.status = $("#statusFilter").val();
+                d.filter_mode = currentFilterMode; // Ajouter le mode de filtre
             },
         },
         "columns": [
             { "data": "quote_number" },
-            { 
+            {
                 data: "customer",
                 render: function(data) {
                     return `<div>
@@ -52,8 +125,7 @@ $(document).ready(function() {
                     </div>`;
                 }
             },
-            
-            { 
+            {
                 data: "dates.quote_date",
                 render: function(data, type, row) {
                     return `<div>
@@ -62,27 +134,30 @@ $(document).ready(function() {
                     </div>`;
                 }
             },
-            { "data": "payment_terms",
-                render: function(data) {
-                    return `<div>
-                        <strong>${data}</strong><br>
-                    </div>`;
-                } 
-            },
-            { "data": "delivery_location",
-                render: function(data) {
-                    return `<div>
-                        <strong>${data}</strong><br>
-                    </div>`;
-                }
-            },
-            { "data": "dates.creation",
-                render: function(data) {
-                    return `<div>
-                        <strong>${data}</strong><br>
-                    </div>`;
-                }
-            },
+            //{
+              //  "data": "payment_terms",
+                //render: function(data) {
+                    //return `<div>
+                  //      <strong>${data || 'Non défini'}</strong><br>
+                //    </div>`;
+              //  }
+            //},
+           // {
+                //"data": "delivery_location",
+                //render: function(data) {
+                   // return `<div>
+                  //      <strong>${data || 'Non défini'}</strong><br>
+                //    </div>`;
+              //  }
+            //},
+           // {
+                //"data": "dates.creation",
+                //render: function(data) {
+                   // return `<div>
+                 //       <strong>${data}</strong><br>
+               //     </div>`;
+             //   }
+           // },
             {
                 data: "amount",
                 render: function(data) {
@@ -98,6 +173,7 @@ $(document).ready(function() {
                     return `<span class="label ${data.class}">${data.label}</span>`;
                 }
             },
+            { "data": "user_name" },
             {
                 data: null,
                 orderable: false,
@@ -111,7 +187,7 @@ $(document).ready(function() {
                             <i class="fa fa-ellipsis-v"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu${row.id}">`;
-                    
+
                     // Option Voir
                     actions += `
                             <li>
@@ -119,17 +195,38 @@ $(document).ready(function() {
                                     <i class="fa fa-eye me-2"></i> Voir
                                 </a>
                             </li>`;
-                    
-                    // Option Modifier (seulement si en attente)
-                    if(parseInt(row.status.code) === 1) {
+
+                    // Option Dupliquer (pour tous sauf brouillon)
+                    if(parseInt(row.status.code) !== 0) {
                         actions += `
                             <li>
-                                <a class="dropdown-item edit-quote" href="#" data-id="${row.id}">
-                                    <i class="fa fa-pencil me-2"></i> Modifier
+                                <a class="dropdown-item duplicate-quote" href="#" data-id="${row.id}" data-reference="${row.quote_number}">
+                                    <i class="fa fa-copy me-2"></i> Dupliquer
                                 </a>
                             </li>`;
                     }
-                    
+
+                    // Option Modifier (seulement si en attente)
+                    // Option Modifier (pour les devis en attente ou validés)
+                    if(parseInt(row.status.code) === 1 || parseInt(row.status.code) === 2) {
+                        actions += `
+                        <li>
+                            <a class="dropdown-item edit-quote" href="#" data-id="${row.id}" data-status="${row.status.code}">
+                                <i class="fa fa-pencil me-2"></i> Modifier
+                            </a>
+                        </li>`;
+                    }
+
+                    // Option Supprimer (seulement si en attente)
+                    if(parseInt(row.status.code) === 1) {
+                        actions += `
+                            <li>
+                                <a class="dropdown-item delete-quote" href="#" data-id="${row.id}">
+                                    <i class="fa fa-trash me-2"></i> Supprimer
+                                </a>
+                            </li>`;
+                    }
+
                     // Option Imprimer
                     actions += `
                             <li>
@@ -137,104 +234,240 @@ $(document).ready(function() {
                                     <i class="fa fa-print me-2"></i> Imprimer
                                 </a>
                             </li>`;
-                    
+
                     // Option Envoyer par email
-                    actions += `
+                    if (row.customer && row.customer.email) {
+                        actions += `
                             <li>
                                 <a class="dropdown-item send-quote" href="#" data-id="${row.id}">
                                     <i class="fa fa-envelope-o me-2"></i> Envoyer par email
                                 </a>
                             </li>`;
-                    
+                    }
+
+                    // Options Valider/Rejeter (uniquement pour les devis en attente)
                     // Options Valider/Rejeter (uniquement pour les devis en attente)
                     if(parseInt(row.status.code) === 1) {
+                        actions += `<li><hr class="dropdown-divider"></li>`;
+                        // Vérifier si l'utilisateur a la permission de valider
+                        if (typeof userCanValidate !== 'undefined' && userCanValidate) {
+                            actions += `
+            <li>
+                <a class="dropdown-item validate-quote" href="#" data-id="${row.id}">
+                    <i class="fa fa-check me-2"></i> Valider
+                </a>
+            </li>`;
+                        }
                         actions += `
-                            <li>
-                                <a class="dropdown-item validate-quote" href="#" data-id="${row.id}">
-                                    <i class="fa fa-check me-2"></i> Valider
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item reject-quote" href="#" data-id="${row.id}">
-                                    <i class="fa fa-times me-2"></i> Rejeter
-                                </a>
-                            </li>`;
+        <li>
+            <a class="dropdown-item reject-quote" href="#" data-id="${row.id}">
+                <i class="fa fa-times me-2"></i> Rejeter
+            </a>
+        </li>`;
                     }
-                    
+
+
                     actions += `</ul></div>`;
                     return actions;
                 }
             }
         ],
-        "order": [[3, "desc"]],
+        "order": [[0, "desc"]],
         "language": {
             "url": baseurl + "assets/js/french.json"
         },
         "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
-               "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-5'i><'col-sm-7'p>>",
         "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
-        "pageLength": 25
+        "pageLength": 25,
+        "initComplete": function() {
+            // Charger la préférence de filtre après l'initialisation
+            loadFilterPreference();
+        }
     });
 
     // Fonction pour rafraîchir la table
     function refreshTable() {
-        quoteTable.ajax.reload(null, false);
+        if (quoteTable) {
+            quoteTable.ajax.reload(null, false);
+        }
     }
 
-
     // Voir un devis
-    $('.' + dtID).on('click', '.view-quote', function() {
+    $('.' + dtID).on('click', '.view-quote', function(e) {
+        e.preventDefault();
         var quoteId = $(this).data('id');
         window.location.href = base_url + remoteAJAXFunctions.view + '/' + quoteId;
     });
 
-
-    
-
-    // Voir un devis
-    // $('.' + dtID).on('click', '.print-printWith', function() {
-    //     var quoteId = $(this).data('id');
-    //     // console.log(quoteId);
-    //     window.location.href = base_url +'/admin/quoteitem/printWithMPDF/' + quoteId;
-    // });
-
-    // Modifier un devis
-    $('.' + dtID).on('click', '.edit-quote', function() {
+    // Supprimer un devis - AVEC CONFIRMATION
+    $('.' + dtID).on('click', '.delete-quote', function(e) {
+        e.preventDefault();
         var quoteId = $(this).data('id');
-        window.location.href = base_url + remoteAJAXFunctions.edit + '/' + quoteId;
-    });
 
-
-    // Rejeter un devis
-    $('.' + dtID).on('click', '.validate-quote', function() {
-        var quoteId = $(this).data('id');
-        
         Swal.fire({
-            title: 'Confirmer la validation',
-            text: "Voulez-vous vraiment valider ce devis ?",
+            title: 'Confirmer la suppression',
+            text: "Voulez-vous vraiment supprimer ce devis ? Cette action est irréversible.",
             icon: 'warning',
-            input: 'text',
-            inputPlaceholder: 'Numéro de bon de commande',
-            inputAttributes: {
-                'aria-label': 'Numéro de bon de commande'
-            },
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Oui, valider',
+            confirmButtonText: 'Oui, supprimer',
             cancelButtonText: 'Annuler'
         }).then((result) => {
             if (result.isConfirmed) {
-                if (!result.value.trim()) {
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Veuillez saisir le numéro de bon de commande'
-                    });
-                    return;
-                }
+                Swal.fire({
+                    title: 'Suppression en cours...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
-                // Afficher l'indicateur de chargement
+                $.ajax({
+                    url: base_url + remoteAJAXFunctions.delete + '/' + quoteId,
+                    type: 'POST',
+                    data: {
+                        id: quoteId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        Swal.close();
+                        if(response.status == "success") {
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Devis supprimé avec succès'
+                            });
+                            refreshTable();
+                        } else {
+                            Toast.fire({
+                                icon: 'error',
+                                title: response.message || 'Erreur lors de la suppression'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Erreur lors de la suppression: ' + (xhr.responseJSON?.message || error)
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Modifier un devis
+    $('.' + dtID).on('click', '.edit-quote', function(e) {
+        e.preventDefault();
+        const quoteId = $(this).data('id');
+        const statusCode = $(this).data('status');
+
+        if (parseInt(statusCode) === 1) {
+            Swal.fire({
+                title: 'Attention',
+                text: "Ce devis est en attente de validation. Voulez-vous vraiment le modifier ?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Oui, modifier',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = base_url + remoteAJAXFunctions.edit + '/' + quoteId;
+                }
+            });
+        } else {
+            window.location.href = base_url + remoteAJAXFunctions.edit + '/' + quoteId;
+        }
+    });
+
+    // Dupliquer un devis
+    $('.' + dtID).on('click', '.duplicate-quote', function(e) {
+        e.preventDefault();
+        const quoteId = $(this).data('id');
+        const reference = $(this).data('reference');
+
+        Swal.fire({
+            title: 'Dupliquer le devis',
+            html: `Voulez-vous créer une copie du devis <strong>${reference}</strong> ?<br>
+              <small>Un nouveau devis sera créé avec les mêmes informations.</small>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, dupliquer',
+            cancelButtonText: 'Annuler',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                return $.ajax({
+                    url: base_url + remoteAJAXFunctions.duplicate + '/' + quoteId,
+                    type: 'POST',
+                    dataType: 'json'
+                }).then(response => {
+                    if (!response.success) {
+                        throw new Error(response.message || 'Erreur lors de la duplication');
+                    }
+                    return response;
+                }).catch(error => {
+                    Swal.showValidationMessage(`Erreur: ${error.message}`);
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const response = result.value;
+
+                Swal.fire({
+                    title: 'Succès !',
+                    html: `Devis dupliqué avec succès.<br>
+                      <small>Nouvelle référence: <strong>${response.new_reference}</strong></small>`,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: 'Modifier le nouveau devis',
+                    cancelButtonText: 'Rester sur la liste'
+                }).then((editResult) => {
+                    if (editResult.isConfirmed) {
+                        window.location.href = base_url + 'admin/quoteitem/edit/' + response.new_quote_id;
+                    } else {
+                        refreshTable();
+                    }
+                });
+            }
+        });
+    });
+
+    // Valider un devis
+    $('.' + dtID).on('click', '.validate-quote', function(e) {
+        e.preventDefault();
+        var quoteId = $(this).data('id');
+
+        Swal.fire({
+            title: 'Confirmer la validation',
+            text: "Voulez-vous vraiment valider ce devis ?",
+            icon: 'question',
+            input: 'text',
+            inputPlaceholder: 'Numéro de bon de commande',
+            inputAttributes: {
+                'aria-label': 'Numéro de bon de commande',
+                'required': 'required'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, valider',
+            cancelButtonText: 'Annuler',
+            preConfirm: (orderNumber) => {
+                if (!orderNumber || !orderNumber.trim()) {
+                    Swal.showValidationMessage('Veuillez saisir le numéro de bon de commande');
+                    return false;
+                }
+                return orderNumber;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
                 Swal.fire({
                     title: 'Validation en cours...',
                     allowOutsideClick: false,
@@ -244,11 +477,11 @@ $(document).ready(function() {
                 });
 
                 $.ajax({
-                    url: base_url + remoteAJAXFunctions.validate + '/' + quoteId,
+                    url: base_url + remoteAJAXFunctions.validate,
                     type: 'POST',
                     data: {
-                        order_number: result.value,
-                        id: quoteId
+                        id: quoteId,
+                        order_number: result.value
                     },
                     dataType: 'json',
                     success: function(response) {
@@ -266,11 +499,11 @@ $(document).ready(function() {
                             });
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function(xhr) {
                         Swal.close();
                         Toast.fire({
                             icon: 'error',
-                            title: 'Erreur lors de la validation: ' + (xhr.responseJSON?.message || error)
+                            title: xhr.responseJSON?.message || 'Erreur lors de la validation'
                         });
                     }
                 });
@@ -278,11 +511,11 @@ $(document).ready(function() {
         });
     });
 
-
     // Rejeter un devis
-    $('.' + dtID).on('click', '.reject-quote', function() {
+    $('.' + dtID).on('click', '.reject-quote', function(e) {
+        e.preventDefault();
         var quoteId = $(this).data('id');
-        
+
         Swal.fire({
             title: 'Confirmer le rejet',
             text: "Voulez-vous vraiment rejeter ce devis ?",
@@ -290,24 +523,23 @@ $(document).ready(function() {
             input: 'textarea',
             inputPlaceholder: 'Motif du rejet',
             inputAttributes: {
-                'aria-label': 'Motif du rejet'
+                'aria-label': 'Motif du rejet',
+                'required': 'required'
             },
             showCancelButton: true,
-            confirmButtonColor: '#d33',
+            confirmButtonColor: '#dc3545',
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Oui, rejeter',
-            cancelButtonText: 'Annuler'
+            cancelButtonText: 'Annuler',
+            preConfirm: (reason) => {
+                if (!reason || !reason.trim()) {
+                    Swal.showValidationMessage('Veuillez saisir un motif de rejet');
+                    return false;
+                }
+                return reason;
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                if (!result.value.trim()) {
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Veuillez saisir un motif de rejet'
-                    });
-                    return;
-                }
-
-                // Afficher l'indicateur de chargement
                 Swal.fire({
                     title: 'Rejet en cours...',
                     allowOutsideClick: false,
@@ -317,11 +549,11 @@ $(document).ready(function() {
                 });
 
                 $.ajax({
-                    url: base_url + remoteAJAXFunctions.reject + '/' + quoteId,
+                    url: base_url + remoteAJAXFunctions.reject,
                     type: 'POST',
                     data: {
-                        reason: result.value,
-                        id: quoteId
+                        id: quoteId,
+                        reason: result.value
                     },
                     dataType: 'json',
                     success: function(response) {
@@ -339,11 +571,11 @@ $(document).ready(function() {
                             });
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function(xhr) {
                         Swal.close();
                         Toast.fire({
                             icon: 'error',
-                            title: 'Erreur lors du rejet: ' + (xhr.responseJSON?.message || error)
+                            title: xhr.responseJSON?.message || 'Erreur lors du rejet'
                         });
                     }
                 });
@@ -351,14 +583,11 @@ $(document).ready(function() {
         });
     });
 
-    // Imprimer une facture
+    // Imprimer un devis
     $('.' + dtID).on('click', '.print-quote', function(e) {
-        // console.log('print-quote');
         e.preventDefault();
         var quoteId = $(this).data('id');
 
-        // console.log(quoteId);
-        
         if(quoteId > 0) {
             Swal.fire({
                 title: 'Chargement...',
@@ -377,7 +606,15 @@ $(document).ready(function() {
                 dataType: "JSON",
                 success: function(response) {
                     Swal.close();
-                    Popup(response.page);
+                    if (response.status === 'error') {
+                        Swal.fire({
+                            title: 'Erreur',
+                            text: response.message,
+                            icon: 'error'
+                        });
+                    } else {
+                        Popup(response.page);
+                    }
                 },
                 error: function(xhr) {
                     Swal.close();
@@ -397,6 +634,63 @@ $(document).ready(function() {
         }
     });
 
+    // Envoyer par email
+    $('.' + dtID).on('click', '.send-quote', function(e) {
+        e.preventDefault();
+        var quoteId = $(this).data('id');
+
+        Swal.fire({
+            title: 'Envoi du devis par email',
+            text: "Voulez-vous envoyer ce devis par email ?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, envoyer',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Envoi en cours...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: base_url + remoteAJAXFunctions.sendEmail,
+                    type: 'POST',
+                    data: {
+                        id: quoteId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        Swal.close();
+                        if(response.status == "success") {
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Devis envoyé avec succès'
+                            });
+                        } else {
+                            Toast.fire({
+                                icon: 'error',
+                                title: response.message || 'Erreur lors de l\'envoi'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        Toast.fire({
+                            icon: 'error',
+                            title: xhr.responseJSON?.message || 'Erreur lors de l\'envoi'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
     // Fonction pour imprimer un devis
     function Popup(data) {
         try {
@@ -408,11 +702,11 @@ $(document).ready(function() {
                 'left': '-9999px'
             });
             $("body").append(frame1);
-            
-            var frameDoc = frame1[0].contentWindow ? frame1[0].contentWindow : 
-                          frame1[0].contentDocument.document ? frame1[0].contentDocument.document : 
-                          frame1[0].contentDocument;
-            
+
+            var frameDoc = frame1[0].contentWindow ? frame1[0].contentWindow :
+                frame1[0].contentDocument.document ? frame1[0].contentDocument.document :
+                    frame1[0].contentDocument;
+
             frameDoc.document.open();
             frameDoc.document.write(`
                 <!DOCTYPE html>
@@ -421,7 +715,6 @@ $(document).ready(function() {
                     <title>Impression devis</title>
                     <meta charset="utf-8">
                     <style>
-                        /* Reset et base */
                         body {
                             margin: 0;
                             padding: 0;
@@ -431,22 +724,17 @@ $(document).ready(function() {
                             color: #000;
                         }
                         
-                        /* Configuration pour l'impression A4 */
                         @page {
                             size: A4;
                             margin: 15mm 10mm;
-                            @top-center { content: element(pageHeader); }
-                            @bottom-center { content: element(pageFooter); }
                         }
                         
-                        /* Force l'impression des couleurs et images */
                         * {
                             -webkit-print-color-adjust: exact !important;
                             color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
                         
-                        /* Dimensions A4 en pixels (approx. 210mm x 297mm) */
                         .page-a4 {
                             width: 210mm;
                             margin: 0 auto;
@@ -454,15 +742,12 @@ $(document).ready(function() {
                             box-sizing: border-box;
                             position: relative;
                             background: white;
-                            box-shadow: 0 0 5px rgba(0,0,0,0.1);
                         }
                         
-                        /* Pour éviter les coupures malheureuses */
                         table, img, div {
                             page-break-inside: avoid;
                         }
                         
-                        /* Gestion des sauts de page */
                         .page-break {
                             page-break-after: always;
                         }
@@ -481,14 +766,8 @@ $(document).ready(function() {
                                 box-shadow: none;
                             }
                             
-                            /* Masquer les éléments inutiles à l'impression */
                             .no-print, .no-print * {
                                 display: none !important;
-                            }
-                            
-                            /* Style d'impression spécifique */
-                            .print-only {
-                                display: block !important;
                             }
                         }
                     </style>
@@ -498,99 +777,37 @@ $(document).ready(function() {
                         ${data}
                     </div>
                     <script>
-                        // Ajustements finaux avant impression
                         window.onload = function() {
-                            // Forcer le chargement des polices et images
                             setTimeout(function() {
                                 window.focus();
                                 window.print();
                             }, 500);
                         };
-                    </script>
+                    <\/script>
                 </body>
                 </html>
             `);
             frameDoc.document.close();
-            
+
             setTimeout(function() {
                 try {
                     window.frames["frame1"].focus();
                     window.frames["frame1"].print();
                 } catch (e) {
                     console.error("Erreur lors de l'impression:", e);
-                    Swal.fire({
-                        title: 'Erreur',
-                        text: 'Erreur lors de l\'impression. Veuillez réessayer.',
-                        icon: 'error'
-                    });
                 } finally {
                     setTimeout(function() {
                         frame1.remove();
                     }, 1000);
                 }
             }, 1000);
-            
+
             return true;
         } catch (e) {
             console.error("Erreur lors de la création de la fenêtre d'impression:", e);
-            Swal.fire({
-                title: 'Erreur',
-                text: 'Erreur lors de la préparation de l\'impression. Veuillez réessayer.',
-                icon: 'error'
-            });
             return false;
         }
+
+
     }
-
-
-    
-    // Confirmation avant envoi par email
-    $('.' + dtID).on('click', '.send-quote', function(e) {
-        e.preventDefault();
-        var quoteId = $(this).data('id');
-        
-        Swal.fire({
-            title: 'Envoi du devis par email',
-            text: "Voulez-vous envoyer ce devis par email ?",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Oui, envoyer',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: base_url + remoteAJAXFunctions.sendEmail + '/' + quoteId,
-                    type: 'POST',
-                    data: {
-                        id: quoteId
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if(response.status == "success") {
-                            Toast.fire({
-                                icon: 'success',
-                                title: 'Devis envoyé avec succès'
-                            });
-                        } else {
-                            Toast.fire({
-                                icon: 'error',
-                                title: response.message || 'Erreur lors de l\'envoi'
-                            });
-                        }
-                    },
-                    error: function() {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'Erreur lors de l\'envoi'
-                        });
-                    }
-                });
-            }
-        });
-    });
-
-
-
 });

@@ -3,16 +3,14 @@
 
 // Set all the required variables for the following methods
 var dtID = 'stockEntryDatatable',
-  formID = 'stockEntryForm',
-  dtButtons = {
-      set: 'submitBtn',
-  },
-  remoteAJAXFunctions = {
-      loadData: 'admin/stockentry/data',
-      add: 'admin/stockentry/add',
-  };
-
-
+    formID = 'stockEntryForm',
+    dtButtons = {
+        set: 'submitBtn',
+    },
+    remoteAJAXFunctions = {
+        loadData: 'admin/stockentry/data',
+        add: 'admin/stockentry/add',
+    };
 
 $(document).ready(function() {
     // Initialisation du datepicker
@@ -43,16 +41,16 @@ $(document).ready(function() {
         $('.repeater-item').each(function() {
             const $item = $(this);
             const category = $item.find('.item-category').val();
-            const itemId = $item.find('.item-select').val();
+            const itemName = $item.find('.item-name').val();
             const quantity = $item.find('.quantity').val();
 
-            if (category || itemId || quantity) {
+            if (category || itemName || quantity) {
                 hasItems = true;
                 if (!category) {
                     errors.push('La catégorie est obligatoire pour tous les articles');
                     isValid = false;
                 }
-                if (!itemId) {
+                if (!itemName) {
                     errors.push('L\'article est obligatoire pour tous les articles');
                     isValid = false;
                 }
@@ -71,36 +69,69 @@ $(document).ready(function() {
         return { isValid, errors };
     }
 
-    // Chargement initial des articles pour la première ligne
-    var firstCategory = $('.repeater-item:first').find('.item-category').val();
-    if (firstCategory) {
-        populateItem($('.repeater-item:first').find('.item-select'), firstCategory);
-    }
-
-    // Fonction pour peupler les articles selon la catégorie
-    function populateItem(itemSelect, categoryId) {
-        if (categoryId) {
-            var container = $(itemSelect).closest('.repeater-item');
-            container.find('.item-select').html("<option value=''>Chargement...</option>");
-            
+// Fonction pour charger les articles d'une catégorie
+    function loadItemsByCategory(categoryName, $datalist, index) {
+        if (categoryName) {
             $.ajax({
-                type: "GET",
-                url: base_url + "admin/itemstock/getItemByCategory",
-                data: {'item_category_id': categoryId},
+                type: "POST",
+                url: base_url + "admin/stockentry/get_items_by_category_name", // Correction de l'URL
+                data: {'category_name': categoryName},
                 dataType: "json",
                 success: function (data) {
-                    var options = "<option value=''>Sélectionner</option>";
-                    $.each(data, function (i, obj) {
-                        options += "<option value='" + obj.id + "' data-unit='" + (obj.unit || '') + "' data-price='" + (obj.unit_price || 0) + "'>" + obj.name + "</option>";
-                    });
-                    container.find('.item-select').html(options);
+                    var options = '';
+                    if (data.length > 0) {
+                        $.each(data, function (i, obj) {
+                            options += '<option value="' + obj.name + '" data-unit="' + (obj.unit || '') + '" data-price="' + (obj.unit_price || 0) + '" data-id="' + obj.id + '">';
+                        });
+                    } else {
+                        options = '<option value="">Aucun article trouvé. Vous pouvez en créer un nouveau en tapant directement.</option>';
+                    }
+                    $datalist.html(options);
                 },
                 error: function(xhr, status, error) {
                     console.error('Erreur lors du chargement des articles:', error);
-                    container.find('.item-select').html("<option value=''>Erreur de chargement</option>");
+                    console.log('URL appelée:', base_url + "admin/stockentry/get_items_by_category_name");
+                    $datalist.html('<option value="">Erreur de chargement</option>');
                 }
             });
+        } else {
+            $datalist.html('<option value="">Sélectionnez d\'abord une catégorie</option>');
         }
+    }
+
+// Fonction pour récupérer les détails d'un article
+    function getItemDetails(itemName, categoryName, $row) {
+        $.ajax({
+            type: "POST",
+            url: base_url + "admin/stockentry/get_item_details", // Correction de l'URL
+            data: {
+                'item_name': itemName,
+                'category_name': categoryName
+            },
+            dataType: "json",
+            success: function (response) {
+                if (response.status === 'success') {
+                    $row.find('.unit').val(response.unit || '');
+                    $row.find('.price').val(response.price || '');
+                    $row.find('.available-qty').text(response.quantity || 0);
+
+                    // Stocker l'ID de l'article pour la soumission
+                    $row.find('.item-name').data('item-id', response.item_id);
+
+                    calculateItemTotal($row);
+                } else {
+                    // Article nouveau, laisser l'utilisateur saisir les infos
+                    $row.find('.unit').val('');
+                    $row.find('.price').val('');
+                    $row.find('.available-qty').text('0');
+                    $row.find('.item-name').data('item-id', 'new');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Erreur lors de la récupération des détails de l\'article:', error);
+                console.log('URL appelée:', base_url + "admin/stockentry/get_item_details");
+            }
+        });
     }
 
     // Calcul du total pour un article
@@ -125,10 +156,21 @@ $(document).ready(function() {
 
     // Ajout d'un nouvel article
     $('#add-item').click(function() {
+        var index = $('.repeater-item').length;
         var newItem = $('.repeater-item').first().clone();
-        newItem.find('select').val('');
         newItem.find('input').val('');
         newItem.find('.total-price').text('0.00');
+        newItem.find('.available-qty').text('0');
+        newItem.find('.item-name').attr('list', 'item-list-' + index);
+        newItem.find('.item-name').data('item-id', '');
+
+        // Créer un nouveau datalist pour cette ligne
+        var newDatalist = $('<datalist>', {
+            id: 'item-list-' + index,
+            class: 'item-datalist'
+        }).html('<option value="">Sélectionnez d\'abord une catégorie</option>');
+
+        newItem.find('.item-name').after(newDatalist);
         $('#items-container').append(newItem);
     });
 
@@ -142,21 +184,45 @@ $(document).ready(function() {
         }
     });
 
-    // Changement de catégorie d'article
+    // Changement de catégorie
     $(document).on('change', '.item-category', function() {
-        var itemSelect = $(this).closest('.repeater-item').find('.item-select');
-        populateItem(itemSelect, $(this).val());
+        var $row = $(this).closest('.repeater-item');
+        var categoryName = $(this).val();
+        var $itemName = $row.find('.item-name');
+        var index = $('.repeater-item').index($row);
+        var $datalist = $row.find('.item-datalist');
+
+        if (!$datalist.length) {
+            $datalist = $('<datalist>', {
+                id: 'item-list-' + index,
+                class: 'item-datalist'
+            });
+            $itemName.after($datalist);
+            $itemName.attr('list', 'item-list-' + index);
+        }
+
+        if (categoryName) {
+            loadItemsByCategory(categoryName, $datalist, index);
+        } else {
+            $datalist.html('<option value="">Sélectionnez d\'abord une catégorie</option>');
+        }
+
+        $itemName.val('');
+        $row.find('.unit').val('');
+        $row.find('.price').val('');
+        $row.find('.available-qty').text('0');
+        calculateItemTotal($row);
     });
 
-    // Changement d'article sélectionné
-    $(document).on('change', '.item-select', function() {
-        var selectedOption = $(this).find('option:selected');
-        var container = $(this).closest('.repeater-item');
-        
-        container.find('.unit').val(selectedOption.data('unit') || '');
-        container.find('.price').val(selectedOption.data('price') || '');
-        
-        calculateItemTotal(container);
+    // Changement d'article
+    $(document).on('change', '.item-name', function() {
+        var $row = $(this).closest('.repeater-item');
+        var itemName = $(this).val();
+        var categoryName = $row.find('.item-category').val();
+
+        if (itemName && categoryName) {
+            getItemDetails(itemName, categoryName, $row);
+        }
     });
 
     // Changement de quantité ou prix
@@ -168,7 +234,7 @@ $(document).ready(function() {
     // Soumission du formulaire
     $(document).on('click', "#"+dtButtons.set, function(e) {
         e.preventDefault();
-        
+
         var $form = $("#"+formID);
         var $submitBtn = $(this);
 
@@ -181,7 +247,7 @@ $(document).ready(function() {
 
         Swal.fire({
             title: 'Confirmation',
-            text: "Voulez-vous enregistrer cette entrée de stock, il n'est possible d'annuler ou de modifier l'enregistrement ?",
+            text: "Voulez-vous enregistrer cette entrée de stock ?",
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Oui, enregistrer',
@@ -207,7 +273,7 @@ $(document).ready(function() {
                     },
                     error: function(xhr, status, error) {
                         console.error('Erreur AJAX:', error);
-                        Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.', 'error');
+                        Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement.', 'error');
                         $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Enregistrer');
                     }
                 });

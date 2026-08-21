@@ -1,20 +1,17 @@
-<?php
-$conn = new mysqli("localhost","root","","diao");
-$sql = "SELECT SUM(amount) AS total_amount  FROM expenses Where deleted =1 ";
 
-
-$result = $conn->query($sql);
-
-
-?>
 
 <?php
 $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 ?>
+
 <style type="text/css">
     /*REQUIRED*/
     .carousel-row {
         margin-bottom: 10px;
+    }
+    .text-primary{
+        color: black;
+        text-transform: uppercase;
     }
     .slide-row {
         padding: 0;
@@ -138,10 +135,8 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                     <div class="">
                         <div class="box-header ptbnull"></div>
                         <div class="box-header ptbnull">
-                            <h3 class="box-title titlefix"><i class="fa fa-money"></i> <?php echo $this->lang->line('expense') . " " . $this->lang->line('report'); ?></h3>
-                            <?php while ($row = $result->fetch_object()): ?>
-                                <h3 class="box-title titlefix" style="margin-left: 200px"> <?php echo $this->lang->line(''); ?>  <b> SOMME FINAL : <?php echo $row->total_amount ?>  FCFA </b></h3>
-                            <?php endwhile; ?>
+                            <h3 class="box-title titlefix"><i class="fa fa-money"></i> <b style="color: black">DEPENSES</b></h3>
+
                         </div>
                         <div class="box-body table-responsive">
                             <div class="download_label">
@@ -162,13 +157,13 @@ $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
                             $this->customlib->get_postmessage();   ?>">
                                 <thead>
                                 <tr>
-                                    <th>Référence</th>
-                                    <th><?php echo $this->lang->line('date'); ?></th>
-                                    <th>Designations</th>
+                                    <!--<th class="text text-left text-primary">Référence</th>-->
+                                    <th class="text text-left text-primary"><?php echo $this->lang->line('date'); ?></th>
+                                    <th class="text text-left text-primary">Designations</th>
 
 
 
-                                    <th>Users</th>
+                                    <th class="text text-left text-primary">Users</th>
                                     <!-- <th><?php echo $this->lang->line('expense_head'); ?></th>-->
 
 

@@ -95,6 +95,7 @@ $(document).ready(function() {
                     </div>`;
                 }
             },
+
             {
                 data: "status",
                 render: function(data) {

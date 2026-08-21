@@ -143,3 +143,52 @@ CREATE TABLE `com_payments` (
   PRIMARY KEY (`id`),
   KEY `invoice_id` (`invoice_id`)
 );
+
+
+
+//INCOME
+<?php
+$conn = new mysqli("localhost","root","","diago");
+$sql1 = "SELECT SUM(amount) AS total_amount  FROM income Where deleted = 1 ";
+
+
+
+$result1 = $conn->query($sql1);
+
+
+
+?>
+
+
+<?php
+$conn = new mysqli("localhost","root","","diago");
+$sql = "SELECT SUM(amount) AS total_amount_r  FROM income_processing Where amount >0 and deleted = 1 ";
+
+$result = $conn->query($sql);
+
+
+  <?php while ($row = $result->fetch_object()): ?>
+                                <?php while ($row1 = $result1->fetch_object()): ?>
+                                    <h3 class="box-title titlefix" style="margin-left: 200px"> <?php echo $this->lang->line(''); ?>  <b> SOMME FINAL : <?php echo $row1->total_amount + $row->total_amount_r ?>  FCFA </b></h3>
+                                <?php endwhile; ?>
+                            <?php endwhile; ?>
+?>
+//ENDR
+
+//EXPENSES
+
+<?php
+$conn = new mysqli("localhost","root","","diago");
+$sql = "SELECT SUM(amount) AS total_amount  FROM expenses Where deleted > 0";
+
+
+$result = $conn->query($sql);
+
+
+  <?php while ($row = $result->fetch_object()): ?>
+                                <h3 class="box-title titlefix" style="margin-left: 200px"> <?php echo $this->lang->line(''); ?>  <b> SOMME FINAL : <?php echo $row->total_amount ?>  FCFA </b></h3>
+                            <?php endwhile; ?>
+
+?>
+
+//ENDR

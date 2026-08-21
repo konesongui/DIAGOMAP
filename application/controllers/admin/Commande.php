@@ -10,7 +10,7 @@ class Commande extends Admin_Controller {
         $this->load->helper('form');
     }
 
-    public function index() {
+    public function index_() {
         if (!$this->rbac->hasPrivilege('vente', 'can_view')) {
             access_denied();
         }
@@ -20,6 +20,19 @@ class Commande extends Admin_Controller {
         $data['title_list'] = 'Recent Issue items';
         $this->load->view('layout/header', $data);
         $this->load->view('admin/commande/commandeList', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+    public function index() {
+        if (!$this->rbac->hasPrivilege('vente', 'can_view')) {
+            access_denied();
+        }
+        $this->session->set_userdata('top_menu', 'Commerciale');
+        $this->session->set_userdata('sub_menu', 'Commande/vente_table');
+        $data['title'] = 'Add Issue item';
+        $data['title_list'] = 'Recent Issue items';
+        $this->load->view('layout/header', $data);
+        $this->load->view('admin/vente_table/tableList', $data);
         $this->load->view('layout/footer', $data);
     }
 

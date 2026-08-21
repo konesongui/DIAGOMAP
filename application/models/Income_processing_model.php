@@ -14,15 +14,35 @@ class Income_processing_model extends My_Model
         parent::__construct();
     }
 
+
+    public function get_appro_by_id($id)
+    {
+        return $this->db->get_where('income_processing', ['id' => $id])->row_array();
+    }
+
+
+    public function deduire_montant_income($income_id, $montant)
+    {
+        $this->db->where('id', $income_id);
+        $income = $this->db->get('income')->row();
+
+        if ($income) {
+            $nouveau_montant = $income->amount_re - $montant;
+
+            $this->db->where('id', $income_id);
+            $this->db->update('income', ['amount_re' => $nouveau_montant]);
+        }
+    }
+
     public function delete_increase($id)
     {
 
         $this->db->trans_start(); # Starting Transaction
         $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
         //=======================Code Start===========================
-        $this->db->where('id', $id)
-        ->set('deleted', '0');
-        $this->db->update('income_processing');
+        $this->db->where('id', $id);
+
+        $this->db->delete('income_processing');
 
         $message   = DELETE_RECORD_CONSTANT . " On  Increase   id " . $id;
         $action    = "Delete";

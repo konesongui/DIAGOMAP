@@ -1,0 +1,29 @@
+{
+    "menus": [
+        {
+            "title": "Similique dolor eum",
+            "page_url": "Nobis ad sunt magna",
+            "ext_url": false,
+            "open_new_tab": true
+        },
+        {
+            "title": "Amet possimus arch",
+            "page_url": "Nesciunt rerum recu",
+            "ext_url": true,
+            "open_new_tab": false
+        },
+        {
+            "title": "Temporibus rem id mo",
+            "page_url": "Sint sunt iure corp",
+            "ext_url": true,
+            "open_new_tab": false
+        },
+        {
+            "title": "Quia quia culpa eni",
+            "page_url": "Sit duis nihil velit",
+            "ext_url": false,
+            "open_new_tab": false
+        }
+    ],
+    "blocks": []
+}

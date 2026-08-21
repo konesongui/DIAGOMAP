@@ -1,30 +1,95 @@
 <?php
 $currency_symbol = $this->customlib->getSchoolCurrencyFormat();
 
-?>
-<?php
 $moisEn = [
-    'January' => 'Janvier',
-    'February' => 'Février',
-    'March' => 'Mars',
-    'April' => 'Avril',
-    'May' => 'Mai',
-    'June' => 'Juin',
-    'July' => 'Juillet',
-    'August' => 'Août',
-    'September' => 'Septembre',
-    'October' => 'Octobre',
-    'November' => 'Novembre',
-    'December' => 'Décembre',
+    'January' => 'Janvier', 'February' => 'Février', 'March' => 'Mars',
+    'April' => 'Avril', 'May' => 'Mai', 'June' => 'Juin',
+    'July' => 'Juillet', 'August' => 'Août', 'September' => 'Septembre',
+    'October' => 'Octobre', 'November' => 'Novembre', 'December' => 'Décembre',
 ];
 
+// CALCULS DU BULLETIN DE PAIE
+$total_brute = $result["categorie_salaire"] + $result["sursalaire"] + $result["prime_anc"] +
+    $result["prime_trans"] + $result["forfait_hs"] + $result["prime_resp"] +
+    $result["prime_rend"] + $result["prime_risque"] + $result["prime_assi"] +
+    $result["prime_grati"] + $result["conge"];
 
+$total_pourcentage = $total_brute * 0.1;
+$primet = 30000;
+
+// Prime transport (exonérée jusqu'à 30,000)
+$final_trans = ($result["prime_trans"] > $primet) ? $result["prime_trans"] - $primet : 0;
+
+// Prime rendement (exonérée jusqu'à 10% du total brut)
+$final_rend = ($result["prime_rend"] > $total_pourcentage) ? $result["prime_rend"] - $total_pourcentage : 0;
+
+// Prime risque (exonérée jusqu'à 10% du total brut)
+$final_risq = ($result["prime_risque"] > $total_pourcentage) ? $result["prime_risque"] - $total_pourcentage : 0;
+
+// Prime assiduité (exonérée jusqu'à 10% du total brut)
+$final_assi = ($result["prime_assi"] > $total_pourcentage) ? $result["prime_assi"] - $total_pourcentage : 0;
+
+// Forfait HS (exonéré jusqu'à 10% du total brut)
+$final_forfait = ($result["forfait_hs"] > $total_pourcentage) ? $result["forfait_hs"] - $total_pourcentage : 0;
+
+// Sursalaire (exonéré jusqu'à 10% du total brut)
+$final_sura = ($result["sursalaire"] > $total_pourcentage) ? $result["sursalaire"] - $total_pourcentage : 0;
+
+// TOTAL FISCAL (base imposable)
+$total_fiscal = $result["categorie_salaire"] + $result["prime_anc"] + $final_trans +
+    $final_rend + $final_risq + $final_assi + $final_sura;
+
+// TOTAL BRUT SOCIAL (base CNPS/CMU)
+$total_social = $total_brute - $result["prime_trans"];
+
+// CALCUL ITS (Impôt sur le Traitement des Salaires)
+$impot = 0;
+$salaire_restant = $total_fiscal;
+
+if ($salaire_restant > 8000000) {
+    $impot += ($salaire_restant - 8000000) * 0.32;
+    $salaire_restant = 8000000;
+}
+
+if ($salaire_restant > 2400000) {
+    $impot += ($salaire_restant - 2400000) * 0.28;
+    $salaire_restant = 2400000;
+}
+
+if ($salaire_restant > 800000) {
+    $impot += ($salaire_restant - 800000) * 0.24;
+    $salaire_restant = 800000;
+}
+
+if ($salaire_restant > 240000) {
+    $impot += ($salaire_restant - 240000) * 0.21;
+    $salaire_restant = 240000;
+}
+
+if ($salaire_restant > 75000) {
+    $impot += ($salaire_restant - 75000) * 0.16;
+}
+
+// Réduction familiale
+$coef = $result["part_igr"] ?? 1;
+$reductions = [1=>0, 1.5=>5500, 2=>11000, 2.5=>16500, 3=>22000,
+    3.5=>27500, 4=>33000, 4.5=>38500, 5=>44000];
+
+$reduction = $reductions[$coef] ?? 0;
+$impot_net = max($impot - $reduction, 0);
+$its = round($impot_net, 2);
+
+// CALCUL DES COTISATIONS SOCIALES
+$cnps = $total_social * 0.08;  // Patronale 8%
+$cmu = $total_social * 0.05;   // CMU 5%
+
+// TOTAL REVENU IMPOSABLE
+$total_revenu = $its + $cmu + $cnps;
+
+// SALAIRE NET
+$net_salary = $total_brute - $cnps - $cmu - $its;
 ?>
-<?php
 
-
-
-?>
 <style type="text/css">
     /*REQUIRED*/
     .carousel-row {
@@ -101,312 +166,480 @@ $moisEn = [
 </style>
 
 <div class="content-wrapper" style="min-height: 946px;">
-
-    <section class="content-header">
-        <h1>
-            <i class="fa fa-bus"></i> <?php echo $this->lang->line('transport'); ?></h1>
-    </section>
-    <!-- Main content -->
     <section class="content">
         <?php $this->load->view('reports/_finance'); ?>
+
         <div class="row">
             <div class="col-md-12">
                 <div class="box removeboxmius">
-                    <div class="box-header ptbnull"></div>
+
+                    <!-- En-tête avec titre, filtre et boutons d'exportation -->
                     <div class="box-header with-border">
-                        <h3 class="box-title"><i class="fa fa-search"></i> <?php echo $this->lang->line('select_criteria'); ?></h3>
-                    </div>
+                        <h3 class="box-title"><i class="fa fa-money"></i> Livre de paie</h3>
+                        <div class="pull-right box-tools">
+                            <form role="form" action="<?php echo site_url('report/payroll') ?>" method="post" class="form-inline" style="display: inline-block;">
+                                <?php echo $this->customlib->getCSRF(); ?>
 
-                    <form role="form" action="<?php echo site_url('report/payroll') ?>" method="post" class="">
-                        <div class="box-body row">
-
-                            <?php echo $this->customlib->getCSRF(); ?>
-
-                            <div class="col-sm-6 col-md-3" >
                                 <div class="form-group">
-                                    <label><?php echo $this->lang->line('search') . " " . $this->lang->line('type'); ?></label>
-                                    <select class="form-control" name="search_type" onchange="showdate(this.value)">
-
-                                        <?php foreach ($searchlist as $key => $search) {
-                                            ?>
-                                            <option value="<?php echo $key ?>" <?php
-                                            if ((isset($search_type)) && ($search_type == $key)) {
-
-                                                echo "selected";
-                                            }
-                                            ?>><?php echo $search ?></option>
+                                    <select class="form-control input-sm" name="search_type" onchange="showdate(this.value)">
+                                        <?php foreach ($searchlist as $key => $search) { ?>
+                                            <option value="<?php echo $key ?>" <?php echo (isset($search_type) && $search_type == $key) ? "selected" : ""; ?>>
+                                                <?php echo $search ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
-                                    <span class="text-danger"><?php echo form_error('search_type'); ?></span>
                                 </div>
-                            </div>
 
-                            <div id='date_result'>
+                                <div class="form-group" id='date_result'></div>
 
-                            </div>
-                            <div class="form-group">
-                                <div class="col-sm-12">
-                                    <button type="submit" name="search" value="search_filter" class="btn btn-primary btn-sm checkbox-toggle pull-right"><i class="fa fa-search"></i> <?php echo $this->lang->line('search'); ?></button>
+                                <div class="form-group">
+                                    <button type="submit" name="search" value="search_filter" class="btn btn-primary btn-sm">
+                                        <i class="fa fa-search"></i> <?php echo $this->lang->line('search'); ?>
+                                    </button>
                                 </div>
+                            </form>
+
+                            <!-- Boutons d'exportation -->
+                            <div class="btn-group" style="margin-left: 10px;">
+                                <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa fa-download"></i> Exporter
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <a href="#" onclick="exportToPDF()">
+                                            <i class="fa fa-file-pdf-o"></i> Export PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onclick="exportToExcel()">
+                                            <i class="fa fa-file-excel-o"></i> Export Excel
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
-                    </form>
+                    </div>
 
-
-                    <div class="">
-                        <div class="box-header ptbnull"></div>
-                        <div class="box-header ptbnull">
-                            <h3 class="box-title titlefix"><i class="fa fa-money"></i> Livre de paie</h3>
+                    <!-- Corps du tableau -->
+                    <div class="box-body table-responsive">
+                        <div class="download_label">
+                            <div class="col-md-4 col-xs-2 col-sm-6">
+                                <img style="width: 150px; height: 70px !important;" src="<?= base_url() . "/uploads/school_content/admin_logo/" . $sch_setting->admin_logo ?>" alt="Logo" />
+                            </div>
+                            <br/><br/><br/><br/>
+                            <?php
+                            echo "Livre de paie <br/><br/>";
+                            echo "Période: ";
+                            $this->customlib->get_postmessage();
+                            ?>
                         </div>
-                        <div class="box-body table-responsive">
-                            <div class="download_label">
-                                <div class="col-md-4 col-xs-2 col-sm-6">
-                                    <img style="width: 150px; height: 70px !important;" src="<?= base_url() . "/uploads/school_content/admin_logo/" . $sch_setting->admin_logo ?>" alt="Image banniere" />
-                                </div>
-                                <br/><br/><br/><br/>
-                                <?php
-                                echo "Livre de paie <br/><br/>";
-                                echo "period:"; $this->customlib->get_postmessage();
-                                ;
-                                ?></div>
 
-
-                            <table class="table table-striped table-bordered table-hover example"/>
-
+                        <!-- Tableau du livre de paie -->
+                        <table class="table table-striped table-bordered table-hover example" id="livre-paie-table">
                             <thead>
                             <tr>
-
-
-                                <th>Matricule</th>
-
-                                <th><?php echo $this->lang->line('name'); ?> et prénom</th>
-                                <th>Total Gains</th>
-                                <!--<th><?php echo $this->lang->line('role'); ?></th>
-                                    <th><?php echo $this->lang->line('designation'); ?></th>-->
-                                <!--<th><?php echo $this->lang->line('month'); ?> - <?php echo $this->lang->line('year') ?></th>-->
-
-                                <!--<th><?php echo $this->lang->line('payslip'); ?> #</th>-->
-                                <th><?php echo $this->lang->line('basic_salary'); ?> </th>
-
-                                <!---<th class="text text-right"><?php echo $this->lang->line('earning'); ?></th>-->
-                                <!-- <th class="text text-right"> </th>-->
-                                <!--<th>Autre revenu</th>-->
-                                <th>Cnps</th>
-                                <th>Cmu</th>
-                                <th>ITS</th>
-                                <th>Total revenu</th>
-                                <th><?php echo $this->lang->line('net_salary'); ?></th>
+                                <th class="text text-left text-primary">Matricule</th>
+                                <th class="text text-left text-primary">Nom et prénom</th>
+                                <th class="text text-left text-primary">Total Brute</th>
+                                <th class="text text-left text-primary">Total Social</th>
+                                <th class="text text-left text-primary">Total Fiscal</th>
+                                <th class="text text-left text-primary">Salaire de base</th>
+                                <th class="text text-left text-primary">Cnps</th>
+                                <th class="text text-left text-primary">Cmu</th>
+                                <th class="text text-left text-primary">ITS</th>
+                                <th class="text text-left text-primary">Total retenu</th>
+                                <th class="text text-left text-primary">Salaire net</th>
                             </tr>
                             </thead>
                             <tbody>
-
-
                             <?php
-                            $basic = 0;
-                            $salaire_brute = 0;
-                            $total_rev = 0;
-                            $autre_r = 0;
-                            $gross = 0;
-                            $gros = 0;
-                            $cmu = 0;
-                            $cnps = 0;
-                            $its = 0;
-                            $g = 0;
-                            $net = 0;
-                            $earnings = 0;
-                            $deduction = 0;
-                            $tax = 0;
+                            foreach ($payrollList as $value) {
 
-                            if (empty($payrollList)) {
-                                ?>
+                                // Total brut recalculé (sans prendre gross_salary depuis la base)
+                                $total_brute = $value['categorie_salaire'] + $value['sursalaire'] + $value['prime_anc'] +
+                                    $value['prime_trans'] + $value['forfait_hs'] + $value['prime_resp'] +
+                                    $value['prime_rend'] + $value['prime_risque'] + $value['prime_assi'] +
+                                    $value['prime_grati'] + $value['conge'] + $value['autre_reve'];
 
-                                <?php
-                            } else {
-                                $count = 1;
+                                // Total social (CNPS/CMU) = total brut - prime de transport
+                                $total_social = $total_brute - $value['prime_trans'];
+                                $total_revenu = $its + $cmu + $cnps;
 
-                                foreach ($payrollList as $key => $value) {
+                                // CNPS avec plafond retraite
+                                // =============================
+                                $plafond_cnps = 3375000; // 45 * 75 000
 
-
-                                    $basic += $value["categorie_salaire"];
-                                    $salaire_brute += $value["cnps_regim"];
-                                    $total_rev += $value["total_revenu"];
-                                    $gross += $value["gross_salary"];
-                                    $gros += $tt;
-                                    $cmu += $value["cmu"];
-                                    $its += $value["its"];
-                                    $cnps += $value["cnps_regim"];
-                                    $g += $y;
-                                    $autre_r += $value["autre_reve"];
-                                    $net += $value["net_salary"];
-
-                                    $earnings += $value["total_allowance"];
-                                    $deduction += $value["total_deduction"];
-                                    if ($value["tax"] != '') {
-                                        $taxdata = $value["tax"];
-                                    } else {
-                                        $taxdata = 0;
-                                    }
-                                    $tax += $taxdata;
-                                    $total = 0;
-                                    $grd_total = 0;
-                                    ?>
-                                    <tr>
-
-                                        <td style="text-transform: capitalize;">
-                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="<?php echo base_url() ?>admin/staff/profile/<?php echo $value['staff_id']; ?>"><?php echo $value['employee_id']; ?></a></span>
-
-                                        </td>
-                                        <td style="text-transform: capitalize;">
-                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="<?php echo base_url() ?>admin/staff/profile/<?php echo $value['staff_id']; ?>"><?php echo $value['name'] . " " . $value['surname'].")"; ?></a></span>
-
-                                        </td>
-                                        <td>
-                                            <?php echo $value['gross_salary']; ?>
-                                        </td>
-                                        <!-- <td>
-                                            <?php echo $value['user_type']; ?>
-                                        </td>-->
-                                        <!--<td>
-                                                    <span  data-original-title="" title=""><?php
-                                        echo $value['designation'];
-                                        ;
-                                        ?></span>
-
-                                        </td>-->
-                                        <!-- <td>
-
-                                            <?php echo $value['month']= $moisEn[$value['month']] . " - " . $value['year']; ?>
-                                        </td>-->
-                                        <!-- <td>
-
-                                            <span data-toggle="popover" class="detail_popover" data-original-title="" title=""><a href="#"><?php echo $value['id']; ?></a></span>
-                                            <div class="fee_detail_popover" style="display: none"><?php echo $this->lang->line('mode'); ?>: <?php
-                                        if (array_key_exists($value["payment_mode"], $payment_mode)) {
-                                            echo $payment_mode[$value["payment_mode"]];
-                                        }
-                                        ?></div>
-
-                                        </td>-->
-                                        <td>
-                                            <?php echo number_format($value['categorie_salaire'], 2, '.', ''); ?>
-                                        </td>
-
-                                        <!-- <td class="text text-right">
-                                            <?php echo (number_format($value['total_allowance'], 2, '.', '')); ?>
-                                        </td>-->
-
-                                        <!--<td class="text text-right">
-                                            <?php echo number_format(($value['gross_salary'] * 0.0630) + $value['autre_reve'] , 2, '.', ''); ?>
-                                        </td>-->
-
-
-                                        <td>
-                                            <?php echo $value['cnps_regim']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $value['cmu']; ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            echo  $value['its']
-
-                                            ?>
-                                        </td>
-                                        <!--<td class="text text-right">
-                                            <?php
-                                        $impot = 0;
-
-                                        if ($value['categorie_salaire'] > 8000000) {
-                                            $impot += ($value['categorie_salaire'] - 8000000) * 0.32;
-                                            $value['categorie_salaire'] = 8000000;
-                                        }
-
-                                        if ($value['categorie_salaire'] > 2400000) {
-                                            $impot += ($value['categorie_salaire'] - 2400000) * 0.28;
-                                            $value['categorie_salaire'] = 2400000;
-                                        }
-
-                                        if ($value['categorie_salaire'] > 800000) {
-                                            $impot += ($value['categorie_salaire'] - 800000) * 0.24;
-                                            $value['categorie_salaire'] = 800000;
-                                        }
-
-                                        if ($value['categorie_salaire'] > 240000) {
-                                            $impot += ($value['categorie_salaire'] - 240000) * 0.21;
-                                            $value['categorie_salaire'] = 240000;
-                                        }
-
-                                        if ($value['categorie_salaire'] > 75000) {
-                                            $impot += ($value['categorie_salaire'] - 70000) * 0.16;
-                                            $value['categorie_salaire'] = 75000;
-                                        }
-
-                                        echo $tt = $impot + ($value['gross_salary'] * 0.0630) + $value['autre_reve'];
-
-                                        ?>
-                                        </td>-->
-                                        <td>
-                                            <?php echo $value['total_revenu']; ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            echo $value["net_salary"];
-
-                                            ?>
-                                        </td>
-                                    </tr>
-                                    <?php
-                                    $count++;
+                                if ($total_social > $plafond_cnps) {
+                                    $cnps_retraite_base = $plafond_cnps;
+                                } else {
+                                    $cnps_retraite_base = $total_social;
                                 }
+
+                                $etraite = $cnps_retraite_base;
+
+                                // Cotisation CNPS sur base plafonnée
+                                $cnps = $etraite * 0.063;  // 8%
+
+
+                                // CNPS et CMU recalculés
+                                //$cnps = $total_social * 0.08;  // 8%
+                                $cmu  = 500;  // 5%
+
+
+                                // Si epf_no est vide ou nul, on considère au moins 1 personne
+                                $epf_no = !empty($result["epf_no"]) ? $result["epf_no"] : 1;
+
+                                // Calcul du CMU total
+                                $cmu_total = $epf_no * $cmu;
+
+                                // =============================
+                                // CALCUL DU TOTAL FISCAL
+                                // =============================
+                                $total_pourcentage = $total_brute * 0.1;
+                                $primet = 30000;
+
+                                // Prime transport
+                                if ($value["prime_trans"] > $primet) {
+                                    $trans = $value["prime_trans"] - $primet;
+                                } else {
+                                    $trans = 0;
+                                }
+                                $final_trans = $trans;
+
+                                // Prime ancienneté
+                                $prime_anc = isset($value["prime_anc"]) ? floatval($value["prime_anc"]) : 0;
+                                if ($prime_anc > $total_pourcentage) {
+                                    $ancien = $prime_anc - $total_pourcentage;
+                                } else {
+                                    $ancien = 0;
+                                }
+                                $final_anc = $ancien;
+
+                                // Prime rendement
+                                if ($value["prime_rend"] > $total_pourcentage) {
+                                    $rends = $value["prime_rend"] - $total_pourcentage;
+                                } else {
+                                    $rends = 0;
+                                }
+                                $final_rend = $rends;
+
+                                // Prime responsabilité
+                                if ($value["prime_resp"] > $total_pourcentage) {
+                                    $respo = $value["prime_resp"] - $total_pourcentage;
+                                } else {
+                                    $respo = 0;
+                                }
+                                $final_respo = $respo;
+
+                                // Prime risque
+                                if ($value["prime_risque"] > $total_pourcentage) {
+                                    $risq = $value["prime_risque"] - $total_pourcentage;
+                                } else {
+                                    $risq = 0;
+                                }
+                                $final_risq = $risq;
+
+                                // Autres revenus
+                                if ($value["autre_reve"] > $total_pourcentage) {
+                                    $autre = $value["autre_reve"] - $total_pourcentage;
+                                } else {
+                                    $autre = 0;
+                                }
+                                $final_autres = $autre;
+
+                                // Prime assiduité
+                                if ($value["prime_assi"] > $total_pourcentage) {
+                                    $assi = $value["prime_assi"] - $total_pourcentage;
+                                } else {
+                                    $assi = 0;
+                                }
+                                $final_assi = $assi;
+
+                                // Forfait heures sup
+                                if ($value["forfait_hs"] > $total_pourcentage) {
+                                    $forfait = $value["forfait_hs"] - $total_pourcentage;
+                                } else {
+                                    $forfait = 0;
+                                }
+                                $final_forfait = $forfait;
+
+                                // Sursalaire
+                                if ($value["sursalaire"] > $total_pourcentage) {
+                                    $sura = $value["sursalaire"] - $total_pourcentage;
+                                } else {
+                                    $sura = 0;
+                                }
+                                $final_sura = $sura;
+
+                                // Total fiscal (base imposable)
+                                $total_fiscal = $value["categorie_salaire"] + $final_trans + $prime_anc + $final_rend +
+                                    $final_risq + $final_respo + $final_assi + $value["sursalaire"] + $final_autres;
+
+                                // =============================
+                                // FIN CALCUL FISCAL
+
+                                // =============================
+                                // ITS avec barème progressif
+                                // =============================
+                                $impot = 0;
+                                $categorie_salaire = $total_fiscal;
+
+                                if ($categorie_salaire > 8000000) {
+                                    $impot += ($categorie_salaire - 8000000) * 0.32;
+                                    $categorie_salaire = 8000000;
+                                }
+
+                                if ($categorie_salaire > 2400000) {
+                                    $impot += ($categorie_salaire - 2400000) * 0.28;
+                                    $categorie_salaire = 2400000;
+                                }
+
+                                if ($categorie_salaire > 800000) {
+                                    $impot += ($categorie_salaire - 800000) * 0.24;
+                                    $categorie_salaire = 800000;
+                                }
+
+                                if ($categorie_salaire > 240000) {
+                                    $impot += ($categorie_salaire - 240000) * 0.21;
+                                    $categorie_salaire = 240000;
+                                }
+
+                                if ($categorie_salaire > 75000) {
+                                    $impot += ($categorie_salaire - 75000) * 0.16;
+                                    $categorie_salaire = 75000;
+                                }
+
+                                // Réduction selon nombre de parts
+                                $coef = isset($value["part_igr"]) ? $value["part_igr"] : 1;
+                                $reduction = 0;
+
+                                switch (true) {
+                                    case ($coef >= 5):
+                                        $reduction = 44000;
+                                        break;
+                                    case ($coef == 4.5):
+                                        $reduction = 38500;
+                                        break;
+                                    case ($coef == 4):
+                                        $reduction = 33000;
+                                        break;
+                                    case ($coef == 3.5):
+                                        $reduction = 27500;
+                                        break;
+                                    case ($coef == 3):
+                                        $reduction = 22000;
+                                        break;
+                                    case ($coef == 2.5):
+                                        $reduction = 16500;
+                                        break;
+                                    case ($coef == 2):
+                                        $reduction = 11000;
+                                        break;
+                                    case ($coef == 1.5):
+                                        $reduction = 5500;
+                                        break;
+                                    case ($coef == 1):
+                                    default:
+                                        $reduction = 0;
+                                        break;
+                                }
+
+                                // ITS net
+                                $impot_net = max($impot - $reduction, 0);
+                                $its = round($impot_net, 2);
+
+                                // Ici tu peux garder ton calcul ITS existant si nécessaire
+                               // $its = $value['its']; // ou recalculer comme plus haut
+
+                                // Salaire net
+                                $net_salary = $total_brute - $cnps - $cmu - $its ;
+
+
+                                // Totaux généraux
+                                $totals['brute']  += $total_brute;
+                                $totals['social'] += $total_social;
+                                $totals['fiscal'] += $total_fiscal;
+                                $totals['base']   += $value['categorie_salaire'];
+                                $totals['cnps']   += $cnps;
+                                $totals['cmu']    += $cmu_total;
+                                $totals['its']    += $its;
+                                $totals['revenu'] += $cnps + $cmu + $its; // revenu imposable
+                                $totals['net']    += $net_salary;
                                 ?>
-                                <tr class="box box-solid total-bg">
+                                <tr>
+                                    <td><?php echo $value['employee_id']; ?></td>
+                                    <td><?php echo $value['name'] . " " . $value['surname']; ?></td>
+                                    <td><?php echo number_format($total_brute, 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($total_social, 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($total_fiscal, 2, ',', ' '); ?></td>
 
-                                    <!-- <td class="text text-right"><?php echo ($currency_symbol . number_format($earnings, 2, '.', '')); ?></td>-->
-                                    <td></td>
-
-
-
-                                    <td><?php echo $this->lang->line('grand_total'); ?> </td>
-                                    <td><?php echo (number_format($gross, 2, '.', '')); ?></td>
-                                    <td><?php echo (number_format($basic, 2, '.', '')); ?></td>
-                                    <td><?php echo (number_format($cnps, 2, '.', '')); ?></td>
-
-                                    <td><?php echo (number_format($cmu, 2, '.', '')); ?></td>
-
-                                    <td><?php echo (number_format($its, 2, '.', '')); ?></td>
-                                    <td><?php echo (number_format($total_rev, 2, '.', '')); ?></td>
-                                    <td><?php echo (number_format($net, 2, '.', '')); ?></td>
-
+                                    <td><?php echo number_format($value['categorie_salaire'], 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($cnps, 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($cmu, 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($its, 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($totals['revenu'], 2, ',', ' '); ?></td>
+                                    <td><?php echo number_format($net_salary, 2, ',', ' '); ?></td>
                                 </tr>
-                            <?php } ?>
+                                <?php
+                            }
+                            ?>
 
+                            <!-- Ligne des totaux -->
+                            <tr class="box box-solid total-bg">
+                                <td colspan="2" class="text text-left text-primary"><strong>GRAND TOTAL</strong></td>
+                                <td><strong><?php echo number_format($totals['brute'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['social'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['fiscal'], 2, ',', ' '); ?></strong></td>
 
+                                <td><strong><?php echo number_format($totals['base'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['cnps'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['cmu'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['its'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['revenu'], 2, ',', ' '); ?></strong></td>
+                                <td><strong><?php echo number_format($totals['net'], 2, ',', ' '); ?></strong></td>
+                            </tr>
                             </tbody>
-
-
-
-                            </table>
-
-                        </div>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 </div>
-</section>
-</div>
+
+<!-- Scripts pour l'exportation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-    <?php
-    if ($search_type == 'period') {
-    ?>
-
+    <?php if ($search_type == 'period') { ?>
     $(document).ready(function () {
         showdate('period');
     });
+    <?php } ?>
 
-    <?php
+    // Fonction d'exportation PDF
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Titre du document
+        doc.setFontSize(16);
+        doc.text('LIVRE DE PAIE', 105, 15, { align: 'center' });
+
+        // Période
+        doc.setFontSize(10);
+        doc.text('Période: <?php echo $this->customlib->get_postmessage(); ?>', 14, 25);
+
+        // Date d'exportation
+        const exportDate = new Date().toLocaleDateString('fr-FR');
+        doc.text('Exporté le: ' + exportDate, 14, 32);
+
+        // Préparation des données du tableau
+        const table = document.getElementById('livre-paie-table');
+        const headers = [];
+        const rows = [];
+
+        // Récupération des en-têtes
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+
+        // Récupération des données
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push(td.textContent.trim());
+            });
+            if (row.length > 0) {
+                rows.push(row);
+            }
+        });
+
+        // Génération du tableau PDF
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: 40,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [66, 139, 202] }
+        });
+
+        // Sauvegarde du PDF
+        doc.save('livre_paie_<?php echo date('Y-m-d'); ?>.pdf');
     }
-    ?>
 
+    // Fonction d'exportation Excel
+    function exportToExcel() {
+        // Préparation des données
+        const data = [];
+        const headers = [];
+
+        // Récupération des en-têtes
+        document.querySelectorAll('#livre-paie-table thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        data.push(headers);
+
+        // Récupération des données
+        document.querySelectorAll('#livre-paie-table tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push(td.textContent.trim());
+            });
+            if (row.length > 0) {
+                data.push(row);
+            }
+        });
+
+        // Création du workbook
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Livre de Paie');
+
+        // Style pour les en-têtes
+        if (!ws['!cols']) ws['!cols'] = [];
+        headers.forEach((_, i) => {
+            ws['!cols'][i] = { width: 15 };
+        });
+
+        // Sauvegarde du fichier Excel
+        XLSX.writeFile(wb, 'livre_paie_<?php echo date('Y-m-d'); ?>.xlsx');
+    }
+
+    // Alternative simple pour Excel (méthode tableau HTML)
+    function exportToExcelSimple() {
+        const table = document.getElementById('livre-paie-table');
+        const html = table.outerHTML;
+
+        // Création d'un blob et téléchargement
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'livre_paie_<?php echo date('Y-m-d'); ?>.xls';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
 </script>
+
+<style>
+    .btn-group {
+        margin-left: 10px;
+    }
+    .dropdown-menu li a {
+        cursor: pointer;
+    }
+    .download_label {
+        display: none; /* Masquer pour l'export */
+    }
+    @media print {
+        .box-header, .btn-group {
+            display: none !important;
+        }
+    }
+</style>

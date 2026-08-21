@@ -8,7 +8,7 @@
     <!-- Main content -->
     <section class="content">
         <div class="row">
-            <?php if ($this->rbac->hasPrivilege('clients', 'can_add') || $this->rbac->hasPrivilege('clients', 'can_edit')) { ?>
+            <?php if ($this->rbac->hasPrivilege('comptable', 'can_add') || $this->rbac->hasPrivilege('comptable', 'can_edit')) { ?>
                 <div class="col-md-4">
                     <!-- Horizontal Form -->
                     <div class="box box-primary">
@@ -68,7 +68,7 @@
                 </div><!--/.col (right) -->
             <?php } ?>
             <div class="col-md-<?php
-            if ($this->rbac->hasPrivilege('clients', 'can_add') || $this->rbac->hasPrivilege('clients', 'can_edit')) {
+            if ($this->rbac->hasPrivilege('comptable', 'can_add') || $this->rbac->hasPrivilege('comptable', 'can_edit')) {
                 echo "8";
             } else {
                 echo "12";
@@ -110,11 +110,11 @@
                                             <td class="mailbox-name"><?php echo $compte['type_compte'] ?></td>
                                             <td class="mailbox-name"><?php echo $compte['est_actif'] ?></td>
                                             <td class="mailbox-date pull-right no-print">
-                                                <?php if ($this->rbac->hasPrivilege('clients', 'can_edit')) { ?>
+                                                <?php if ($this->rbac->hasPrivilege('comptable', 'can_edit')) { ?>
                                                     <a data-placement="left" href="<?php echo base_url(); ?>admin/comptecomptable/edit/<?php echo $compte['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('edit'); ?>">
                                                         <i class="fa fa-pencil"></i>
                                                     </a>
-                                                <?php } if ($this->rbac->hasPrivilege('clients', 'can_delete')) { ?>
+                                                <?php } if ($this->rbac->hasPrivilege('comptable', 'can_delete')) { ?>
                                                     <a data-placement="left" href="<?php echo base_url(); ?>admin/comptecomptable/delete/<?php echo $compte['id'] ?>" class="btn btn-default btn-xs"  data-toggle="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php echo $this->lang->line('delete_confirm') ?>');">
                                                         <i class="fa fa-remove"></i>
                                                     </a>

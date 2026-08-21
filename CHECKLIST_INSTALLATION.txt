@@ -1,0 +1,268 @@
+🎯 CHECKLIST D'INSTALLATION - SYSTÈME QR ATTENDANCE
+════════════════════════════════════════════════════════════════════════════════
+
+📋 AVANT DE COMMENCER
+─────────────────────────────────────────────────────────────────────────────────
+☐ PHP 7.4+ installé
+☐ MySQL/MariaDB fonctionnel
+☐ CodeIgniter 3.x installé
+☐ FontAwesome chargé dans le projet
+☐ Table 'staff' existe dans la base de données
+☐ Permissions RBAC configurées
+
+════════════════════════════════════════════════════════════════════════════════
+
+🚀 ÉTAPES D'INSTALLATION
+─────────────────────────────────────────────────────────────────────────────────
+
+ÉTAPE 1 : Créer la base de données
+☐ Accédez à : http://localhost/diagoma/install_qrcode.php
+☐ Cliquez sur "Installer"
+☐ Vérifiez le message "✅ Installation réussie !"
+☐ La table 'staff_attendance_qr' a été créée
+
+ÉTAPE 2 : Ajouter les routes
+☐ Ouvrez le fichier : application/config/routes.php
+☐ Ajoutez à la fin du fichier :
+
+$route['admin/qrattendance/display'] = 'admin/Qrattendance/display_qr';
+$route['admin/qrattendance/scan'] = 'admin/Qrattendance/scan_page';
+$route['admin/qrattendance/process'] = 'admin/Qrattendance/process_scan';
+$route['admin/qrattendance/today'] = 'admin/Qrattendance/today_attendance';
+$route['admin/qrattendance/report'] = 'admin/Qrattendance/attendance_report';
+
+☐ Sauvegardez le fichier
+
+ÉTAPE 3 : Sécuriser l'installation
+☐ Supprimez le fichier : install_qrcode.php
+  (Pour des raisons de sécurité - ne pas laisser ce fichier accessible)
+
+ÉTAPE 4 : Vérifier l'intégration RH
+☐ Accédez à : http://localhost/diagoma/admin/admin/rh
+☐ Vous devez voir la section "Présence et badges"
+☐ Vous devez voir 3 nouvelles cartes :
+    ✓ Afficher QR Code
+    ✓ Présences du jour
+    ✓ Rapport Présence
+
+════════════════════════════════════════════════════════════════════════════════
+
+✅ VÉRIFICATIONS POST-INSTALLATION
+─────────────────────────────────────────────────────────────────────────────────
+
+Test 1 : Afficher le QR Code
+☐ Cliquez sur "Afficher QR Code" depuis le menu RH
+☐ Une page avec un QR code s'affiche
+☐ Le QR code est au format 400x400px
+☐ Une alternative "Accès direct" est disponible
+
+Test 2 : Scanner depuis mobile
+☐ Scannez le QR code avec un smartphone
+☐ Une page de login s'affiche
+☐ Entrez les identifiants d'un employé
+☐ L'arrivée est enregistrée ✓
+
+Test 3 : Deuxième scan
+☐ Rescannez le QR code
+☐ Entrez les mêmes identifiants
+☐ Le départ est enregistré ✓
+
+Test 4 : Voir les présences du jour
+☐ Cliquez sur "Présences du jour"
+☐ Un tableau s'affiche avec :
+    ✓ Les employés présents
+    ✓ Les heures d'arrivée
+    ✓ Les heures de départ
+    ✓ La durée totale
+    ✓ Les statistiques
+
+Test 5 : Générer un rapport
+☐ Cliquez sur "Rapport Présence"
+☐ Définissez les filtres (date de début/fin, employé)
+☐ Cliquez sur "Rechercher"
+☐ Les résultats s'affichent
+☐ Vous pouvez :
+    ✓ Imprimer le rapport
+    ✓ Exporter en CSV
+
+════════════════════════════════════════════════════════════════════════════════
+
+🔐 VÉRIFICATIONS DE SÉCURITÉ
+─────────────────────────────────────────────────────────────────────────────────
+
+☐ Le fichier install_qrcode.php a été supprimé
+☐ Les permissions RBAC sont activées
+☐ Seuls les utilisateurs avec 'staff_attendance' > 'can_view' voient les cartes
+☐ Les mots de passe des employés sont sécurisés (bcrypt)
+☐ Les tokens QR expirent après 60 minutes
+☐ Une seule arrivée/départ par jour et par employé
+
+════════════════════════════════════════════════════════════════════════════════
+
+📱 FLUX UTILISATEUR COMPLET
+─────────────────────────────────────────────────────────────────────────────────
+
+Admin du matin :
+  1. Ouvre http://localhost/diagoma/admin/admin/rh
+  2. Clique sur "Afficher QR Code"
+  3. Affiche le code sur un écran/affichage à l'entrée
+  4. Laisse tourner toute la journée
+
+Employé à l'arrivée :
+  1. Scanne le QR code avec son téléphone
+  2. Entre son ID employé (ex: EMP001)
+  3. Entre son mot de passe
+  4. Clique sur "Enregistrer ma présence"
+  5. Message de confirmation : "✓ Bienvenue ! Arrivée enregistrée à 08:30"
+
+Admin en cours de journée :
+  1. Ouvre "Présences du jour"
+  2. Voit en temps réel qui est arrivé
+  3. Consulte les statistiques :
+     • Total de présences
+     • Nombre d'arrivées
+     • Nombre de départs
+     • Nombre incomplets (pas encore partis)
+
+Employé à la sortie :
+  1. Rescanne le QR code
+  2. Entre son ID et mot de passe
+  3. Clique sur "Enregistrer ma présence"
+  4. Message : "✓ Au revoir ! Départ enregistré à 17:00. Durée : 8.5h"
+
+Admin en fin de journée :
+  1. Ouvre "Rapport Présence"
+  2. Filtre par date du jour
+  3. Exporte en CSV pour traitement paie
+  4. Imprime pour archives
+
+════════════════════════════════════════════════════════════════════════════════
+
+🎨 PERSONNALISATION (OPTIONNEL)
+─────────────────────────────────────────────────────────────────────────────────
+
+Modifier les couleurs :
+  • Bleu : #28669e → Changez partout où vous le voyez
+  • Jaune : #fec32e → Changez partout où vous le voyez
+  
+  Fichiers à modifier :
+  - application/views/admin/qrattendance/display_qr.php
+  - application/views/admin/qrattendance/scan_page.php
+  - application/views/admin/qrattendance/today_attendance.php
+  - application/views/admin/qrattendance/attendance_report.php
+
+Modifier les messages :
+  • Fichier : application/config/qrcode_attendance.php
+  • Section : $config['messages']
+
+Modifier les icônes :
+  • Fichier : application/views/admin/rh.php
+  • Cherchez : "card-icon"
+  • Changez : "fa fa-qrcode" par une autre icône
+
+════════════════════════════════════════════════════════════════════════════════
+
+🐛 DÉPANNAGE
+─────────────────────────────────────────────────────────────────────────────────
+
+Problème : Le QR code ne scanne pas
+Solution :
+  • Vérifiez que la URL est accessible depuis mobile
+  • Testez avec : http://localhost/diagoma/admin/qrattendance/scan_page?token=xxxxx
+  • Vérifiez que FontAwesome est chargé
+
+Problème : "Employé non trouvé"
+Solution :
+  • Vérifiez que l'employé existe dans la table 'staff'
+  • Vérifiez que le champ 'employee_id' est rempli
+  • Vérifiez que l'employé est actif (is_active = 1)
+
+Problème : "Mot de passe incorrect"
+Solution :
+  • Assurez-vous d'utiliser le bon mot de passe
+  • Vérifiez que le champ 'password' existe dans staff
+  • Réinitialisez le mot de passe de l'employé
+
+Problème : Pas d'enregistrement
+Solution :
+  • Vérifiez que la table 'staff_attendance_qr' existe
+  • Vérifiez les permissions MySQL
+  • Vérifiez les logs PHP/MySQL
+
+Problème : Cartes QR ne s'affichent pas dans le menu RH
+Solution :
+  • Vérifiez les permissions RBAC de l'utilisateur
+  • Vérifiez que 'staff_attendance' > 'can_view' est accordé
+  • Rafraîchissez la page (Ctrl+F5)
+
+════════════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTATION
+─────────────────────────────────────────────────────────────────────────────────
+
+Pour plus d'informations, consultez :
+
+  QRCODE_ATTENDANCE_GUIDE.md
+  └─ Guide complet avec tous les détails techniques
+
+  QRCODE_QUICK_START.txt
+  └─ Démarrage rapide et instructions simples
+
+  RH_INTEGRATION_NOTES.md
+  └─ Notes détaillées sur l'intégration au module RH
+
+  INSTALLATION_FINAL.txt
+  └─ Résumé final et étapes d'installation
+
+════════════════════════════════════════════════════════════════════════════════
+
+📊 DONNÉES COLLECTÉES
+─────────────────────────────────────────────────────────────────────────────────
+
+Table : staff_attendance_qr
+
+Champs :
+  • id                  (ID unique du scan)
+  • staff_id            (ID de l'employé)
+  • attendance_date     (Date du jour AAAA-MM-JJ)
+  • arrival_time        (HH:MM:SS)
+  • departure_time      (HH:MM:SS)
+  • scan_date           (Timestamp complet)
+  • status              (arrival/departure/complete)
+  • notes               (Notes optionnelles)
+  • created_at          (Date de création)
+  • updated_at          (Date de mise à jour)
+
+════════════════════════════════════════════════════════════════════════════════
+
+🎯 PROCHAINES ÉTAPES RECOMMANDÉES
+─────────────────────────────────────────────────────────────────────────────────
+
+☐ Former les employés à scanner le QR code
+☐ Afficher un tutoriel à côté du QR code
+☐ Définir les horaires officiels d'arrivée/départ
+☐ Mettre en place des alertes pour les retards
+☐ Ajouter des notifications email (optionnel)
+☐ Synchroniser avec le module de paie
+☐ Créer des rapports mensuels automatisés
+☐ Archiver les données mensuelles
+
+════════════════════════════════════════════════════════════════════════════════
+
+✨ FÉLICITATIONS ! ✨
+
+Votre système de présence par QR Code est maintenant installé et intégré
+dans l'interface RH Diagoma !
+
+Accédez à : http://localhost/diagoma/admin/admin/rh
+
+Vous verrez les 3 nouvelles cartes dans la section "Présence et badges".
+
+════════════════════════════════════════════════════════════════════════════════
+
+Version : 1.0
+Date : 2026-08-05
+Status : ✅ Ready to Use
+Support : Consultez la documentation incluse
+
+════════════════════════════════════════════════════════════════════════════════

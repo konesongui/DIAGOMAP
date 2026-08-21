@@ -575,8 +575,11 @@ class Customlib
     public function getAdminSessionUserName()
     {
         $student_session = $this->CI->session->userdata('admin');
-        $username        = $student_session['username'];
-        return $username;
+        if (empty($student_session) || empty($student_session['username'])) {
+            return '';
+        }
+
+        return $student_session['username'];
     }
 
     public function getStudentSessionGardianname()
@@ -636,22 +639,32 @@ class Customlib
     public function getAppName()
     {
         $admin = $this->CI->session->userdata('admin');
-        if ($admin) {
+        if (!empty($admin) && !empty($admin['sch_name'])) {
             return $admin['sch_name'];
-        } else if ($this->CI->session->userdata('student')) {
+        } else if (!empty($this->CI->session->userdata('student'))) {
             $student = $this->CI->session->userdata('student');
-            return $student['sch_name'];
+            if (!empty($student['sch_name'])) {
+                return $student['sch_name'];
+            }
         }
+
+        return 'Diagoma';
     }
 
     public function getStaffRole()
     {
         $admin = $this->CI->session->userdata('admin');
-        $roles = $admin['roles'];
-        if ($admin) {
-            $role_key = key($roles);
-            return json_encode(array('id' => $roles[$role_key], 'name' => $role_key));
+        if (empty($admin) || empty($admin['roles'])) {
+            return json_encode(array('id' => 0, 'name' => 'admin'));
         }
+
+        $roles = $admin['roles'];
+        if (!is_array($roles) || empty($roles)) {
+            return json_encode(array('id' => 0, 'name' => 'admin'));
+        }
+
+        $role_key = key($roles);
+        return json_encode(array('id' => $roles[$role_key], 'name' => $role_key));
     }
 
     public function getSchoolName()
@@ -1222,30 +1235,72 @@ class Customlib
 
     public function getUserData()
     {
-        $result         = $this->getLoggedInUserData();
-        $id             = $result["id"];
-        $data           = $this->CI->staff_model->get($id);
-        $setting_result = $this->CI->setting_model->get();
-        if (!empty($setting_result)) {
-            $data["class_teacher"] = $setting_result[0]["class_teacher"];
-        } else {
-            $data["class_teacher"] = "yes";
+        $result = $this->getLoggedInUserData();
+        if (empty($result) || empty($result['id'])) {
+            return array('id' => 0, 'class_teacher' => 'yes');
         }
+
+        if (empty($this->CI->staff_model)) {
+            $this->CI->load->model('Staff_model', '', true);
+        }
+
+        $id = (int) $result['id'];
+        $data = array();
+        if (isset($this->CI->staff_model) && method_exists($this->CI->staff_model, 'get')) {
+            $data = $this->CI->staff_model->get($id);
+        }
+
+        if (!is_array($data)) {
+            $data = array();
+        }
+
+        if (!empty($this->CI->setting_model) && method_exists($this->CI->setting_model, 'get')) {
+            $setting_result = $this->CI->setting_model->get();
+            if (!empty($setting_result)) {
+                $data['class_teacher'] = isset($setting_result[0]['class_teacher']) ? $setting_result[0]['class_teacher'] : 'yes';
+            } else {
+                $data['class_teacher'] = 'yes';
+            }
+        } else {
+            $data['class_teacher'] = 'yes';
+        }
+
+        $data['id'] = $id;
         return $data;
     }
 
     public function countincompleteTask($id)
     {
+        if (empty($id)) {
+            return 0;
+        }
 
-        $result = $this->CI->calendar_model->countincompleteTask($id);
-        return $result;
+        if (empty($this->CI->calendar_model) || !method_exists($this->CI->calendar_model, 'countincompleteTask')) {
+            $this->CI->load->model('Calendar_model', '', true);
+        }
+
+        if (!empty($this->CI->calendar_model) && method_exists($this->CI->calendar_model, 'countincompleteTask')) {
+            return $this->CI->calendar_model->countincompleteTask($id);
+        }
+
+        return 0;
     }
 
     public function getincompleteTask($id)
     {
+        if (empty($id)) {
+            return array();
+        }
 
-        $result = $this->CI->calendar_model->getincompleteTask($id);
-        return $result;
+        if (empty($this->CI->calendar_model) || !method_exists($this->CI->calendar_model, 'getincompleteTask')) {
+            $this->CI->load->model('Calendar_model', '', true);
+        }
+
+        if (!empty($this->CI->calendar_model) && method_exists($this->CI->calendar_model, 'getincompleteTask')) {
+            return $this->CI->calendar_model->getincompleteTask($id);
+        }
+
+        return array();
     }
 
     public function getClassbyteacher($id)

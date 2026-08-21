@@ -1,4 +1,4 @@
-<table class="table table-striped">      
+<table class="table table-striped">
     <tr>
         <th class="border0"><?php echo $this->lang->line('to_title'); ?></th>
         <td class="border0"><?php print_r($data['to_title']); ?></td>
@@ -16,5 +16,5 @@
         <td><?php print_r($data['from_title']); ?></td>
         <th><?php echo $this->lang->line('date'); ?></th>
         <td><?php print_r(date($this->customlib->getSchoolDateFormat(), $this->customlib->dateyyyymmddTodateformat($data['date']))); ?></td>
-    </tr> 
+    </tr>
 </table>

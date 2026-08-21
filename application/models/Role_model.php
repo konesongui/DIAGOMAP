@@ -164,7 +164,28 @@ class Role_model extends MY_Model {
         return $query->result();
     }
 
-    public function getInsertBatch($role_id, $to_be_insert = array(), $to_be_update = array(), $to_be_delete = array()) {
+    public function getInsertBatch($role_id, $to_be_insert, $to_be_update, $to_be_validate, $to_be_delete) {
+        // Insertion
+        if (!empty($to_be_insert)) {
+            $this->db->insert_batch('roles_permissions', $to_be_insert);
+        }
+        // Mise à jour
+        if (!empty($to_be_update)) {
+            $this->db->update_batch('roles_permissions', $to_be_update, 'id');
+        }
+        if (!empty($to_be_validate)) {
+            $this->db->validate_batch('roles_permissions', $to_be_validate, 'id');
+        }
+
+        // Suppression
+        if (!empty($to_be_delete)) {
+            $this->db->where_in('id', $to_be_delete);
+            $this->db->delete('roles_permissions');
+        }
+        return true;
+    }
+
+    public function getInsertBatch090626($role_id, $to_be_insert = array(), $to_be_update = array(), $to_be_delete = array()) {
         $this->db->trans_start();
         $this->db->trans_strict(FALSE);
         if (!empty($to_be_insert)) {

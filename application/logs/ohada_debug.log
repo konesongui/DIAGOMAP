@@ -1,0 +1,23 @@
+[2026-08-06 15:07:25] chart_of_accounts/index START
+[2026-08-06 15:07:25] chart_of_accounts/index END
+[2026-08-06 15:08:14] chart_of_accounts/index START
+[2026-08-06 15:08:14] chart_of_accounts/index END
+[2026-08-06 15:14:13] chart_of_accounts/index START
+[2026-08-06 15:14:13] chart_of_accounts/index EXCEPTION Aucune table utilisée in C:\wamp64\www\diagoma\system\database\drivers\mysqli\mysqli_driver.php:305
+[2026-08-06 15:14:13] chart_of_accounts/index STATUS 500 END
+[2026-08-06 15:14:43] chart_of_accounts/index START
+[2026-08-06 15:14:43] chart_of_accounts/index EXCEPTION Aucune table utilisée in C:\wamp64\www\diagoma\system\database\drivers\mysqli\mysqli_driver.php:305
+[2026-08-06 15:14:43] chart_of_accounts/index STATUS 500 END
+[2026-08-06 15:15:19] chart_of_accounts/index START
+[2026-08-06 15:15:19] chart_of_accounts/index EXCEPTION Aucune table utilisée in C:\wamp64\www\diagoma\system\database\drivers\mysqli\mysqli_driver.php:305
+[2026-08-06 15:15:19] chart_of_accounts/index STATUS 500 END
+[2026-08-06 15:16:08] chart_of_accounts/index START
+[2026-08-06 15:16:08] chart_of_accounts/index EXCEPTION Aucune table utilisée in C:\wamp64\www\diagoma\system\database\drivers\mysqli\mysqli_driver.php:305
+[2026-08-06 15:16:08] chart_of_accounts/index STATUS 500 END
+[2026-08-06 15:16:11] chart_of_accounts/index START
+[2026-08-06 15:16:11] chart_of_accounts/index EXCEPTION Aucune table utilisée in C:\wamp64\www\diagoma\system\database\drivers\mysqli\mysqli_driver.php:305
+[2026-08-06 15:16:11] chart_of_accounts/index STATUS 500 END
+[2026-08-06 15:17:14] chart_of_accounts/index START
+[2026-08-06 15:17:14] chart_of_accounts/index STATUS 200 END
+[2026-08-06 15:17:46] balance_auxiliaire/index START
+[2026-08-06 15:17:46] balance_auxiliaire/index STATUS 200 END

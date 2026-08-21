@@ -52,7 +52,11 @@
                                 <?php } ?>
                                 
                                 <?php echo $this->customlib->getCSRF(); ?>
-                                
+                                <div class="form-group" hidden>
+                                    <label for="exampleInputEmail1">User<small class="req"> *</small></label>
+                                    <input id="user_name" name="user_name" readonly placeholder="" type="text" class="form-control"  value="<?php echo $this->customlib->getAdminSessionUserName(); ?>" />
+                                    <span class="text-danger"><?php echo form_error('user_name'); ?></span>
+                                </div>
                                 <div class="form-group col-md-4">
                                     <label for="exampleInputEmail1">Client</label><small class="req"> *</small>
 
@@ -97,6 +101,20 @@
                                     <label>Lieu de livraison </label>
                                     <textarea name="delivery_location" class="form-control"><?= set_value('delivery_location') ?></textarea>
                                 </div>
+                                <div class="form-group col-md-4">
+                                    <label for="payment_method">Méthode de paiement</label>
+                                    <select class="form-control select2" id="payment_method" name="payment_method">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="cash">Espèces</option>
+                                        <option value="check">Chèque</option>
+                                        <option value="bank_transfer">Virement</option>
+                                        <option value="card">Carte bancaire</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Objet</label>
+                                    <input id="objet" name="objet" type="text" class="form-control" value="<?= set_value('objet') ?>"/>
+                                </div>
                             </div>
                             <div class="clearfix"></div>
                             <hr>
@@ -106,6 +124,7 @@
                                     <div id="items-container">
                                         <div class="repeater-item">
                                             <div class="row">
+
                                                 <div class="form-group col-md-3">
                                                     <label>Catégorie <small class="req">*</small></label>
                                                     <select name="item_category_id[]" class="form-control item-category" required>

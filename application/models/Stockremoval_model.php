@@ -22,7 +22,7 @@ class Stockremoval_model extends MY_Model
      * @param array $data Les données de l'entrée de stock
      * @return int|bool L'ID de l'entrée créée ou false en cas d'erreur
      */
-    public function add($data)
+    public function add_11($data)
     {
         $this->db->trans_start();
 
@@ -85,7 +85,97 @@ class Stockremoval_model extends MY_Model
      * @param float $price Prix unitaire
      * @return bool
      */
-    private function updateStock($item_id, $category_id, $quantity, $price)
+    /**
+     * Ajoute une nouvelle sortie de stock avec ses articles
+     */
+    public function add($data)
+    {
+        $this->db->trans_start();
+
+        try {
+            // Préparation des données de la sortie
+            $removal_data = [
+                'origin' => $data['origin'],  // Changé de 'designation' à 'origin'
+                'reason' => $data['reason'],  // Ajouté
+                'reference' => $this->generateReference(),
+                'issue_date' => $data['issue_date'],
+                'grand_total' => $data['grand_total'],
+                'created_at' => date('Y-m-d H:i:s'),
+            ];
+
+            // Insertion de la sortie
+            $this->db->insert($this->table, $removal_data);
+            $removal_id = $this->db->insert_id();
+
+            if (!$removal_id) {
+                throw new Exception('Erreur lors de la création de la sortie de stock');
+            }
+
+            // Insertion des articles
+            foreach ($data['items'] as $item) {
+                $item_data = [
+                    'stock_removal_id' => $removal_id,
+                    'category_id' => $item['category_id'],
+                    'item_id' => $item['item_id'],
+                    'unit' => $item['unit'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'line_total' => $item['line_total']
+                ];
+
+                if (!$this->db->insert($this->items_table, $item_data)) {
+                    throw new Exception('Erreur lors de l\'ajout d\'un article');
+                }
+
+                // Mise à jour du stock (SOUSTRACTION pour une sortie)
+                if (!$this->updateStock($item['item_id'], $item['category_id'], -$item['quantity'], $item['price'])) {
+                    throw new Exception('Erreur lors de la mise à jour du stock');
+                }
+            }
+
+            $this->db->trans_complete();
+            return $removal_id;
+
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'Stockremoval Model Error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Met à jour le stock d'un article pour une sortie
+     */
+    private function updateStock($item_id, $category_id, $quantity_change, $price)
+    {
+        // Vérifie si l'article existe déjà dans le stock
+        $this->db->where('item_id', $item_id);
+        $query = $this->db->get($this->stock_table);
+
+        if ($query->num_rows() > 0) {
+            $stock = $query->row();
+
+            // Vérifier si le stock est suffisant
+            if ($stock->current_quantity + $quantity_change < 0) {
+                throw new Exception('Stock insuffisant pour l\'article ID: ' . $item_id);
+            }
+
+            $new_quantity = $stock->current_quantity + $quantity_change;
+
+            // Pour les sorties, on ne modifie pas le prix moyen pondéré
+            // On garde le même prix
+            $this->db->where('item_id', $item_id);
+            return $this->db->update($this->stock_table, [
+                'current_quantity' => $new_quantity,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+        } else {
+            // Ne devrait pas arriver pour une sortie (article non en stock)
+            throw new Exception('Article non trouvé en stock: ' . $item_id);
+        }
+    }
+
+    private function updateStock_11($item_id, $category_id, $quantity, $price)
     {
         // Vérifie si l'article existe déjà dans le stock
         $this->db->where('item_id', $item_id);

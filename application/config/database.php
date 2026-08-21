@@ -93,3 +93,23 @@ $db['default'] = array(
 	'failover' => array(),
 	'save_queries' => TRUE
 );
+
+// Configuration base MASTER
+$db['master'] = [
+    'dsn'   => '',
+    'hostname' => 'localhost',
+    'username' => 'master_user',
+    'password' => 'master_pass',
+    'database' => 'erp_master',
+    'dbdriver' => 'mysqli',
+];
+
+// Configuration dynamique pour les clients
+$db['client'] = [
+    'dsn'   => '',
+    'hostname' => 'localhost',
+    'username' => 'client_user',
+    'password' => 'client_pass',
+    'database' => '', // Rempli dynamiquement
+    'dbdriver' => 'mysqli',
+];

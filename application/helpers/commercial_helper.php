@@ -41,4 +41,5 @@
       
       return '<span class="'.$classes[$status].'">'.$texts[$status].'</span>';
     }
+
   }

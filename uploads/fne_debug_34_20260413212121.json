@@ -1,0 +1,283 @@
+{
+    "invoiceType": "sale",
+    "paymentMethod": "cash",
+    "template": "B2C",
+    "isRne": false,
+    "clientNcc": "",
+    "clientCompanyName": "Office Ivoirien des Chargeurs",
+    "clientPhone": "22521258562",
+    "clientEmail": "songuikone207@gmail.com",
+    "pointOfSale": "DIAGOMA",
+    "establishment": "INTENDANT",
+    "commercialMessage": "Merci pour votre confiance",
+    "footer": "Service client: cm@cmeexpertises.com",
+    "foreignCurrency": "",
+    "foreignCurrencyRate": 0,
+    "items": [
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00683",
+            "description": "APIVM1 D32ds v4 (32 vCPUs, 128 GB RAM) x 744 Hours (Pay as you go), Windows (License included), OS Only",
+            "quantity": 12,
+            "amount": 1575944,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00684",
+            "description": "APIVM1 Disk1: 1TB Premium SSD Managed Disks, Premium SSD, LRS Redundancy, P30 Disk Type 1 Disks; Pay as you go",
+            "quantity": 12,
+            "amount": 22464,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00684",
+            "description": "APIVM1 Disk1: 1TB Premium SSD Managed Disks, Premium SSD, LRS Redundancy, P30 Disk Type 1 Disks; Pay as you go",
+            "quantity": 12,
+            "amount": 92656,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00685",
+            "description": "APIVM2 1 D32ds v4 (32 vCPUs, 128 GB RAM) x 744 Hours (Pay as you go), Windows (License included), OS Only;",
+            "quantity": 12,
+            "amount": 1575944,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00686",
+            "description": "APIVM2 Disk0: 128 GB Premium SSD Managed Disks, Premium SSD, LRS Redundancy, P10 Disk Type 1 Disks; Pay as you go",
+            "quantity": 12,
+            "amount": 22460,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00687",
+            "description": "APIVM2 Disk1: 1TB Premium SSD Managed Disks, Premium SSD, LRS Redundancy, P30 Disk Type 1 Disks; Pay as you go",
+            "quantity": 12,
+            "amount": 92656,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00688",
+            "description": "VMDUTDB 1 D32ds v4 (32 vCPUs, 128 GB RAM) x 744 Hours (Pay as you go), Windows (License included), OS Only;",
+            "quantity": 12,
+            "amount": 1735944,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00689",
+            "description": "VMDUTDB Disk0: 128 GB Standard SSD Managed Disks, Standard SSD, LRS Redundancy, E10 Disk Type 1 Disks, 100 Storage transactions; Pay as you go",
+            "quantity": 12,
+            "amount": 5970,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00690",
+            "description": "VMDUTDB Disk1: 1TB Standard HDD Managed Disks, Standard HDD, S30 Disk Type 1 Disks, 100 Storage transactions; Pay as you go",
+            "quantity": 12,
+            "amount": 24928,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00691",
+            "description": "VMDUTDB Disk2: 2TB Standard HDD Managed Disks, Standard HDD, S40 Disk Type 1 Disks, 100 Storage transactions; Pay as you go",
+            "quantity": 12,
+            "amount": 47560,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00692",
+            "description": "MAILVM: 1 D16ds v4 (16 vCPUs, 64 GB RAM) x 744 Hours (Pay as you go), Windows (License included), OS Only; ",
+            "quantity": 12,
+            "amount": 741280,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00693",
+            "description": "MAILVM Disk0: 128 GB Standard SSD Managed Disks, Standard SSD, LRS Redundancy, E10 Disk Type 1 Disks, 100 Storage transactions; Pay as you go",
+            "quantity": 12,
+            "amount": 5970,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00706",
+            "description": "TEST VM (with SQL Standard) 1 D16ds v4 (16 vCPUs, 64 GB RAM) x 744 Hours (Pay as you go), Windows (License included), SQL Standard (Pay as you go); ",
+            "quantity": 12,
+            "amount": 1384848,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00695",
+            "description": "TEST VM Disk0: 128 GB Premium SSD Managed Disks, Premium SSD, LRS Redundancy, P10 Disk Type 1 Disks; Pay as you go",
+            "quantity": 12,
+            "amount": 12464,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00696",
+            "description": "Web Application Firewall V2 tier, 730 Fixed gateway Hours, 1 compute units and 1000 persistent connections with 1 mb\/s throughput, 1 TB Data transfer",
+            "quantity": 12,
+            "amount": 311232,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00697",
+            "description": "Web Application Firewall V2 tier, 730 Fixed gateway Hours, 1 compute units and 1000 persistent connections with 1 mb\/s throughput, 1 TB Data transfer",
+            "quantity": 12,
+            "amount": 12624,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00698",
+            "description": "APIVM1 Backup Azure VMs, 1 Instance(s) x 1,200 GB, LRS Redundancy, Moderate Average Daily Churn, 36 GB Average monthly snapshot usage data",
+            "quantity": 12,
+            "amount": 72480,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00699",
+            "description": "APIVM2 Backup Azure VMs, 1 Instance(s) x 1,200 GB, LRS Redundancy, Moderate Average Daily Churn, 36 GB Average monthly snapshot usage data",
+            "quantity": 12,
+            "amount": 72480,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00700",
+            "description": "VMDUTDB Backup Azure VMs, 1 Instance(s) x 4,300 GB, LRS Redundancy, Moderate Average Daily Churn, 129 GB Average monthly snapshot usage data",
+            "quantity": 12,
+            "amount": 276464,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00701",
+            "description": "MAILVM Backup Azure VMs, 1 Instance(s) x 128 GB, GRS Redundancy, Moderate Average Daily Churn, 8 GB Average monthly snapshot usage data",
+            "quantity": 12,
+            "amount": 33776,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00702",
+            "description": "TEST VM Backup Azure VMs, 1 Instance(s) x 128 GB, GRS Redundancy, Moderate Average Daily Churn, 8 GB Average monthly snapshot usage data",
+            "quantity": 12,
+            "amount": 33776,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00703",
+            "description": "Basic (ARM), 0 Dynamic IP Addresses X 730 Hours, 5 Static IP Addresses X 744 Hours",
+            "quantity": 12,
+            "amount": 10528,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00704",
+            "description": "Standard (ARM), 2 Static IP Addresses X 744 Hours, 0 Public IP Prefixes X 730 Hours",
+            "quantity": 12,
+            "amount": 7592,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        },
+        {
+            "taxes": [
+                "TVAC"
+            ],
+            "reference": "REF-00705",
+            "description": "Premier Support",
+            "quantity": 12,
+            "amount": 88880,
+            "discount": 0,
+            "measurementUnit": "pcs"
+        }
+    ],
+    "discount": 0
+}

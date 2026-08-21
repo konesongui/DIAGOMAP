@@ -3,9 +3,9 @@
 
 // Set all the required variables for the following methods
 var dtID = 'stockEntryDatatable',
-  remoteAJAXFunctions = {
-      loadData: 'admin/stockentry/data',
-  };
+    remoteAJAXFunctions = {
+        loadData: 'admin/stockentry/data',
+    };
 
 
 
@@ -22,11 +22,11 @@ $(document).ready(function() {
             { "data": "reference" },
             { "data": "designation" },
             { "data": "date" },
-            { 
+            {
                 "data": "montant",
                 "className": "text-right"
             },
-            { 
+            {
                 "data": "actions",
                 "orderable": false,
                 "searchable": false,
@@ -38,8 +38,8 @@ $(document).ready(function() {
             "url": baseurl + "assets/js/french.json"
         },
         "dom": "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
-               "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-5'i><'col-sm-7'p>>",
         "lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
         "pageLength": 25
     });

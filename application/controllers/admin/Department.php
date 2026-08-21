@@ -14,7 +14,7 @@ class Department extends Admin_Controller {
 
     function department() {
 
-        $this->session->set_userdata('top_menu', 'HR');
+        $this->session->set_userdata('top_menu', 'System Settings');
         $this->session->set_userdata('sub_menu', 'admin/department/department');
 
         $departmenttypeid = $this->input->post("departmenttypeid");

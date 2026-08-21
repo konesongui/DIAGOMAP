@@ -31,42 +31,153 @@ class Staff extends Admin_Controller
 
     public function index()
     {
-
         if (!$this->rbac->hasPrivilege('staff', 'can_view')) {
             access_denied();
         }
 
-        $data['title']  = 'Staff Search';
+        $data['title']  = 'Liste des employées';
         $data['fields'] = $this->customfield_model->get_custom_fields('staff', 1);
         $this->session->set_userdata('top_menu', 'HR');
         $this->session->set_userdata('sub_menu', 'HR/staff');
-        $search             = $this->input->post("search");
-        $resultlist         = $this->staff_model->searchFullText("", 1);
+        $search = $this->input->post("search");
+
+        // Récupérer les filtres
+        $status_filter = $this->input->post('status');
+        $date_from = $this->input->post('date_from');
+        $date_to = $this->input->post('date_to');
+
+        $data['status_filter'] = $status_filter;
+        $data['date_from'] = $date_from;
+        $data['date_to'] = $date_to;
+
+        // MODIFICATION : Utiliser une méthode qui fonctionne sans erreur
+        $resultlist = $this->staff_model->getAll(); // Cette méthode existe déjà et retourne tous les employés
+
         $data['resultlist'] = $resultlist;
         $staffRole          = $this->staff_model->getStaffRole();
         $data["role"]       = $staffRole;
         $data["role_id"]    = "";
         $search_text        = $this->input->post('search_text');
+
         if (isset($search)) {
             if ($search == 'search_filter') {
-                $this->form_validation->set_rules('role', $this->lang->line('role'), 'trim|required|xss_clean');
-                if ($this->form_validation->run() == false) {
+                // MODIFICATION : Simplifier la validation puisque le rôle n'est plus obligatoire
+                $data['searchby']    = "filter";
+                $role                = $this->input->post('role');
+                $data['employee_id'] = $this->input->post('empid');
+                $data["role_id"]     = $role;
+                $data['search_text'] = $this->input->post('search_text');
 
-                    $data["resultlist"] = array();
-                } else {
-                    $data['searchby']    = "filter";
-                    $role                = $this->input->post('role');
-                    $data['employee_id'] = $this->input->post('empid');
-                    $data["role_id"]     = $role;
-                    $data['search_text'] = $this->input->post('search_text');
-                    $resultlist          = $this->staff_model->getEmployee($role, 1);
-                    $data['resultlist']  = $resultlist;
-                }
+                // MODIFICATION : Utiliser la méthode searchFullText avec les nouveaux paramètres
+                $status = $this->input->post('status');
+                $date_from = $this->input->post('date_from');
+                $date_to = $this->input->post('date_to');
+                $search_text = $this->input->post('search_text');
+
+                // Appeler la méthode avec tous les filtres
+                $resultlist = $this->staff_model->getFilteredStaff($status, $date_from, $date_to, $search_text, $role);
+                $data['resultlist'] = $resultlist;
+
             } else if ($search == 'search_full') {
                 $data['searchby']    = "text";
                 $data['search_text'] = trim($this->input->post('search_text'));
-                $resultlist          = $this->staff_model->searchFullText($search_text, 1);
 
+                // MODIFICATION : Recherche simple par texte avec tous les statuts
+                $resultlist = $this->staff_model->searchFullText($search_text, null);
+                $data['resultlist'] = $resultlist;
+                $data['title']      = 'Search Details: ' . $data['search_text'];
+            }
+        }
+
+        $this->load->view('layout/header');
+        $this->load->view('admin/staff/staffsearch', $data);
+        $this->load->view('layout/footer');
+    }
+
+    public function quick_search()
+    {
+        if (!$this->rbac->hasPrivilege('staff', 'can_view')) {
+            echo json_encode(array('status' => 'error', 'message' => 'Access denied'));
+            return;
+        }
+
+        $search_text = trim((string) ($this->input->post('search_text') !== null ? $this->input->post('search_text') : $this->input->get_post('search_text')));
+
+        if ($search_text === '') {
+            echo json_encode(array('status' => 'error', 'message' => 'Search term is required'));
+            return;
+        }
+
+        $results = $this->staff_model->searchFullText($search_text, null);
+
+        foreach ($results as $key => $value) {
+            $full_name = trim((isset($value['name']) ? $value['name'] : '') . ' ' . (isset($value['surname']) ? $value['surname'] : ''));
+            $results[$key]['full_name'] = $full_name;
+            $results[$key]['profile_url'] = site_url('admin/staff/profile/' . (int) $value['id']);
+        }
+
+        echo json_encode(array(
+            'status' => 'success',
+            'data' => $results
+        ));
+    }
+
+    public function index_1602()
+    {
+        if (!$this->rbac->hasPrivilege('staff', 'can_view')) {
+            access_denied();
+        }
+
+        $data['title']  = 'Liste des employées';
+        $data['fields'] = $this->customfield_model->get_custom_fields('staff', 1);
+        $this->session->set_userdata('top_menu', 'HR');
+        $this->session->set_userdata('sub_menu', 'HR/staff');
+        $search     = $this->input->post("search");
+
+        // MODIFICATION : Utiliser une méthode qui fonctionne sans erreur
+        $resultlist = $this->staff_model->getAll(); // Cette méthode existe déjà et retourne tous les employés
+
+        $data['resultlist'] = $resultlist;
+        $staffRole          = $this->staff_model->getStaffRole();
+        $data["role"]       = $staffRole;
+        $data["role_id"]    = "";
+        $search_text        = $this->input->post('search_text');
+
+        // Récupérer le filtre statut pour le pré-remplissage
+        $status_filter = $this->input->post('status');
+        $data['status_filter'] = $status_filter;
+
+        if (isset($search)) {
+            if ($search == 'search_filter') {
+                // MODIFICATION : Simplifier la validation puisque le rôle n'est plus obligatoire
+                $data['searchby']    = "filter";
+                $role                = $this->input->post('role');
+                $data['employee_id'] = $this->input->post('empid');
+                $data["role_id"]     = $role;
+                $data['search_text'] = $this->input->post('search_text');
+
+                // MODIFICATION : Utiliser la méthode searchFullText avec le statut
+                $status = $this->input->post('status');
+                $search_text = $this->input->post('search_text');
+
+                if (!empty($search_text)) {
+                    // Si recherche par texte + filtre statut
+                    $resultlist = $this->staff_model->searchFullText($search_text, $status);
+                } else if (!empty($role)) {
+                    // Si filtre par rôle + statut
+                    $resultlist = $this->staff_model->getEmployee($role, $status);
+                } else {
+                    // Si seulement filtre par statut
+                    $resultlist = $this->staff_model->getAll(null, $status);
+                }
+                $data['resultlist'] = $resultlist;
+
+            } else if ($search == 'search_full') {
+                $data['searchby']    = "text";
+                $data['search_text'] = trim($this->input->post('search_text'));
+
+                // MODIFICATION : Recherche simple par texte avec tous les statuts
+                $resultlist = $this->staff_model->searchFullText($search_text, null);
                 $data['resultlist'] = $resultlist;
                 $data['title']      = 'Search Details: ' . $data['search_text'];
             }
@@ -92,7 +203,7 @@ class Staff extends Admin_Controller
 
         $this->session->set_userdata('top_menu', 'HR');
         $this->session->set_userdata('sub_menu', 'HR/staff/disablestafflist');
-        $data['title'] = 'Staff Search';
+        $data['title'] = 'Liste des employées';
         $staffRole     = $this->staff_model->getStaffRole();
 
         $data["role"]       = $staffRole;
@@ -231,7 +342,7 @@ class Staff extends Admin_Controller
                     $attendence_count[$staff_attendence['att_type']][] = 1;
 					}
 				}else{
-					
+
 				}
                 $res[$att_dates] = $staff_attendence;
             }
@@ -434,6 +545,7 @@ class Staff extends Admin_Controller
         $this->form_validation->set_rules('file', $this->lang->line('image'), 'callback_handle_upload');
 
         if ($this->form_validation->run() == true) {
+            try {
 
             $custom_field_post  = $this->input->post("custom_fields[staff]");
             $custom_value_array = array();
@@ -454,12 +566,21 @@ class Staff extends Admin_Controller
             $department        = $this->input->post("department");
             $designation       = $this->input->post("designation");
             $cnps_no          = $this->input->post("cnps_no");
+            $nationalite          = $this->input->post("nationalite");
             $role              = $this->input->post("role");
             $name              = $this->input->post("name");
             $gender            = $this->input->post("gender");
             $marital_status    = $this->input->post("marital_status");
             $dob               = $this->input->post("dob");
             $categorie_salaire               = $this->input->post("categorie_salaire");
+            $categorie = $this->db->get_where('categorie_salaire', ['salaire' => $categorie_salaire])->row();
+
+            // On génère la valeur pour categorie_lettre
+            $categorie_lettre = $categorie ? $categorie->categorie : null;
+            $data = array(
+                'categorie_salaire' => $categorie_lettre, // A
+                'categorie_lettre'  => $categorie_salaire // 1000
+            );
             $categorie_name               = $this->input->post("categorie_name");
             $contact_no        = $this->input->post("contactno");
             $emergency_no      = $this->input->post("emergency_no");
@@ -515,17 +636,69 @@ class Staff extends Admin_Controller
 
             $password = $this->role->get_random_password($chars_min = 6, $chars_max = 6, $use_upper_case = false, $include_numbers = true, $include_special_chars = false);
 
+            $dob_sql = date('Y-m-d', $this->customlib->datetostrtotime($dob));
+            $date_joining_sql = !empty($date_of_joining)
+                ? date('Y-m-d', $this->customlib->datetostrtotime($date_of_joining))
+                : date('Y-m-d');
+            $date_leaving_sql = !empty($date_of_leaving)
+                ? date('Y-m-d', $this->customlib->datetostrtotime($date_of_leaving))
+                : '0000-00-00';
+            $current_user_data = $this->customlib->getUserData();
+            $default_lang_id = (isset($current_user_data['lang_id']) && is_numeric($current_user_data['lang_id'])) ? (int)$current_user_data['lang_id'] : 1;
+            $default_user_id = (isset($current_user_data['id']) && is_numeric($current_user_data['id'])) ? (int)$current_user_data['id'] : 0;
+
             $data_insert = array(
                 'password'        => $this->enc_lib->passHashEnc($password),
                 'employee_id'     => $employee_id,
+                'lang_id'         => $default_lang_id,
                 'name'            => $name,
+                'surname'         => '',
+                'father_name'     => '',
+                'mother_name'     => '',
+                'qualification'   => '',
+                'work_exp'        => '',
+                'contact_no'      => '',
+                'emergency_contact_no' => '',
                 'email'           => $email,
-                'dob'             => date('Y-m-d', $this->customlib->datetostrtotime($dob)),
-                'date_of_leaving' => '',
+                'dob'             => $dob_sql,
+                'marital_status'  => '',
+                'date_of_joining' => $date_joining_sql,
+                'date_of_leaving' => $date_leaving_sql,
+                'local_address'   => '',
+                'permanent_address' => '',
+                'note'            => '',
+                'image'           => '',
                 'gender'          => $gender,
-                'cnps_no'          => $cnps_no,
+                'account_title'   => '',
+                'bank_account_no' => '',
+                'bank_name'       => '',
+                'ifsc_code'       => '',
+                'bank_branch'     => '',
+                'cnps_no'         => '',
                 'payscale'        => '',
+                'basic_salary'    => '',
+                'epf_no'          => '',
+                'contract_type'   => '',
+                'shift'           => '',
+                'location'        => '',
+                'facebook'        => '',
+                'twitter'         => '',
+                'linkedin'        => '',
+                'instagram'       => '',
+                'resume'          => '',
+                'joining_letter'  => '',
+                'resignation_letter' => '',
+                'other_document_name' => '',
+                'other_document_file' => '',
+                'user_id'         => $default_user_id,
                 'is_active'       => 1,
+                'verification_code' => '',
+                'file_name'       => '',
+                'file_size'       => 0,
+                'upload_date'     => date('Y-m-d H:i:s'),
+                'cmu_enfant'      => '',
+                'taxes'           => '',
+                'nationalite'     => '',
             );
 
             if (isset($surname)) {
@@ -586,6 +759,11 @@ class Staff extends Admin_Controller
             if (isset($categorie_salaire)) {
 
                 $data_insert['categorie_salaire'] = $categorie_salaire;
+            }
+
+            if (isset($categorie_lettre)) {
+
+                $data_insert['categorie_lettre'] = $categorie_lettre;
             }
 
             if (isset($categorie_name)) {
@@ -675,12 +853,16 @@ class Staff extends Admin_Controller
             }
 
             if ($date_of_joining != "") {
-                $data_insert['date_of_joining'] = date('Y-m-d', $this->customlib->datetostrtotime($date_of_joining));
+                $data_insert['date_of_joining'] = $date_joining_sql;
+            }
+
+            if ($date_of_leaving != "") {
+                $data_insert['date_of_leaving'] = $date_leaving_sql;
             }
 
             $leave_type  = $this->input->post('leave_type');
             $leave_array = array();
-            if (!empty($leave_array)) {
+            if (!empty($leave_type)) {
                 foreach ($leave_type as $leave_key => $leave_value) {
                     $leave_array[] = array(
                         'staff_id'      => 0,
@@ -699,24 +881,35 @@ class Staff extends Admin_Controller
             $employee_id                           = 0;
 
             if ($this->sch_setting_detail->staffid_auto_insert) {
+                $prefix          = (string)$this->sch_setting_detail->staffid_prefix;
+                $digit_len       = (int)$this->sch_setting_detail->staffid_no_digit;
+                $start_from      = (int)$this->sch_setting_detail->staffid_start_from;
+                $candidate_digit = $start_from;
+
                 if ($this->sch_setting_detail->staffid_update_status) {
-
-                    $employee_id = $this->sch_setting_detail->staffid_prefix . $this->sch_setting_detail->staffid_start_from;
-
                     $last_student = $this->staff_model->lastRecord();
-
-                    $last_admission_digit = str_replace($this->sch_setting_detail->staffid_prefix, "", $last_student->employee_id);
-
-                    $employee_id                = $this->sch_setting_detail->staffid_prefix . sprintf("%0" . $this->sch_setting_detail->staffid_no_digit . "d", $last_admission_digit + 1);
-                    $data_insert['employee_id'] = $employee_id;
-                } else {
-                    $employee_id                = $this->sch_setting_detail->staffid_prefix . $this->sch_setting_detail->staffid_start_from;
-                    $data_insert['employee_id'] = $employee_id;
+                    if (!empty($last_student) && isset($last_student->employee_id)) {
+                        $last_employee_id = (string)$last_student->employee_id;
+                        $numeric_part     = str_replace($prefix, "", $last_employee_id);
+                        if (is_numeric($numeric_part)) {
+                            $candidate_digit = (int)$numeric_part + 1;
+                        }
+                    }
                 }
 
-                $employee_id_exists = $this->staff_model->check_staffid_exists($employee_id);
-                if ($employee_id_exists) {
+                $attempts = 0;
+                do {
+                    $employee_id = $prefix . sprintf("%0" . $digit_len . "d", $candidate_digit);
+                    $exists      = $this->staff_model->check_staffid_exists($employee_id);
+                    $candidate_digit++;
+                    $attempts++;
+                } while ($exists && $attempts < 5000);
+
+                if ($exists) {
                     $insert = false;
+                    $data['error_message'] = 'Impossible de generer un matricule unique automatiquement.';
+                } else {
+                    $data_insert['employee_id'] = $employee_id;
                 }
             } else {
 
@@ -726,6 +919,17 @@ class Staff extends Admin_Controller
             if ($insert) {
 
                 $insert_id = $this->staff_model->batchInsert($data_insert, $role_array, $leave_array, $data_setting);
+
+                if (!$insert_id) {
+                    $db_error = $this->db->error();
+                    $error_message = !empty($db_error['message']) ? $db_error['message'] : 'Erreur lors de l\'enregistrement de l\'employe.';
+                    $this->session->set_flashdata('msg', '<div class="alert alert-danger">' . $error_message . '</div>');
+                    $this->load->view('layout/header', $data);
+                    $this->load->view('admin/staff/staffcreate', $data);
+                    $this->load->view('layout/footer', $data);
+                    return;
+                }
+
                 $staff_id  = $insert_id;
                 if (!empty($custom_value_array)) {
                     $this->customfield_model->insertRecord($custom_value_array, $insert_id);
@@ -817,10 +1021,18 @@ class Staff extends Admin_Controller
 
                 redirect('admin/staff');
             } else {
-                $data['error_message'] = 'Admission No ' . $admission_no . ' already exists';
+                $data['error_message'] = 'Le matricule employe existe deja. Veuillez saisir un autre matricule.';
                 $this->load->view('layout/header', $data);
                 $this->load->view('admin/staff/staffcreate', $data);
                 $this->load->view('layout/footer', $data);
+            }
+            } catch (\Throwable $e) {
+                log_message('error', 'Staff create failed: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+                $this->session->set_flashdata('msg', '<div class="alert alert-danger">Erreur serveur lors de l\'enregistrement de l\'employe: ' . htmlspecialchars($e->getMessage()) . '</div>');
+                $this->load->view('layout/header', $data);
+                $this->load->view('admin/staff/staffcreate', $data);
+                $this->load->view('layout/footer', $data);
+                return;
             }
         }
 
@@ -829,6 +1041,48 @@ class Staff extends Admin_Controller
         $this->load->view('layout/footer', $data);
     }
 
+// ==================== NOUVELLE FONCTION POUR LA VALIDATION DES DOCUMENTS DYNAMIQUES ====================
+    public function handle_dynamic_documents()
+    {
+        $result = $this->filetype_model->get();
+
+        if (isset($_FILES["documents"]) && !empty($_FILES['documents']['name'][0])) {
+            $allowed_extension = array_map('trim', array_map('strtolower', explode(',', $result->file_extension)));
+            $allowed_mime_type = array_map('trim', array_map('strtolower', explode(',', $result->file_mime)));
+
+            foreach ($_FILES['documents']['name'] as $index => $file_name) {
+                if (!empty($file_name)) {
+                    $file_type = $_FILES["documents"]['type'][$index];
+                    $file_size = $_FILES["documents"]["size"][$index];
+                    $file_tmp = $_FILES["documents"]["tmp_name"][$index];
+
+                    $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mtype = finfo_file($finfo, $file_tmp);
+                    finfo_close($finfo);
+
+                    if (!in_array($mtype, $allowed_mime_type)) {
+                        $this->form_validation->set_message('handle_dynamic_documents', $this->lang->line('file_type_not_allowed') . ': ' . $file_name);
+                        return false;
+                    }
+
+                    if (!in_array($ext, $allowed_extension) || !in_array($file_type, $allowed_mime_type)) {
+                        $this->form_validation->set_message('handle_dynamic_documents', $this->lang->line('extension_not_allowed') . ': ' . $file_name);
+                        return false;
+                    }
+
+                    if ($file_size > $result->file_size) {
+                        $file_validate = $this->config->item('file_validate');
+                        $this->form_validation->set_message('handle_dynamic_documents', $this->lang->line('file_size_shoud_be_less_than') . number_format($file_validate['upload_size'] / 1048576, 2) . " MB" . ' (' . $file_name . ')');
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
     public function handle_upload()
     {
         $image_validate = $this->config->item('image_validate');
@@ -1042,6 +1296,7 @@ class Staff extends Admin_Controller
 
         $data['title']               = 'Edit Staff';
         $data['id']                  = $id;
+        $data['stff_list'] = $this->staff_model->get();
         $genderList                  = $this->customlib->getGender();
         $data['genderList']          = $genderList;
         $payscaleList                = $this->staff_model->getPayroll();
@@ -1056,6 +1311,7 @@ class Staff extends Admin_Controller
         $data["department"]          = $department;
         $categorie_listes            = $this->visitors_model->categorie_listes();
         $data["categorie"]          = $categorie_listes;
+        $data['staffs'] = $this->visitors_model->get_staff_with_categorie();
         $marital_status              = $this->marital_status;
         $data["marital_status"]      = $marital_status;
         $data['title']               = 'Edit Staff';
@@ -1128,6 +1384,8 @@ class Staff extends Admin_Controller
             $name              = $this->input->post("name");
             $gender            = $this->input->post("gender");
             $cnps_no            = $this->input->post("cnps_no");
+            $nationalite            = $this->input->post("nationalite");
+            $responsable            = $this->input->post("responsable");
             $marital_status    = $this->input->post("marital_status");
             $dob               = $this->input->post("dob");
             $contact_no        = $this->input->post("contactno");
@@ -1139,9 +1397,26 @@ class Staff extends Admin_Controller
             $qualification     = $this->input->post("qualification");
             $work_exp          = $this->input->post("work_exp");
             $basic_salary      = $this->input->post('basic_salary');
-            $categorie_salaire      = $this->input->post('categorie_salaire');
+
+            // ==================== GESTION CATÉGORIE SALARIALE ====================
+            $categorie_salaire_data = $this->input->post("categorie_salaire");
+            $categorie_salaire_valeur = '';
+            $categorie_lettre = '';
+
+            if (!empty($categorie_salaire_data)) {
+                // Séparation de la valeur et de la lettre (format: "valeur|lettre")
+                $categorie_parts = explode('|', $categorie_salaire_data);
+                if (count($categorie_parts) == 2) {
+                    $categorie_salaire_valeur = $categorie_parts[0]; // La valeur numérique
+                    $categorie_lettre = $categorie_parts[1]; // La lettre de catégorie
+                }
+            }
+            // ==================== FIN GESTION CATÉGORIE SALARIALE ====================
+
+            $salaire_base      = $this->input->post('salaire_base');
             $sursalaire      = $this->input->post('sursalaire');
             $part_igr      = $this->input->post('part_igr');
+            $cmu_enfant      = $this->input->post('cmu_enfant');
             $prime_anc      = $this->input->post('prime_anc');
             $prime_trans      = $this->input->post('prime_trans');
             $forfait_hs      = $this->input->post('forfait_hs');
@@ -1157,6 +1432,7 @@ class Staff extends Admin_Controller
             $crns      = $this->input->post('crns');
             $cmu     = $this->input->post('cmu');
             $cnps_regim      = $this->input->post('cnps_regim');
+            $responsable      = $this->input->post('responsable');
             $cnps_tra      = $this->input->post('cnps_tra');
             $cnps_pres      = $this->input->post('cnps_pres');
             $fdfp_taxe      = $this->input->post('fdfp_taxe');
@@ -1222,6 +1498,8 @@ class Staff extends Admin_Controller
                 'father_name'          => $father_name,
                 'gender'               => $gender,
                 'cnps_no'               => $cnps_no,
+                'nationalite'               => $nationalite,
+                'responsable'               => $responsable,
                 'account_title'        => $account_title,
                 'bank_account_no'      => $bank_account_no,
                 'bank_name'            => $bank_name,
@@ -1229,9 +1507,14 @@ class Staff extends Admin_Controller
                 'bank_branch'          => $bank_branch,
                 'payscale'             => '',
                 'basic_salary'         => $basic_salary,
-                'categorie_salaire'         => $categorie_salaire,
+                // ==================== NOUVELLES COLONNES CATÉGORIE ====================
+                'categorie_salaire'    => $categorie_salaire_valeur, // Valeur numérique
+                'categorie_lettre'     => $categorie_lettre,         // Lettre de catégorie
+                // ==================== FIN NOUVELLES COLONNES ====================
+                'salaire_base'         => $salaire_base,
                 'sursalaire'         => $sursalaire,
                 'part_igr'         => $part_igr,
+                'cmu_enfant'         => $cmu_enfant,
                 'prime_anc'         => $prime_anc,
                 'prime_trans'         => $prime_trans,
                 'forfait_hs'         => $forfait_hs,
@@ -1247,6 +1530,381 @@ class Staff extends Admin_Controller
                 'crns'                => $crns,
                 'cmu'                 => $cmu,
                 'cnps_regim'         => $cnps_regim,
+                'responsable'         => $responsable,
+                'cnps_tra'         => $cnps_tra,
+                'cnps_pres'         => $cnps_pres,
+                'fdfp_taxe'         => $fdfp_taxe,
+                'fdfp_form'         => $fdfp_form,
+                'avan_acom'         => $avan_acom,
+                'autre_reve'         => $autre_reve,
+                'tax'                  => $tax,
+                'epf_no'               => $epf_no,
+                'contract_type'        => $contract_type,
+                'shift'                => $shift,
+                'location'             => $location,
+                'facebook'             => $facebook,
+                'twitter'              => $twitter,
+                'linkedin'             => $linkedin,
+                'instagram'            => $instagram,
+            );
+            if ($date_of_joining != "") {
+                $data1['date_of_joining'] = date('Y-m-d', $this->customlib->datetostrtotime($date_of_joining));
+            } else {
+                $data1['date_of_joining'] = "";
+            }
+
+            if ($date_of_leaving != "") {
+                $data1['date_of_leaving'] = date('Y-m-d', $this->customlib->datetostrtotime($date_of_leaving));
+            } else {
+                $data1['date_of_leaving'] = "";
+            }
+
+            if (!$this->sch_setting_detail->staffid_auto_insert) {
+                $data1['employee_id'] = $employee_id;
+            }
+            $insert_id = $this->staff_model->add($data1);
+
+            $role_id = $this->input->post("role");
+
+            $role_data = array('staff_id' => $id, 'role_id' => $role_id);
+
+            $this->staff_model->update_role($role_data);
+
+            $leave_type = $this->input->post("leave_type_id");
+
+            $alloted_leave = $this->input->post("alloted_leave");
+            $altid         = $this->input->post("altid");
+
+            if (!empty($leave_type)) {
+                $i = 0;
+                foreach ($leave_type as $key => $value) {
+
+                    if (!empty($altid[$i])) {
+
+                        $data2 = array('staff_id' => $id,
+                            'leave_type_id'           => $leave_type[$i],
+                            'id'                      => $altid[$i],
+                            'alloted_leave'           => $alloted_leave[$i],
+                        );
+                    } else {
+
+                        $data2 = array('staff_id' => $id,
+                            'leave_type_id'           => $leave_type[$i],
+                            'alloted_leave'           => $alloted_leave[$i],
+                        );
+                    }
+
+                    $this->staff_model->add_staff_leave_details($data2);
+                    $i++;
+                }
+            }
+
+            if (isset($_FILES["file"]) && !empty($_FILES['file']['name'])) {
+                $fileInfo = pathinfo($_FILES["file"]["name"]);
+                $img_name = $id . '.' . $fileInfo['extension'];
+                move_uploaded_file($_FILES["file"]["tmp_name"], "./uploads/staff_images/" . $img_name);
+                $data_img = array('id' => $id, 'image' => $img_name);
+                $this->staff_model->add($data_img);
+            }
+
+            if (isset($_FILES["first_doc"]) && !empty($_FILES['first_doc']['name'])) {
+                $uploaddir = './uploads/staff_documents/' . $id . '/';
+                if (!is_dir($uploaddir) && !mkdir($uploaddir)) {
+                    die("Error creating folder $uploaddir");
+                }
+                $fileInfo    = pathinfo($_FILES["first_doc"]["name"]);
+                $first_title = 'resume';
+                $resume_doc  = "resume" . $id . '.' . $fileInfo['extension'];
+                $img_name    = $uploaddir . $resume_doc;
+                move_uploaded_file($_FILES["first_doc"]["tmp_name"], $img_name);
+            } else {
+
+                $resume_doc = $resume;
+            }
+
+            if (isset($_FILES["second_doc"]) && !empty($_FILES['second_doc']['name'])) {
+                $uploaddir = './uploads/staff_documents/' . $id . '/';
+                if (!is_dir($uploaddir) && !mkdir($uploaddir)) {
+                    die("Error creating folder $uploaddir");
+                }
+                $fileInfo           = pathinfo($_FILES["second_doc"]["name"]);
+                $first_title        = 'joining_letter';
+                $joining_letter_doc = "joining_letter" . $id . '.' . $fileInfo['extension'];
+                $img_name           = $uploaddir . $joining_letter_doc;
+                move_uploaded_file($_FILES["second_doc"]["tmp_name"], $img_name);
+            } else {
+
+                $joining_letter_doc = $joining_letter;
+            }
+
+            if (isset($_FILES["third_doc"]) && !empty($_FILES['third_doc']['name'])) {
+                $uploaddir = './uploads/staff_documents/' . $id . '/';
+                if (!is_dir($uploaddir) && !mkdir($uploaddir)) {
+                    die("Error creating folder $uploaddir");
+                }
+                $fileInfo               = pathinfo($_FILES["third_doc"]["name"]);
+                $first_title            = 'resignation_letter';
+                $resignation_letter_doc = "resignation_letter" . $id . '.' . $fileInfo['extension'];
+                $img_name               = $uploaddir . $resignation_letter_doc;
+                move_uploaded_file($_FILES["third_doc"]["tmp_name"], $img_name);
+            } else {
+
+                $resignation_letter_doc = $resignation_letter;
+            }
+
+            if (isset($_FILES["fourth_doc"]) && !empty($_FILES['fourth_doc']['name'])) {
+                $uploaddir = './uploads/staff_documents/' . $id . '/';
+                if (!is_dir($uploaddir) && !mkdir($uploaddir)) {
+                    die("Error creating folder $uploaddir");
+                }
+                $fileInfo     = pathinfo($_FILES["fourth_doc"]["name"]);
+                $fourth_title = 'Other Doucment';
+                $fourth_doc   = "otherdocument" . $id . '.' . $fileInfo['extension'];
+                $img_name     = $uploaddir . $fourth_doc;
+                move_uploaded_file($_FILES["fourth_doc"]["tmp_name"], $img_name);
+            } else {
+                $fourth_title = 'Other Document';
+                $fourth_doc   = $other_document_file;
+            }
+
+            $data_doc = array('id' => $id, 'resume' => $resume_doc, 'joining_letter' => $joining_letter_doc, 'resignation_letter' => $resignation_letter_doc, 'other_document_name' => $fourth_title, 'other_document_file' => $fourth_doc);
+
+            $this->staff_model->add($data_doc);
+            $this->session->set_flashdata('msg', '<div class="alert alert-success">' . $this->lang->line('success_message') . '</div>');
+            redirect('admin/staff');
+        }
+    }
+
+    public function edit_121125($id)
+    {
+        if (!$this->rbac->hasPrivilege('staff', 'can_edit')) {
+            access_denied();
+        }
+        $a           = 0;
+        $sessionData = $this->session->userdata('admin');
+        $userdata    = $this->customlib->getUserData();
+
+        $data['title']               = 'Edit Staff';
+        $data['id']                  = $id;
+        $data['stff_list'] = $this->staff_model->get();
+        $genderList                  = $this->customlib->getGender();
+        $data['genderList']          = $genderList;
+        $payscaleList                = $this->staff_model->getPayroll();
+        $leavetypeList               = $this->staff_model->getLeaveType();
+        $data["leavetypeList"]       = $leavetypeList;
+        $data["payscaleList"]        = $payscaleList;
+        $staffRole                   = $this->staff_model->getStaffRole();
+        $data["getStaffRole"]        = $staffRole;
+        $designation                 = $this->staff_model->getStaffDesignation();
+        $data["designation"]         = $designation;
+        $department                  = $this->staff_model->getDepartment();
+        $data["department"]          = $department;
+       $categorie_listes            = $this->visitors_model->categorie_listes();
+       $data["categorie"]          = $categorie_listes;
+        $data['staffs'] = $this->visitors_model->get_staff_with_categorie();
+        $marital_status              = $this->marital_status;
+        $data["marital_status"]      = $marital_status;
+        $data['title']               = 'Edit Staff';
+        $staff                       = $this->staff_model->get($id);
+        $data['staff']               = $staff;
+        $data["contract_type"]       = $this->contract_type;
+        $data['sch_setting']         = $this->sch_setting_detail;
+        $data['staffid_auto_insert'] = $this->sch_setting_detail->staffid_auto_insert;
+        if ($staff["role_id"] == 7) {
+            $a = 0;
+            if ($userdata["email"] == $staff["email"]) {
+                $a = 1;
+            }
+        } else {
+            $a = 1;
+        }
+
+        if ($a != 1) {
+            access_denied();
+        }
+
+        $staffLeaveDetails         = $this->staff_model->getLeaveDetails($id);
+        $data['staffLeaveDetails'] = $staffLeaveDetails;
+        $resume                    = $this->input->post("resume");
+        $joining_letter            = $this->input->post("joining_letter");
+        $resignation_letter        = $this->input->post("resignation_letter");
+        $other_document_name       = $this->input->post("other_document_name");
+        $other_document_file       = $this->input->post("other_document_file");
+        $custom_fields             = $this->customfield_model->getByBelong('staff');
+
+        foreach ($custom_fields as $custom_fields_key => $custom_fields_value) {
+
+            if ($custom_fields_value['validation']) {
+                $custom_fields_id   = $custom_fields_value['id'];
+                $custom_fields_name = $custom_fields_value['name'];
+                $this->form_validation->set_rules("custom_fields[staff][" . $custom_fields_id . "]", $custom_fields_name, 'trim|required');
+            }
+        }
+
+        $this->form_validation->set_rules('name', 'Name', 'trim|required|xss_clean');
+        $this->form_validation->set_rules('role', 'Role', 'trim|required|xss_clean');
+        $this->form_validation->set_rules('gender', 'Gender', 'trim|required|xss_clean');
+        $this->form_validation->set_rules('dob', 'Date of Birth', 'trim|required|xss_clean');
+        $this->form_validation->set_rules('file', $this->lang->line('image'), 'callback_handle_upload');
+        $this->form_validation->set_rules('first_doc', $this->lang->line('image'), 'callback_handle_first_upload');
+        $this->form_validation->set_rules('second_doc', $this->lang->line('image'), 'callback_handle_second_upload');
+        $this->form_validation->set_rules('third_doc', $this->lang->line('image'), 'callback_handle_third_upload');
+        $this->form_validation->set_rules('fourth_doc', $this->lang->line('image'), 'callback_handle_fourth_upload');
+        if (!$this->sch_setting_detail->staffid_auto_insert) {
+
+            $this->form_validation->set_rules('employee_id', $this->lang->line('staff_id'), 'callback_username_check');
+        }
+
+        $this->form_validation->set_rules(
+            'email', $this->lang->line('email'), array('required', 'valid_email',
+                array('check_exists', array($this->staff_model, 'valid_email_id')),
+            )
+        );
+        if ($this->form_validation->run() == false) {
+
+            $this->load->view('layout/header', $data);
+            $this->load->view('admin/staff/staffedit', $data);
+            $this->load->view('layout/footer', $data);
+        } else {
+
+            $employee_id       = $this->input->post("employee_id");
+            $department        = $this->input->post("department");
+            $designation       = $this->input->post("designation");
+            $role              = $this->input->post("role");
+            $name              = $this->input->post("name");
+            $gender            = $this->input->post("gender");
+            $cnps_no            = $this->input->post("cnps_no");
+            $nationalite            = $this->input->post("nationalite");
+            $responsable            = $this->input->post("responsable");
+            $marital_status    = $this->input->post("marital_status");
+            $dob               = $this->input->post("dob");
+            $contact_no        = $this->input->post("contactno");
+            $emergency_no      = $this->input->post("emergency_no");
+            $email             = $this->input->post("email");
+            $date_of_joining   = $this->input->post("date_of_joining");
+            $date_of_leaving   = $this->input->post("date_of_leaving");
+            $address           = $this->input->post("address");
+            $qualification     = $this->input->post("qualification");
+            $work_exp          = $this->input->post("work_exp");
+            $basic_salary      = $this->input->post('basic_salary');
+            $categorie_salaire      = $this->input->post('categorie_salaire');
+
+            $salaire_base      = $this->input->post('salaire_base');
+            $sursalaire      = $this->input->post('sursalaire');
+            $part_igr      = $this->input->post('part_igr');
+            $cmu_enfant      = $this->input->post('cmu_enfant');
+            $prime_anc      = $this->input->post('prime_anc');
+            $prime_trans      = $this->input->post('prime_trans');
+            $forfait_hs      = $this->input->post('forfait_hs');
+            $prime_resp      = $this->input->post('prime_resp');
+            $bonus           = $this->input->post('bonus');
+            $prime_rend      = $this->input->post('prime_rend');
+            $prime_risque     = $this->input->post('prime_risque');
+            $prime_assi      = $this->input->post('prime_assi');
+            $prime_grati      = $this->input->post('prime_grati');
+            $imp_sal      = $this->input->post('imp_sal');
+            $contra_nat      = $this->input->post('contra_nat');
+            $imp_revenu      = $this->input->post('imp_revenu');
+            $crns      = $this->input->post('crns');
+            $cmu     = $this->input->post('cmu');
+            $cnps_regim      = $this->input->post('cnps_regim');
+            $responsable      = $this->input->post('responsable');
+            $cnps_tra      = $this->input->post('cnps_tra');
+            $cnps_pres      = $this->input->post('cnps_pres');
+            $fdfp_taxe      = $this->input->post('fdfp_taxe');
+            $fdfp_form     = $this->input->post('fdfp_form');
+            $avan_acom     = $this->input->post('avan_acom');
+            $autre_reve     = $this->input->post('autre_reve');
+            $tax     = $this->input->post('tax');
+
+            $account_title     = $this->input->post("account_title");
+            $bank_account_no   = $this->input->post("bank_account_no");
+            $bank_name         = $this->input->post("bank_name");
+            $ifsc_code         = $this->input->post("ifsc_code");
+            $bank_branch       = $this->input->post("bank_branch");
+            $contract_type     = $this->input->post("contract_type");
+            $shift             = $this->input->post("shift");
+            $location          = $this->input->post("location");
+            $leave             = $this->input->post("leave");
+            $facebook          = $this->input->post("facebook");
+            $twitter           = $this->input->post("twitter");
+            $linkedin          = $this->input->post("linkedin");
+            $instagram         = $this->input->post("instagram");
+            $permanent_address = $this->input->post("permanent_address");
+            $father_name       = $this->input->post("father_name");
+            $surname           = $this->input->post("surname");
+            $mother_name       = $this->input->post("mother_name");
+            $note              = $this->input->post("note");
+            $epf_no            = $this->input->post("epf_no");
+
+            $custom_field_post = $this->input->post("custom_fields[staff]");
+
+            $custom_value_array = array();
+            if (!empty($custom_fields)) {
+                foreach ($custom_field_post as $key => $value) {
+                    $check_field_type = $this->input->post("custom_fields[staff][" . $key . "]");
+                    $field_value      = is_array($check_field_type) ? implode(",", $check_field_type) : $check_field_type;
+                    $array_custom     = array(
+                        'belong_table_id' => $id,
+                        'custom_field_id' => $key,
+                        'field_value'     => $field_value,
+                    );
+                    $custom_value_array[] = $array_custom;
+                }
+                $this->customfield_model->updateRecord($custom_value_array, $id, 'staff');
+            }
+
+            $data1 = array(
+                'id'                   => $id,
+                'department'           => $department,
+                'designation'          => $designation,
+                'qualification'        => $qualification,
+                'work_exp'             => $work_exp,
+                'name'                 => $name,
+                'contact_no'           => $contact_no,
+                'emergency_contact_no' => $emergency_no,
+                'email'                => $email,
+                'dob'                  => date('Y-m-d', $this->customlib->datetostrtotime($dob)),
+                'marital_status'       => $marital_status,
+                'local_address'        => $address,
+                'permanent_address'    => $permanent_address,
+                'note'                 => $note,
+                'surname'              => $surname,
+                'mother_name'          => $mother_name,
+                'father_name'          => $father_name,
+                'gender'               => $gender,
+                'cnps_no'               => $cnps_no,
+                'nationalite'               => $nationalite,
+                'responsable'               => $responsable,
+                'account_title'        => $account_title,
+                'bank_account_no'      => $bank_account_no,
+                'bank_name'            => $bank_name,
+                'ifsc_code'            => $ifsc_code,
+                'bank_branch'          => $bank_branch,
+                'payscale'             => '',
+                'basic_salary'         => $basic_salary,
+                'categorie_salaire'         => $categorie_salaire,
+                'categorie_lettre'         => $categorie_lettre,
+                'salaire_base'         => $salaire_base,
+                'sursalaire'         => $sursalaire,
+                'part_igr'         => $part_igr,
+                'cmu_enfant'         => $cmu_enfant,
+                'prime_anc'         => $prime_anc,
+                'prime_trans'         => $prime_trans,
+                'forfait_hs'         => $forfait_hs,
+                'prime_resp'         => $prime_resp,
+                'bonus'         => $bonus,
+                'prime_rend'         => $prime_rend,
+                'prime_risque'         => $prime_risque,
+                'prime_assi'         => $prime_assi,
+                'prime_grati'         => $prime_grati,
+                'imp_sal'         => $imp_sal,
+                'contra_nat'         => $contra_nat,
+                'imp_revenu'         => $imp_revenu,
+                'crns'                => $crns,
+                'cmu'                 => $cmu,
+                'cnps_regim'         => $cnps_regim,
+                'responsable'         => $responsable,
                 'cnps_tra'         => $cnps_tra,
                 'cnps_pres'         => $cnps_pres,
                 'fdfp_taxe'         => $fdfp_taxe,
@@ -1411,12 +2069,49 @@ class Staff extends Admin_Controller
         if ($a == 1) {
             access_denied();
         }
-        $data['title'] = 'Staff List';
+        $data['title'] = 'Liste des employées';
         $this->staff_model->remove($id);
         redirect('admin/staff');
     }
 
     public function disablestaff($id)
+    {
+        if (!$this->rbac->hasPrivilege('disable_staff', 'can_view')) {
+            access_denied();
+        }
+
+        $a = 0;
+        $sessionData = $this->session->userdata('admin');
+        $userdata = $this->customlib->getUserData();
+        $staff = $this->staff_model->get($id);
+
+        if ($staff["role_id"] == 7) {
+            $a = 0;
+            if ($userdata["email"] == $staff["email"]) {
+                $a = 1;
+            }
+        } else {
+            $a = 1;
+        }
+
+        if ($a != 1) {
+            access_denied();
+        }
+
+        $data = array(
+            'id' => $id,
+            'reason' => $this->input->post('reason'),
+            'disable_at' => date('Y-m-d', $this->customlib->datetostrtotime($_POST['date'])),
+            'leaving_reason' => $this->input->post('reason'), // Ajout du motif de départ
+            'is_active' => 0
+        );
+
+        $this->staff_model->disablestaff($data);
+        $array = array('status' => 'success', 'error' => '', 'message' => $this->lang->line('success_message'));
+        echo json_encode($array);
+    }
+
+    public function disablestaff_15($id)
     {
         if (!$this->rbac->hasPrivilege('disable_staff', 'can_view')) {
 
@@ -1627,6 +2322,7 @@ class Staff extends Admin_Controller
             "gender"                   => "gender",
             "date_of_birth"            => "date_of_birth",
             "date_of_joining"          => "date_of_joining",
+            "date_of_leaving"          => "date_of_leaving",
             "phone"                    => "phone",
             "emergency_contact_number" => "emergency_contact_number",
             "marital_status"           => "marital_status",
@@ -1819,6 +2515,106 @@ class Staff extends Admin_Controller
     {
         $this->staff_model->rating_remove($id);
         redirect('admin/staff/rating');
+    }
+
+    /**
+     * Affiche la liste des anciens employés (ceux qui ont une date de sortie)
+     */
+    /**
+     * Affiche la liste des anciens employés (ceux qui ont une date de sortie)
+     */
+    /**
+     * Affiche la liste des anciens employés (ceux qui ont une date de sortie)
+     */
+    public function former_employees()
+    {
+        if (!$this->rbac->hasPrivilege('staff', 'can_view')) {
+            access_denied();
+        }
+
+        $data['title'] = 'Anciens employés';
+        $data['fields'] = $this->customfield_model->get_custom_fields('staff', 1);
+
+        $this->session->set_userdata('top_menu', 'HR');
+        $this->session->set_userdata('sub_menu', 'HR/staff/former_employees');
+
+        // Version la plus simple
+        $this->db->select("staff.*, staff_designation.designation, department.department_name as department, roles.id as role_id, roles.name as role");
+        $this->db->from('staff');
+        $this->db->join('staff_designation', "staff_designation.id = staff.designation", "left");
+        $this->db->join('staff_roles', "staff_roles.staff_id = staff.id", "left");
+        $this->db->join('roles', "roles.id = staff_roles.role_id", "left");
+        $this->db->join('department', "department.id = staff.department", "left");
+
+        // Condition : date_of_leaving est renseignée
+        $this->db->where('staff.date_of_leaving IS NOT NULL');
+        $this->db->where('staff.date_of_leaving !=', '0000-00-00');
+
+        $this->db->order_by('staff.date_of_leaving', 'DESC');
+
+        $query = $this->db->get();
+        $resultlist = $query->result_array();
+
+        $data['resultlist'] = $resultlist;
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('admin/staff/former_employees', $data);
+        $this->load->view('layout/footer', $data);
+    }
+
+
+    /**
+     * Reconduire (réactiver) un ancien employé
+     * @param int $id ID de l'employé
+     */
+    public function reinstate($id)
+    {
+        if (!$this->rbac->hasPrivilege('staff', 'can_edit')) {
+            access_denied();
+        }
+
+        $this->form_validation->set_rules('new_joining_date', 'Nouvelle date d\'entrée', 'trim|required|xss_clean');
+
+        if ($this->form_validation->run() == true) {
+            $new_joining_date = $this->input->post('new_joining_date');
+            $reason = $this->input->post('reason');
+
+            // Récupérer les informations de l'employé
+            $staff = $this->staff_model->get($id);
+
+            if ($staff) {
+                // Mettre à jour l'employé
+                $data = array(
+                    'id' => $id,
+                    'is_active' => 1,
+                    'date_of_leaving' => '', // Effacer la date de sortie
+                    'disable_at' => '', // Effacer la date de désactivation
+                    'leaving_reason' => '', // Effacer le motif de départ
+                    'date_of_joining' => date('Y-m-d', strtotime($new_joining_date)) // Nouvelle date d'entrée
+                );
+
+                $this->staff_model->add($data);
+
+                // Optionnel: Ajouter une note dans l'historique de l'employé
+                $note_data = array(
+                    'staff_id' => $id,
+                    'title' => 'Réintégration',
+                    'description' => 'Employé réintégré le ' . date('d/m/Y') . ' avec une nouvelle date d\'entrée au ' . date('d/m/Y', strtotime($new_joining_date)) . '. Motif: ' . $reason,
+                    'created_at' => date('Y-m-d H:i:s')
+                );
+
+                // Si vous avez une table pour l'historique des employés
+                // $this->db->insert('staff_timeline', $note_data);
+
+                $this->session->set_flashdata('msg', '<div class="alert alert-success">Employé reconduit avec succès. Nouvelle date d\'entrée: ' . date('d/m/Y', strtotime($new_joining_date)) . '</div>');
+            } else {
+                $this->session->set_flashdata('msg', '<div class="alert alert-danger">Employé non trouvé.</div>');
+            }
+        } else {
+            $this->session->set_flashdata('msg', '<div class="alert alert-danger">' . validation_errors() . '</div>');
+        }
+
+        redirect('admin/staff/former_employees');
     }
 
 }

@@ -17,7 +17,7 @@ class Recrutement extends Admin_Controller {
             access_denied();
         }
         $this->session->set_userdata('top_menu', 'HR');
-        $this->session->set_userdata('sub_menu', 'admin/recrutement');
+        $this->session->set_userdata('sub_menu', 'admin/recrutements');
         $this->form_validation->set_rules('purpose', $this->lang->line('purpose'), 'required');
         $this->form_validation->set_rules('name', $this->lang->line('name'), 'required');
         $this->form_validation->set_rules('date', $this->lang->line('date'), 'required');
@@ -54,7 +54,7 @@ class Recrutement extends Admin_Controller {
             }
 
             $this->session->set_flashdata('msg', '<div class="alert alert-success">' . $this->lang->line('success_message') . '</div>');
-            redirect('admin/recrutement');
+            redirect('admin/recrutements/index');
         }
     }
 

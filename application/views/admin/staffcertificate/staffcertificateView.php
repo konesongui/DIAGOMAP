@@ -10,7 +10,7 @@
                     <!-- Horizontal Form -->
                     <div class="box box-primary">
                         <div class="box-header with-border">
-                            <h3 class="box-title"><?php echo $this->lang->line('add'); ?> <?php echo $this->lang->line('staff'); ?> <?php echo $this->lang->line('icard'); ?></h3>
+                            <h3 class="box-title">Créer un certificat</h3>
                         </div><!-- /.box-header -->
                         <!-- form start -->
                         <form id="form1" enctype="multipart/form-data" action="<?php echo site_url('admin/staffcertificate/create') ?>"  id="certificateform" name="certificateform" method="post" accept-charset="utf-8">
@@ -64,7 +64,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Code </label>
-                                    <input id="header_color"  name="generated_code" placeholder="" type="text" class="form-control my-colorpicker1"  value="<?= $generated_code ?>" readonly />
+                                    <input id="header_color"   name="generated_code" placeholder="" readonly type="text" class="form-control my-colorpicker1"  value="<?= $generated_code ?>"/>
                                 </div>
 
                                 <div class="form-group switch-inline">
@@ -147,6 +147,7 @@
                             </div><!-- /.box-body -->
                             <div class="box-footer">
                                 <button type="submit" class="btn btn-info pull-right"><?php echo $this->lang->line('save'); ?></button>
+                                <button type="reset"  class="btn btn-secondary bg-black"><i class="fa fa-refresh" aria-hidden="true"></i></button>
                             </div>
                         </form>
                     </div>
@@ -163,7 +164,7 @@
             ?>">
                 <!-- general form elements -->
                    <div class="box box-primary" id="hroom">
-                    <div class="box-header ptbnull" style="height: 207px">
+                    <div class="box-header ptbnull" style="height: 207px; text-align: center; padding-top: 41px">
                         <h3 class="box-title titlefix">Formulaire de création de design du certificat</h3><br/><br/>
                         <p class="box-title titlefix">Chaque enregistrement va généré un code unique d'identification</p>
                     </div>
